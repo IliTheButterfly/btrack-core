@@ -33,7 +33,6 @@ jobs:
       run: mkdir -p $env:GITHUB_WORKSPACE/deps; mkdir -p $env:GITHUB_WORKSPACE/deps/current
 
     - name: Download and extract OpenCV
-      shell: pwsh
       run: |
         $fileUrl = "https://github.com/IliTheButterfly/opencv-builds/releases/download/R${env:OPENCV_RELEASE_VERSION}/${env:OPENCV_PLATFORM}_${env:OPENCV_ARCH}_${env:OPENCV_BUILD_TYPE}.zip"
         $fileName = "${env:GITHUB_WORKSPACE}/deps/${env:OPENCV_PLATFORM}_${env:OPENCV_ARCH}_${env:OPENCV_BUILD_TYPE}.zip"

@@ -31,7 +31,7 @@ jobs:
 
     - name: Set up dependencies directory
       run: |
-        $depsPath = "${env:GITHUB_WORKSPACE}\deps"
+        $depsPath = "C:\btrack-core-cache\deps"
         $currentPath = "$depsPath\current"
         if (-Not (Test-Path $depsPath)) {
           mkdir -p $depsPath
@@ -43,9 +43,9 @@ jobs:
     - name: Download and extract OpenCV
       run: |
         $fileUrl = "https://github.com/IliTheButterfly/opencv-builds/releases/download/R${env:OPENCV_RELEASE_VERSION}/${env:OPENCV_PLATFORM}_${env:OPENCV_ARCH}_${env:OPENCV_BUILD_TYPE}.zip"
-        $fileName = "${env:GITHUB_WORKSPACE}/deps/${env:OPENCV_PLATFORM}_${env:OPENCV_ARCH}_${env:OPENCV_BUILD_TYPE}.zip"
-        $currentDir = "${env:GITHUB_WORKSPACE}/deps/current"
-        $versionFile = "$currentDir/version.txt"
+        $fileName = "C:\btrack-core-cache\deps\${env:OPENCV_PLATFORM}_${env:OPENCV_ARCH}_${env:OPENCV_BUILD_TYPE}.zip"
+        $currentDir = "C:\btrack-core-cache\deps\current"
+        $versionFile = "$currentDir\version.txt"
         $expectedVersion = "${env:OPENCV_RELEASE_VERSION}_${env:OPENCV_PLATFORM}_${env:OPENCV_ARCH}_${env:OPENCV_BUILD_TYPE}"
 
         # Download the file if it doesn't already exist
@@ -84,7 +84,7 @@ jobs:
     - name: Configure CMake
       # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
       # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
-      run: cmake -S ${{github.workspace}}/btrack-core -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DCMAKE_PREFIX_PATH=${{github.workspace}}/deps/current/staticlib -DOpenCV_DIR=${{github.workspace}}/deps/current
+      run: cmake -S ${{github.workspace}}/btrack-core -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DCMAKE_PREFIX_PATH=C:/btrack-core-cache/deps/current/staticlib -DOpenCV_DIR=C:/btrack-core-cache/deps/current/staticlib
 
     - name: Build
       # Build your program with the given configuration

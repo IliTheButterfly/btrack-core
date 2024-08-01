@@ -35,6 +35,7 @@ endif()
 
 # Include sub-projects.
 add_subdirectory ("btrack-core")
+add_subdirectory ("tests")
 
 
 

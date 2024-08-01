@@ -14,7 +14,7 @@ env:
 
   # Select a prebuilt Open CV release from https://github.com/IliTheButterfly/opencv-builds
   OPENCV_VERSION: 4.10.0
-  OPENCV_RELEASE_VERSION: 1.0.0
+  OPENCV_RELEASE_VERSION: 2.0.0
   OPENCV_PLATFORM: Windows10
   OPENCV_ARCH: x64
   OPENCV_BUILD_TYPE: Release

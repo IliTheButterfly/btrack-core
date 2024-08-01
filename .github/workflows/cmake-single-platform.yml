@@ -43,7 +43,7 @@ jobs:
     - name: Download and extract OpenCV
       run: |
         $fileUrl = "https://github.com/IliTheButterfly/opencv-builds/releases/download/R${env:OPENCV_RELEASE_VERSION}/${env:OPENCV_PLATFORM}_${env:OPENCV_ARCH}_${env:OPENCV_BUILD_TYPE}.zip"
-        $fileName = "C:\btrack-core-cache\deps\${env:OPENCV_PLATFORM}_${env:OPENCV_ARCH}_${env:OPENCV_BUILD_TYPE}.zip"
+        $fileName = "C:\btrack-core-cache\deps\${env:OPENCV_PLATFORM}_${env:OPENCV_ARCH}_${env:OPENCV_BUILD_TYPE}_${env:OPENCV_VERSION}_${env:OPENCV_RELEASE_VERSION}.zip"
         $currentDir = "C:\btrack-core-cache\deps\current"
         $versionFile = "$currentDir\version.txt"
         $expectedVersion = "${env:OPENCV_RELEASE_VERSION}_${env:OPENCV_PLATFORM}_${env:OPENCV_ARCH}_${env:OPENCV_BUILD_TYPE}"

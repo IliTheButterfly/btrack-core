@@ -30,7 +30,15 @@ jobs:
     - uses: actions/checkout@v4
 
     - name: Set up dependencies directory
-      run: mkdir -p $env:GITHUB_WORKSPACE/deps; mkdir -p $env:GITHUB_WORKSPACE/deps/current
+      run: |
+        $depsPath = "${env:GITHUB_WORKSPACE}\deps"
+        $currentPath = "$depsPath\current"
+        if (-Not (Test-Path $depsPath)) {
+          mkdir -p $depsPath
+        }
+        if (-Not (Test-Path $currentPath)) {
+          mkdir -p $currentPath
+        }
 
     - name: Download and extract OpenCV
       run: |
@@ -38,7 +46,7 @@ jobs:
         $fileName = "${env:GITHUB_WORKSPACE}/deps/${env:OPENCV_PLATFORM}_${env:OPENCV_ARCH}_${env:OPENCV_BUILD_TYPE}.zip"
         $currentDir = "${env:GITHUB_WORKSPACE}/deps/current"
         $versionFile = "$currentDir/version.txt"
-        $expectedVersion = "${env:OPENCV_RELEASE_VERSION}"
+        $expectedVersion = "${env:OPENCV_RELEASE_VERSION}_${env:OPENCV_PLATFORM}_${env:OPENCV_ARCH}_${env:OPENCV_BUILD_TYPE}"
 
         # Download the file if it doesn't already exist
         if (-Not (Test-Path $fileName)) {

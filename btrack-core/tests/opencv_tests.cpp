@@ -16,8 +16,8 @@ TEST(OpencvTests, BuildInfo)
 
 TEST(OpencvTests, CvtTest)
 {
-	std::cout << (std::filesystem::current_path() / "test.jpg") << std::endl;
-	cv::Mat img = cv::imread((std::filesystem::current_path() / "test.jpg").string());
+	std::cout << TEST_JPG_LOCATION << std::endl;
+	cv::Mat img = cv::imread(TEST_JPG_LOCATION);
 	cv::Mat res;
 	cv::cvtColor(img, res, cv::COLOR_BGR2RGB);
 }

@@ -14,7 +14,6 @@ FetchContent_MakeAvailable(googletest)
 
 
 
-enable_testing()
 
 
 
@@ -51,5 +50,6 @@ endif ()
 
 GTEST_DISCOVER_TESTS(opencv_tests)
 
-set(test_dir ${CMAKE_BUILD_TYPE})
-configure_file(test.jpg ${test_dir}/test.jpg COPYONLY)
+get_filename_component(test_file test.jpg ABSOLUTE)
+message(STATUS ${test_file})
+add_definitions(-DTEST_JPG_LOCATION="${test_file}")

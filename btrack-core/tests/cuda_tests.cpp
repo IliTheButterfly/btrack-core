@@ -1,8 +1,15 @@
 #include <gtest/gtest.h>
 #include <cuda.h>
+#include <opencv2/opencv.hpp>
 
 TEST(CudaTests, VersionCheck)
 {
-	EXPECT_EQ(CUDA_VERSION, 12050);
+	EXPECT_EQ((int)(CUDA_VERSION / 10), 1205);
 }
+
+TEST(CudaTests, DeviceCheck)
+{
+	EXPECT_GE(cv::cuda::deviceSupports(cv::cuda::FeatureSet::DYNAMIC_PARALLELISM), 1);
+}
+
 

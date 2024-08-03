@@ -12,4 +12,5 @@ _deps
 .vs
 out
 deps
+CMakePresets.json
 

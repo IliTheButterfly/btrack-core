@@ -12,6 +12,14 @@ endif()
 
 project ("btrack-core")
 
+if (MSVC)
+	add_compile_options(
+		$<$<CONFIG:>:/MT>
+		$<$<CONFIG:Debug>:/MT>
+		$<$<CONFIG:RELEASE>:/MT>
+	)
+endif ()
+
 # Define arguments
 set(USE_CUDA true CACHE BOOL "Should CUDA be used?")
 
@@ -22,9 +30,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 # Find OpenCV and CUDA
 find_package(OpenCV REQUIRED)
 
-if (USE_CUDA)
-	find_package(CUDA REQUIRED)
-endif()
+find_package(CUDA REQUIRED)
 
 # Include directories
 include_directories(${OpenCV_INCLUDE_DIRS})
@@ -35,6 +41,10 @@ endif()
 
 # Include sub-projects.
 add_subdirectory ("btrack-core")
+
+enable_testing()
+
+add_subdirectory ("tests")
 
 
 

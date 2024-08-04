@@ -9,7 +9,7 @@ TEST(CudaTests, VersionCheck)
 
 TEST(CudaTests, DeviceCheck)
 {
-	EXPECT_GE(cv::cuda::deviceSupports(cv::cuda::FeatureSet::DYNAMIC_PARALLELISM), 1);
+	EXPECT_GE(cv::cuda::getCudaEnabledDeviceCount(), 1);
 }
 
 

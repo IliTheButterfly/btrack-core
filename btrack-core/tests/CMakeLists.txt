@@ -12,8 +12,7 @@ set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 
 FetchContent_MakeAvailable(googletest)
 
-
-
+include_directories(${btrack_core_INCLUDES})
 
 
 
@@ -27,6 +26,18 @@ if (USE_CUDA)
 	  GTest::gtest_main
 	  btrack-core
 	  opencv_world
+	)
+
+	add_executable(
+		processing_tests_with_cuda
+		wrapper_tests.cpp
+	)
+	target_include_directories(processing_tests_with_cuda PUBLIC ${btrack_core_INCLUDES})
+	target_link_libraries(
+		processing_tests_with_cuda
+		GTest::gtest_main
+		btrack-core
+		opencv_world
 	)
 endif ()
 
@@ -46,10 +57,14 @@ include(GoogleTest)
 
 if (USE_CUDA)
 	gtest_discover_tests(cuda_tests)
+	gtest_discover_tests(processing_tests_with_cuda)
 endif ()
 
-GTEST_DISCOVER_TESTS(opencv_tests)
+gtest_discover_tests(opencv_tests)
 
+
+message(STATUS ${btrack_core_INCLUDES})
 get_filename_component(test_file test.jpg ABSOLUTE)
 message(STATUS ${test_file})
 add_definitions(-DTEST_JPG_LOCATION="${test_file}")
+

@@ -36,8 +36,10 @@ find_package(CUDA REQUIRED)
 include_directories(${OpenCV_INCLUDE_DIRS})
 
 if (USE_CUDA)
+	add_definitions(-DUSE_CUDA)
 	include_directories(${CUDA_INCLUDE_DIRS})
 endif()
+
 
 # Include sub-projects.
 add_subdirectory ("btrack-core")
@@ -45,6 +47,5 @@ add_subdirectory ("btrack-core")
 enable_testing()
 
 add_subdirectory ("tests")
-
 
 

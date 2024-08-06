@@ -24,7 +24,7 @@ if (USE_CUDA)
 	target_link_libraries(
 	  cuda_tests
 	  GTest::gtest_main
-	  btrack-core
+	  btrack-core-cuda
 	  opencv_world
 	)
 
@@ -36,7 +36,7 @@ if (USE_CUDA)
 	target_link_libraries(
 		processing_tests_with_cuda
 		GTest::gtest_main
-		btrack-core
+		btrack-core-cuda
 		opencv_world
 	)
 endif ()
@@ -60,6 +60,19 @@ if (USE_CUDA)
 	gtest_discover_tests(processing_tests_with_cuda)
 endif ()
 
+add_executable(
+    processing_tests_no_cuda
+    wrapper_tests.cpp
+)
+target_include_directories(processing_tests_no_cuda PUBLIC ${btrack_core_INCLUDES})
+target_link_libraries(
+    processing_tests_no_cuda
+    GTest::gtest_main
+    btrack-core
+    opencv_world
+)
+
+gtest_discover_tests(processing_tests_no_cuda)
 gtest_discover_tests(opencv_tests)
 
 

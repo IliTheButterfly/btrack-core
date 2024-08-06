@@ -32,6 +32,8 @@ find_package(OpenCV REQUIRED)
 
 find_package(CUDA REQUIRED)
 
+find_package(Boost REQUIRED)
+
 # Include directories
 include_directories(${OpenCV_INCLUDE_DIRS})
 

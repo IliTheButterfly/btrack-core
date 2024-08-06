@@ -10,7 +10,8 @@
       "cacheVariables": {
         "CMAKE_C_COMPILER": "cl.exe",
         "CMAKE_CXX_COMPILER": "cl.exe",
-        "OpenCV_DIR": "W:/Programs/cv2_gpu/build/install/x64/vc17/staticlib"
+        "OpenCV_DIR": "W:/Programs/cv2_gpu/build/install/x64/vc17/staticlib",
+        "Boost_INCLUDE_DIR": "W:/Programs/boost/boost_1_85_0"
       },
       "condition": {
         "type": "equals",

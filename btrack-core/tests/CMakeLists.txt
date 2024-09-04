@@ -7,14 +7,12 @@ FetchContent_Declare(
 )
 # For Windows: Prevent overriding the parent project's compiler/linker settings
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-# set_property(GLOBAL PROPERTY
-# 	MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+set_property(GLOBAL PROPERTY
+	MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 
 FetchContent_MakeAvailable(googletest)
 
 include_directories(${btrack_core_INCLUDES})
-
-
 
 if (USE_CUDA)
 	add_executable(
@@ -25,7 +23,6 @@ if (USE_CUDA)
 	  cuda_tests
 	  GTest::gtest_main
 	  btrack-core-cuda
-	  opencv_world
 	)
 
 	add_executable(
@@ -37,7 +34,6 @@ if (USE_CUDA)
 		processing_tests_with_cuda
 		GTest::gtest_main
 		btrack-core-cuda
-		opencv_world
 	)
 endif ()
 
@@ -50,7 +46,6 @@ target_link_libraries(
 	opencv_tests
 	GTest::gtest_main
 	btrack-core
-	opencv_world
 )
 
 include(GoogleTest)
@@ -69,11 +64,22 @@ target_link_libraries(
     processing_tests_no_cuda
     GTest::gtest_main
     btrack-core
-    opencv_world
+)
+
+add_executable(
+    settings_tests
+    settings_tests.cpp
+)
+target_include_directories(settings_tests PUBLIC ${btrack_core_INCLUDES})
+target_link_libraries(
+    settings_tests
+    GTest::gtest_main
+    btrack-core
 )
 
 gtest_discover_tests(processing_tests_no_cuda)
 gtest_discover_tests(opencv_tests)
+gtest_discover_tests(settings_tests)
 
 
 message(STATUS ${btrack_core_INCLUDES})

@@ -29,13 +29,14 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 # Find OpenCV and CUDA
 find_package(OpenCV REQUIRED)
-
 find_package(CUDA REQUIRED)
-
 find_package(Boost REQUIRED)
 
 # Include directories
-include_directories(${OpenCV_INCLUDE_DIRS})
+message(STATUS ${Boost_INCLUDE_DIR})
+include_directories(${OpenCV_INCLUDE_DIRS} ${Boost_INCLUDE_DIR})
+message(STATUS ${Boost_LIBRARIES})
+message(STATUS ${Boost_LIBRARY_DIRS})
 
 if (USE_CUDA)
 	add_definitions(-DUSE_CUDA)

@@ -13,4 +13,6 @@ _deps
 out
 deps
 CMakePresets.json
+build
+settings.json
 

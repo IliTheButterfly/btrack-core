@@ -63,7 +63,7 @@ class SettingsManagerMock : public _SettingsManager
 {
 public:
 	void load() override { loaded = true; }
-	void save() const override { saved = true; }
+	void save() override { saved = true; }
 };
 
 TEST(SettingsManagerTests, EditLoadSave)
@@ -73,7 +73,7 @@ TEST(SettingsManagerTests, EditLoadSave)
 	loaded = false;
 	saved = false;
 	{
-		auto editor = manager.edit();
+		SettingsContainer editor {&manager};
 		EXPECT_TRUE(loaded);
 		EXPECT_FALSE(saved);
 	}

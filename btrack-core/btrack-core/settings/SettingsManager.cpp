@@ -19,14 +19,14 @@ void SettingsManager::load()
 	mCurrent.from_ptree(ptree);
 }
 
-void SettingsManager::save() const
+void SettingsManager::save()
 {
 	pt::ptree ptree;
 	mCurrent.to_ptree(ptree);
 	pt::write_json(paths::getScenePath(mFilename).string(), ptree);
 }
 
-const SceneSettings& _SettingsManager::get() const
+SceneSettings& _SettingsManager::get()
 {
 	return mCurrent;
 }
@@ -34,11 +34,6 @@ const SceneSettings& _SettingsManager::get() const
 void _SettingsManager::set(const SceneSettings& settings)
 {
 	mCurrent = settings;
-}
-
-SettingsContainer&& _SettingsManager::edit()
-{
-	return SettingsContainer(this);
 }
 
 SettingsContainer::SettingsContainer(_SettingsManager* manager) : mManager(manager)

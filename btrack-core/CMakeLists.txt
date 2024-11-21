@@ -30,7 +30,7 @@ endif ()
 set(USE_CUDA OFF CACHE BOOL "Should CUDA be used?")
 
 # Specify the C++ standard
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 # Find OpenCV and CUDA
@@ -38,7 +38,7 @@ find_package(OpenCV REQUIRED)
 if (USE_CUDA)
 find_package(CUDA REQUIRED)
 endif ()
-find_package(Boost REQUIRED)
+find_package(Boost COMPONENTS filesystem serialization REQUIRED)
 
 # Include directories
 message(STATUS ${Boost_INCLUDE_DIR})

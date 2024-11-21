@@ -12,24 +12,23 @@ class SettingsContainer;
 class _SettingsManager
 {
 protected:
-	SceneSettings mCurrent;
+	SceneSettings mCurrent{};
 	std::string mFilename = "default";
 
 public:
 	virtual void setFilename(const std::string& name);
 	virtual const std::string getFilenemae() const;
 	virtual void load() = 0;
-	virtual void save() const = 0;
-	virtual const SceneSettings& get() const;
+	virtual void save() = 0;
+	virtual SceneSettings& get();
 	virtual void set(const SceneSettings& settings);
-	SettingsContainer&& edit();
 };
 
 class SettingsManager : public _SettingsManager
 {
 public:
 	void load() override;
-	void save() const override;
+	void save() override;
 };
 
 class SettingsContainer

@@ -10,16 +10,31 @@
 #endif()
 
 
+set(SourceFiles
+	"btrack-core.cpp"
+	"processing/camera.cpp"
+	"processing/scene.cpp"
+	"settings/SettingsManager.cpp"
+	"nodes/MetaNode.cpp"
+	"nodes/MetaNodeInputValue.cpp"
+	"nodes/MetaNodeInputArray.cpp"
+	"nodes/MetaNodeOutputValue.cpp"
+	"nodes/MetaNodeOutputArray.cpp"
 
-get_filename_component(local_dir ./ ABSOLUTE)
-set(btrack_core_INCLUDES ${local_dir} PARENT_SCOPE)
+	"nodes/Node.cpp"
+	"nodes/NodeInputValue.cpp"
+	"nodes/NodeInputArray.cpp"
+	"nodes/NodeOutputValue.cpp"
+	"nodes/NodeOutputArray.cpp"
+)
+
+
 include_directories(${btrack_core_INCLUDES})
-
-add_library (btrack-core "btrack-core.cpp" "btrack-core.h" "processing/camera.h" "settings/CamSettings.h" "settings/paths.h" "settings/PTreeConvertible.h" "settings/SceneSettings.h" "settings/SettingsManager.h" "settings/SettingsManager.cpp")
+add_library (btrack-core ${SourceFiles})
 
 
 if (USE_CUDA)
-	add_library (btrack-core-cuda "btrack-core.cpp" "btrack-core.h" "processing/camera.h" "settings/CamSettings.h" "settings/paths.h" "settings/PTreeConvertible.h" "settings/SceneSettings.h" "settings/SettingsManager.h" "settings/SettingsManager.cpp")
+	add_library (btrack-core-cuda ${SourceFiles})
 	target_compile_definitions(btrack-core-cuda PUBLIC -DUSE_CUDA)
 	if (MSVC)
 		target_link_libraries(btrack-core-cuda ${CUDA_LIBRARIES} opencv_world ${Boost_LIBRARIES})
@@ -33,4 +48,3 @@ if (MSVC)
 else ()
 	target_link_libraries(btrack-core ${OpenCV_LIBS} ${Boost_LIBRARIES})
 endif ()
-# TODO: Add tests and install targets if needed.

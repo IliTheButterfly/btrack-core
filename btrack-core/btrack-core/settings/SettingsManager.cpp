@@ -1,6 +1,10 @@
 #include "SettingsManager.h"
 
+namespace btrack { namespace settings {
+
 namespace pt = boost::property_tree;
+
+
 
 void _SettingsManager::setFilename(const std::string& name)
 {
@@ -52,3 +56,5 @@ SettingsContainer::~SettingsContainer()
 	mManager->set(mSettings);
 	mManager->save();
 }
+
+}} // btrack::settings

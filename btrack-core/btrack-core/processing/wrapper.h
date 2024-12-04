@@ -2,6 +2,8 @@
 
 #include <opencv2/opencv.hpp>
 
+namespace btrack { namespace processing {
+
 #ifdef USE_CUDA
 
 #include <opencv2/cudaimgproc.hpp>
@@ -22,3 +24,5 @@ using procMat = cv::Mat;
 
 #endif // USE_CUDA
 
+
+}} // btrack::processing

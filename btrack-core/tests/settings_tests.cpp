@@ -2,6 +2,8 @@
 #include "settings/CamSettings.h"
 #include "settings/SettingsManager.h"
 
+using namespace btrack::settings;
+
 TEST(CamSettingsIntrinsicsTests, SimpleConversionTest)
 {
 	CameraIntrinsics intr = {};

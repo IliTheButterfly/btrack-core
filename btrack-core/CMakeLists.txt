@@ -18,6 +18,11 @@ endif()
 
 project ("btrack-core")
 
+get_filename_component(local_dir ./btrack-core ABSOLUTE)
+set(btrack_core_INCLUDES ${local_dir} GLOBAL_SCOPE)
+message(STATUS ${btrack_core_INCLUDES})
+include_directories(${btrack_core_INCLUDES})
+
 if (MSVC)
 	add_compile_options(
 		$<$<CONFIG:>:/MT>
@@ -30,7 +35,7 @@ endif ()
 set(USE_CUDA OFF CACHE BOOL "Should CUDA be used?")
 
 # Specify the C++ standard
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 # Find OpenCV and CUDA

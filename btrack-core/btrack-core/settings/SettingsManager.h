@@ -7,6 +7,8 @@
 #include "SceneSettings.h"
 #include "paths.h"
 
+namespace btrack { namespace settings {
+
 class SettingsContainer;
 
 class _SettingsManager
@@ -41,3 +43,5 @@ public:
 	SceneSettings& get();
 	~SettingsContainer();
 };
+
+}} // btrack::settings

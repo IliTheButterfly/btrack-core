@@ -2,6 +2,9 @@
 
 #include <boost/filesystem.hpp>
 
+
+namespace btrack { namespace settings {
+
 namespace paths
 {
 	namespace fs = boost::filesystem;
@@ -30,3 +33,5 @@ namespace paths
 		}
 	}
 };
+
+}} // btrack::settings

@@ -3,6 +3,8 @@
 #include <opencv2/opencv.hpp>
 #include <opencv2/core/quaternion.hpp>
 
+namespace btrack { namespace settings {
+
 class PTreeConvertible
 {
 public:
@@ -99,3 +101,5 @@ template <class T>
 inline void convert_from_ptree(boost::property_tree::ptree &pt, T &v)
 {
 }
+
+}} // btrack::settings

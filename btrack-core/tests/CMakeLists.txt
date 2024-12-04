@@ -16,6 +16,8 @@ FetchContent_MakeAvailable(googletest)
 
 include_directories(${btrack_core_INCLUDES})
 
+
+
 if (USE_CUDA)
 	add_executable(
 	  cuda_tests
@@ -79,9 +81,33 @@ target_link_libraries(
     btrack-core
 )
 
+add_executable(
+    node_tests
+    node_tests.cpp
+)
+target_include_directories(node_tests PUBLIC ${btrack_core_INCLUDES})
+target_link_libraries(
+    node_tests
+    GTest::gtest_main
+    btrack-core
+)
+
+add_executable(
+    registry_tests
+    registry_tests.cpp
+)
+target_include_directories(registry_tests PUBLIC ${btrack_core_INCLUDES})
+target_link_libraries(
+    registry_tests
+    GTest::gtest_main
+    btrack-core
+)
+
 gtest_discover_tests(processing_tests_no_cuda)
 gtest_discover_tests(opencv_tests)
 gtest_discover_tests(settings_tests)
+gtest_discover_tests(node_tests)
+gtest_discover_tests(registry_tests)
 
 
 message(STATUS ${btrack_core_INCLUDES})

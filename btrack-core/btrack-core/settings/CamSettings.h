@@ -8,6 +8,8 @@
 
 #include "PTreeConvertible.h"
 
+namespace btrack { namespace settings {
+
 struct CameraIntrinsics : public PTreeConvertible {
     cv::Matx<double, 1, 5> distCoeffs{};
     cv::Matx33d cameraMatrix{};
@@ -179,3 +181,5 @@ struct CameraSettings : public PTreeConvertible
         convert_from_ptree(extr, extrinsics);
     }
 };
+
+}} // btrack::settings

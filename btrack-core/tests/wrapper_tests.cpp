@@ -1,6 +1,8 @@
 #include <gtest/gtest.h>
 #include <processing/wrapper.h>
 
+using namespace btrack::processing;
+
 TEST(WrapperTests, CvtTest)
 {
 	std::cout << TEST_JPG_LOCATION << std::endl;

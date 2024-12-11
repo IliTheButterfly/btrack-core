@@ -3,6 +3,18 @@
 
 using namespace btrack::nodes;
 
+class NodeStart : public Node
+{
+public:
+	NodeOutputValue<int> valueOutput{"valueOutput"};
+	NodeOutputValue<int> arrayOutput{"arrayOutput"};
+
+	void process() override
+	{
+		
+	}
+};
+
 class TestNodeStart : public MetaNode
 {
 public:
@@ -15,11 +27,11 @@ public:
 	MetaNodeOutputValue<int> valueOutput{"valueOutput"};
 	MetaNodeOutputArray<int> arrayOutput{"arrayOutput"};
 
+	void generate(int count) override {}
 
 	size_t inputCount() const override { return 0; }
 	size_t outputCount() const override { return 2; }
 };
-
 
 class TestNodeMid1 : public MetaNode
 {
@@ -35,6 +47,9 @@ public:
 	
 	MetaNodeOutputValue<int> valueOutput{"valueOutput"};
 	MetaNodeOutputArray<int> arrayOutput{"arrayOutput"};
+
+	void generate(int count) override {}
+
 	size_t inputCount() const override { return 2; }
 	size_t outputCount() const override { return 2; }
 };
@@ -48,9 +63,11 @@ public:
 		const std::string& _description = ""
 		) : 
 			TestNodeEnd::MetaNode(_name, _friendlyName, _description) {}
-	using NodeIt = MetaNode::NodeIt;
 	MetaNodeInputValue<int> valueInput{"valueInput"};
 	MetaNodeInputArray<int> arrayInput{"arrayInput"};
+
+	void generate(int count) override {}
+
 	size_t inputCount() const override { return 2; }
 	size_t outputCount() const override { return 0; }
 };
@@ -119,4 +136,5 @@ TEST(NodeTests, OtherChain)
 	mid.valueOutput>>end.valueInput;
 	mid.arrayOutput>>end.arrayInput;
 }
+
 

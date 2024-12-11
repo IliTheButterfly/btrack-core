@@ -21,6 +21,11 @@ public:
 template <typename T>
 class NodeInput : public _NodeInput
 {
+public:
+    using DataPtr = std::shared_ptr<T>;
+    using ChannelType = Channel<T>;
+private:
+	
 protected:
 	NodeInput(
 		const std::string& _name, 

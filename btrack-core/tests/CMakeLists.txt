@@ -16,8 +16,6 @@ FetchContent_MakeAvailable(googletest)
 
 include_directories(${btrack_core_INCLUDES})
 
-
-
 if (USE_CUDA)
 	add_executable(
 	  cuda_tests
@@ -84,6 +82,7 @@ target_link_libraries(
 add_executable(
     node_tests
     node_tests.cpp
+	${SourceFiles}
 )
 target_include_directories(node_tests PUBLIC ${btrack_core_INCLUDES})
 target_link_libraries(

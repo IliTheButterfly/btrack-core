@@ -9,17 +9,17 @@ class NodeGraph
 {
 public:
 	using MetaNodeType = MetaNode;
-	using MetaNodePtr = boost::shared_ptr<MetaNode>;
-	using MetaNodeIterator = NodeIterator<NodeGraph, MetaNodeType, MetaNodePtr>;
+	using MetaNodePtr = MetaNode*;
+	using MetaNodeIterator = NodeIterator<MetaNodeType, MetaNodePtr>;
 
 private:
-	std::vector<MetaNodePtr> mChildren;
+	std::vector<MetaNode> mChildren;
 
 public:
-	NodeIteratorAccessorConcrete(MetaNodeIterator, Children);
+	NodeIteratorAccessorConcrete(MetaNodeIterator, Children, NodeGraph);
 
-	MetaNodeIterator ChildrenBegin() { return MetaNodeIterator(mChildren.begin()); }
-	MetaNodeIterator ChildrenEnd() { return MetaNodeIterator(mChildren.end()); }
+	MetaNodeIterator ChildrenBegin() { return MetaNodeIterator::create(mChildren.begin()); }
+	MetaNodeIterator ChildrenEnd() { return MetaNodeIterator::create(mChildren.end()); }
 
 };
 

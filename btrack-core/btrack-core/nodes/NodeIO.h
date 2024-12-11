@@ -4,7 +4,8 @@
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <iterator>
-#include <boost/smart_ptr.hpp>
+#include <vector>
+#include <nodes/MemoryRegistry.h>
 
 namespace btrack { namespace nodes
 {
@@ -60,44 +61,99 @@ NodeItemType operator~(NodeItemType x) { return (NodeItemType)(x ^ NodeItemType:
 // NodeItemType operator~(const NodeItemType x) { return (const NodeItemType)((const uint8_t)x ^ NodeItemType::ANY); }
 
 
-template <typename ParentNode, typename NodeType, typename NodePtr>
-// Iterator for ParentNode
+
+template <typename NodeType, typename NodePtr>
 class NodeIterator
 {
-	using IteratorType = std::vector<NodePtr>::iterator;
-
-	IteratorType mCurrent;
-
 public:
 	// STL-like iterator traits
 	using iterator_category = std::forward_iterator_tag;
-	using value_type = NodeType;
 	using difference_type = std::ptrdiff_t;
-	using pointer = NodeType*;
+	using pointer = NodePtr;
 	using reference = NodeType&;
 
-	using parent = ParentNode;
+	struct _IteratorRef
+	{
+		virtual reference operator*() const = 0;
+		virtual pointer operator->() const = 0;
 
-	explicit NodeIterator(IteratorType current) : mCurrent(current) {}
+		virtual _IteratorRef& operator++() = 0;
+
+		// virtual _IteratorRef operator++(int) = 0;
+
+		bool operator==(_IteratorRef& other) const { return (*this).operator->() == (*other).operator->(); }
+		bool operator!=(_IteratorRef& other) const { return !(*this == other); }
+	};
+
+	template <typename IterT>
+	struct IteratorRef : public _IteratorRef
+	{
+		IterT mCurrent;
+
+		// IteratorRef(std::vector<IterT>::iterator iter) : mCurrent{mCurrent} {}
+		IteratorRef(IterT iter) : mCurrent{mCurrent} {}
+		
+		reference operator*() const override { return *mCurrent; }
+		pointer operator->() const override  { return &((reference)*(*this)); }
+
+		_IteratorRef& operator++() override
+		{
+			++mCurrent;
+			return *this;
+		}
+
+		IteratorRef operator++(int)
+		{
+			IteratorRef temp = *this;
+			++(*this);
+			return temp;
+		}
+
+		// bool operator==(_IteratorRef& other) const override { return (**this) == (**other); }
+		// bool operator!=(_IteratorRef& other) const override { return !(*this == other); }
+	};
+
+private:
+	_IteratorRef* mCurrent;
+
+	NodeIterator(_IteratorRef* current) : mCurrent(current) {}
+public:
+
+	template <typename IterT>
+	NodeIterator(IteratorRef<IterT> current) : mCurrent(new IteratorRef<IterT>(current)) {}
+
+	NodeIterator operator=(const NodeIterator& it) { return NodeIterator(new _IteratorRef(*(it.mCurrent))); }
+
+	template <typename IterT>
+	static NodeIterator create(IterT iter)
+	{
+		return NodeIterator(new IteratorRef<IterT>(iter));
+	}
 
 	reference operator*() const { return **mCurrent; }
-	pointer operator->() const { return mCurrent->get(); }
+	pointer operator->() const { return (*mCurrent); }
 
 	NodeIterator& operator++()
 	{
-		++mCurrent;
+		(*mCurrent)++;
 		return *this;
 	}
 
 	NodeIterator operator++(int)
 	{
 		NodeIterator temp = *this;
-		++(*this);
+		(*this)++;
 		return temp;
 	}
 
-	bool operator==(const NodeIterator& other) const { return mCurrent == other.mCurrent; }
+	bool operator==(const NodeIterator& other) const { return (*mCurrent) == *(other.mCurrent); }
 	bool operator!=(const NodeIterator& other) const { return !(*this == other); }
+
+	~NodeIterator()
+	{
+		delete mCurrent;
+		mCurrent = nullptr;
+	}
 };
 
 
@@ -161,11 +217,11 @@ public:
 	virtual const std::type_info& dataType() const = 0;
 };
 
-#define NodeIteratorAccessor(iteratorType, name) \
+#define NodeIteratorAccessor(iteratorType, name, parentType) \
 struct iteratorType##_ref \
 { \
-	iteratorType::parent& parent; \
-	iteratorType##_ref(iteratorType::parent& p) : parent{p} {} \
+	parentType& parent; \
+	iteratorType##_ref(parentType& p) : parent{p} {} \
 	iteratorType begin() { return parent.name##Begin(); } \
 	iteratorType end() { return parent.name##End(); } \
 };\
@@ -174,11 +230,11 @@ virtual iteratorType name##End() = 0; \
 iteratorType##_ref name##Iter() { return iteratorType##_ref(*this); }
 
 
-#define NodeIteratorAccessorConcrete(iteratorType, name) \
+#define NodeIteratorAccessorConcrete(iteratorType, name, parentType) \
 struct iteratorType##_ref \
 { \
-	iteratorType::parent& parent; \
-	iteratorType##_ref(iteratorType::parent& p) : parent{p} {} \
+	parentType& parent; \
+	iteratorType##_ref(parentType& p) : parent{p} {} \
 	iteratorType begin() { return parent.name##Begin(); } \
 	iteratorType end() { return parent.name##End(); } \
 };\

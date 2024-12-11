@@ -22,14 +22,17 @@ protected:
 			_NodeOutput::NodeIO(_name, _nodeType | NodeItemType::OUTPUT, _friendlyName, _description) {}
 public:
 	using _NodeInputType = _NodeInput;
-    using _NodeInputPtr = boost::shared_ptr<_NodeInput>;
-	using _NodeInputIterator = NodeIterator<_NodeOutput, _NodeInputType, _NodeInputPtr>;
-	NodeIteratorAccessor(_NodeInputIterator, _NodeInput);
+    using _NodeInputPtr = _NodeInput*;
+	using _NodeInputIterator = NodeIterator<_NodeInputType, _NodeInputPtr>;
+	NodeIteratorAccessor(_NodeInputIterator, _NodeInput, _NodeOutput);
 };
 
 template <typename T>
 class NodeOutput : public _NodeOutput
 {
+public:
+    using DataPtr = std::shared_ptr<T>;
+    using ChannelType = Channel<T>;
 protected:
 	NodeOutput(
 		const std::string& _name, 
@@ -42,9 +45,9 @@ public:
 	using _NodeInputIterator = NodeOutput::_NodeInputIterator;
 
     using NodeInputType = NodeInput<T>;
-    using NodeInputPtr = boost::shared_ptr<NodeInput<T>>;
-	using NodeInputIterator = NodeIterator<_NodeInput, NodeInputType, NodeInputPtr>;
-	NodeIteratorAccessor(NodeInputIterator, NodeInput);
+    using NodeInputPtr = NodeInput<T>*;
+	using NodeInputIterator = NodeIterator<NodeInputType, NodeInputPtr>;
+	NodeIteratorAccessor(NodeInputIterator, NodeInput, NodeOutput<T>);
 
 	const std::type_info& dataType() const override { return typeid(T); }
 };

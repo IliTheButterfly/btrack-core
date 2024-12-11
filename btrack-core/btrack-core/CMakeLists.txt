@@ -15,6 +15,7 @@ set(SourceFiles
 	"processing/camera.cpp"
 	"processing/scene.cpp"
 	"settings/SettingsManager.cpp"
+	
 	"nodes/MetaNode.cpp"
 	"nodes/MetaNodeInputValue.cpp"
 	"nodes/MetaNodeInputArray.cpp"

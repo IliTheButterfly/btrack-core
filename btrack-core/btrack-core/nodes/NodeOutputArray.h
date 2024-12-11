@@ -1,23 +1,14 @@
 #pragma once
 #include "nodes/NodeOutput.h"
+#include "nodes/NodeInputArray.h"
 
 namespace btrack { namespace nodes {
-
-class _NodeInput;
-
-template <typename T>
-class NodeInput;
-
-class _NodeInputArray;
-
-template <typename T>
-class NodeInputArray;
 
 template <typename T>
 class NodeOutputArray : public NodeOutput<T>
 {
 protected:
-	std::vector<boost::shared_ptr<NodeInputArray<T>>> mChildren;
+	std::vector<NodeInputArray<T>> mChildren;
 public:
 	NodeOutputArray(
 		const std::string& _name, 
@@ -30,16 +21,19 @@ public:
 	using NodeInputIterator = NodeOutput<T>::NodeInputIterator;
 	
 	using NodeInputArrayType = NodeInputArray<T>;
-	using NodeInputArrayPtr = boost::shared_ptr<NodeInputArray<T>>;
-	using NodeInputArrayIterator = NodeIterator<NodeOutputArray, NodeInputArrayType, NodeInputArrayPtr>;
-	NodeIteratorAccessorConcrete(NodeInputArrayIterator, NodeInputArray);
-	
+	using NodeInputArrayPtr = NodeInputArray<T>*;
+	using NodeInputArrayIterator = NodeIterator<NodeInputArrayType, NodeInputArrayPtr>;
+	NodeIteratorAccessorConcrete(NodeInputArrayIterator, NodeInputArray, NodeOutputArray<T>);
+
+
+
+
 	NodeOutputArray<T>& operator>>(NodeInputArray<T>& input);
 
-	NodeInputArrayIterator NodeInputArrayBegin() { return NodeInputArrayIterator(mChildren.begin()); }
-	NodeInputArrayIterator NodeInputArrayEnd() { return NodeInputArrayIterator(mChildren.end()); }
-	_NodeInputIterator _NodeInputBegin() { return _NodeInputIterator(mChildren.begin()); }
-	_NodeInputIterator _NodeInputEnd() { return _NodeInputIterator(mChildren.end()); }
+	NodeInputArrayIterator NodeInputArrayBegin() { return NodeInputArrayIterator::create(mChildren.begin()); }
+	NodeInputArrayIterator NodeInputArrayEnd() { return NodeInputArrayIterator::create(mChildren.end()); }
+	_NodeInputIterator _NodeInputBegin() { return _NodeInputIterator::create(mChildren.begin()); }
+	_NodeInputIterator _NodeInputEnd() { return _NodeInputIterator::create(mChildren.end()); }
 };
 
 }} // btrack::nodes

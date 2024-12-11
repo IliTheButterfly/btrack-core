@@ -1,16 +1,14 @@
 #pragma once
 #include "nodes/MetaNodeInput.h"
+#include "nodes/NodeInputValue.h"
 
 namespace btrack { namespace nodes {
-
-template <typename T>
-class NodeInputArray;
 
 template <typename T>
 class MetaNodeInputArray : public MetaNodeInput<T>
 {
 protected:
-	std::vector<boost::shared_ptr<NodeInputArray<T>>> mInputs;
+	std::vector<NodeInputValue<T>> mInputs;
 public:
 	MetaNodeInputArray(
 		const std::string& _name, 
@@ -23,17 +21,30 @@ public:
 	using NodeInputIterator = MetaNodeInput<T>::NodeInputIterator;
 	
 
-	using NodeInputArrayType = NodeInputArray<T>;
-	using NodeInputArrayPtr = boost::shared_ptr<NodeInputArray<T>>;
-	using NodeInputArrayIterator = NodeIterator<MetaNodeInputArray, NodeInputArrayType, NodeInputArrayPtr>;
-	NodeIteratorAccessorConcrete(NodeInputArrayIterator, NodeInputArray);
+	using NodeInputValueType = NodeInputValue<T>;
+	using NodeInputValuePtr = NodeInputValue<T>*;
+	using NodeInputValueIterator = NodeIterator<NodeInputValueType, NodeInputValuePtr>;
+	NodeIteratorAccessorConcrete(NodeInputValueIterator, NodeInputValue, MetaNodeInputArray<T>);
 
-	NodeInputArrayIterator NodeInputArrayBegin();
-	NodeInputArrayIterator NodeInputArrayEnd();
+	NodeInputValueIterator NodeInputValueBegin();
+	NodeInputValueIterator NodeInputValueEnd();
 	_NodeInputIterator _NodeInputBegin() override;
     _NodeInputIterator _NodeInputEnd() override;
 	NodeInputIterator NodeInputBegin() override;
 	NodeInputIterator NodeInputEnd() override;
 };
+
+template <typename T> 
+inline MetaNodeInputArray<T>::NodeInputValueIterator MetaNodeInputArray<T>::NodeInputValueBegin() { return MetaNodeInputArray<T>::NodeInputValueIterator::create(mInputs.begin()); }
+template <typename T> 
+inline MetaNodeInputArray<T>::NodeInputValueIterator MetaNodeInputArray<T>::NodeInputValueEnd() { return MetaNodeInputArray<T>::NodeInputValueIterator::create(mInputs.end()); }
+template <typename T> 
+inline MetaNodeInputArray<T>::_NodeInputIterator MetaNodeInputArray<T>::_NodeInputBegin() { return MetaNodeInputArray<T>::_NodeInputIterator::create(mInputs.begin()); }
+template <typename T> 
+inline MetaNodeInputArray<T>::_NodeInputIterator MetaNodeInputArray<T>::_NodeInputEnd() { return MetaNodeInputArray<T>::_NodeInputIterator::create(mInputs.end()); }
+template <typename T> 
+inline MetaNodeInputArray<T>::NodeInputIterator MetaNodeInputArray<T>::NodeInputBegin() { return MetaNodeInputArray<T>::NodeInputIterator::create(mInputs.begin()); }
+template <typename T> 
+inline MetaNodeInputArray<T>::NodeInputIterator MetaNodeInputArray<T>::NodeInputEnd() { return MetaNodeInputArray<T>::NodeInputIterator::create(mInputs.end()); }
 
 }} // namespace btrack::nodes

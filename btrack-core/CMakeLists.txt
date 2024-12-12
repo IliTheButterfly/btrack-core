@@ -43,7 +43,7 @@ find_package(OpenCV REQUIRED)
 if (USE_CUDA)
 find_package(CUDA REQUIRED)
 endif ()
-find_package(Boost COMPONENTS filesystem serialization REQUIRED)
+find_package(Boost COMPONENTS thread filesystem serialization REQUIRED)
 
 # Include directories
 message(STATUS ${Boost_INCLUDE_DIR})

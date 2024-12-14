@@ -24,8 +24,38 @@ public:
 		const std::string& _description = ""
 		) : 
 			TestNodeStart::MetaNode(_name, _friendlyName, _description) {}
-	MetaNodeOutputValue<int> valueOutput{"valueOutput"};
-	MetaNodeOutputArray<int> arrayOutput{"arrayOutput"};
+	std::shared_ptr<MetaNodeOutputValue<int>> valueOutput = std::make_shared<MetaNodeOutputValue<int>>("valueOutput");
+	std::shared_ptr<MetaNodeOutputArray<int>> arrayOutput = std::make_shared<MetaNodeOutputArray<int>>("arrayOutput");
+
+	void generate(int count) override {}
+
+	size_t inputCount() const override { return 0; }
+	size_t outputCount() const override { return 2; }
+};
+
+class NodeStartFloat : public Node
+{
+public:
+	NodeOutputValue<float> valueOutput{"valueOutput"};
+	NodeOutputValue<float> arrayOutput{"arrayOutput"};
+
+	void process() override
+	{
+		
+	}
+};
+
+class TestNodeStartFloat : public MetaNode
+{
+public:
+	TestNodeStartFloat(
+		const std::string& _name, 
+		const std::string& _friendlyName = "",
+		const std::string& _description = ""
+		) : 
+			TestNodeStartFloat::MetaNode(_name, _friendlyName, _description) {}
+	MetaNodeOutputValue<float> valueOutput{"valueOutput"};
+	MetaNodeOutputArray<float> arrayOutput{"arrayOutput"};
 
 	void generate(int count) override {}
 
@@ -42,11 +72,11 @@ public:
 		const std::string& _description = ""
 		) : 
 			TestNodeMid1::MetaNode(_name, _friendlyName, _description) {}
-	MetaNodeInputValue<int> valueInput{"valueInput"};
-	MetaNodeInputArray<int> arrayInput{"arrayInput"};
+	std::shared_ptr<MetaNodeInputValue<int>> valueInput = std::make_shared<MetaNodeInputValue<int>>("valueInput");
+	std::shared_ptr<MetaNodeInputArray<int>> arrayInput = std::make_shared<MetaNodeInputArray<int>>("arrayInput");
 	
-	MetaNodeOutputValue<int> valueOutput{"valueOutput"};
-	MetaNodeOutputArray<int> arrayOutput{"arrayOutput"};
+	std::shared_ptr<MetaNodeOutputValue<int>> valueOutput = std::make_shared<MetaNodeOutputValue<int>>("valueOutput");
+	std::shared_ptr<MetaNodeOutputArray<int>> arrayOutput = std::make_shared<MetaNodeOutputArray<int>>("arrayOutput");
 
 	void generate(int count) override {}
 
@@ -63,8 +93,8 @@ public:
 		const std::string& _description = ""
 		) : 
 			TestNodeEnd::MetaNode(_name, _friendlyName, _description) {}
-	MetaNodeInputValue<int> valueInput{"valueInput"};
-	MetaNodeInputArray<int> arrayInput{"arrayInput"};
+	std::shared_ptr<MetaNodeInputValue<int>> valueInput = std::make_shared<MetaNodeInputValue<int>>("valueInput");
+	std::shared_ptr<MetaNodeInputArray<int>> arrayInput = std::make_shared<MetaNodeInputArray<int>>("arrayInput");
 
 	void generate(int count) override {}
 
@@ -88,11 +118,11 @@ TEST(NodeTests, SimpleChain)
 	auto mid = TestNodeMid1("mid", "Middle");
 	auto end = TestNodeEnd("end", "End");
 
-	start.valueOutput>>mid.valueInput;
-	start.arrayOutput>>mid.arrayInput;
+	(*start.valueOutput)>>mid.valueInput;
+	(*start.arrayOutput)>>mid.arrayInput;
 
-	mid.valueOutput>>end.valueInput;
-	mid.arrayOutput>>end.arrayInput;
+	(*mid.valueOutput)>>end.valueInput;
+	(*mid.arrayOutput)>>end.arrayInput;
 }
 
 /**
@@ -111,7 +141,7 @@ TEST(NodeTests, ValueToArray)
 	auto start = TestNodeStart("start", "Start");
 	auto end = TestNodeEnd("end", "End");
 
-	start.valueOutput>>end.arrayInput;
+	(*start.valueOutput)>>end.arrayInput;
 }
 
 /**
@@ -130,11 +160,41 @@ TEST(NodeTests, OtherChain)
 	auto mid = TestNodeMid1("mid", "Middle");
 	auto end = TestNodeEnd("end", "End");
 
-	start.valueOutput>>mid.valueInput;
-	start.arrayOutput>>mid.arrayInput;
+	(*start.valueOutput)>>mid.valueInput;
+	(*start.arrayOutput)>>mid.arrayInput;
 
-	mid.valueOutput>>end.valueInput;
-	mid.arrayOutput>>end.arrayInput;
+	(*mid.valueOutput)>>end.valueInput;
+	(*mid.arrayOutput)>>end.arrayInput;
 }
 
+// TEST(NodeTests, TypeConversionChain)
+// {
+// 	auto start = TestNodeStartFloat("start", "Start");
+// 	auto mid = TestNodeMid1("mid", "Middle");
+
+// 	(*start.valueOutput)>>mid.valueInput;
+// 	(*start.arrayOutput)>>mid.arrayInput;
+// }
+
+struct ItTestObj
+{
+	int foo;
+};
+
+struct ItTest
+{
+	using ItTestObjType = ItTestObj;
+    using ItTestObjPtr = std::shared_ptr<ItTestObj>;
+	using ItTestObjIterator = NodeIterator<ItTestObjPtr>;
+	NodeIteratorAccessorConcrete(ItTestObjIterator, ItTestObj, ItTest);
+	std::vector<ItTestObjPtr> objs;
+
+	ItTestObjIterator ItTestObjBegin() { return ItTestObjIterator::create(objs.begin()); }
+	ItTestObjIterator ItTestObjEnd() { return ItTestObjIterator::create(objs.end()); }
+};
+
+TEST(NodeTests, IteratorTest)
+{
+
+}
 

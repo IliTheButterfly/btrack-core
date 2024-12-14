@@ -12,8 +12,17 @@ class NodeInputArray;
 template <typename T>
 class MetaNodeInputValue : public MetaNodeInput<T>
 {
+public:
+	using _NodeInputIterator = MetaNodeInput<T>::_NodeInputIterator;
+	using NodeInputIterator = MetaNodeInput<T>::NodeInputIterator;
+
+
+	using NodeInputValueType = NodeInputValue<T>;
+	using NodeInputValuePtr = std::shared_ptr<NodeInputValue<T>>;
+	using NodeInputValueIterator = NodeIterator<NodeInputValuePtr>;
+	NodeIteratorAccessorConcrete(NodeInputValueIterator, NodeInputValue, MetaNodeInputValue);
 protected:
-	std::vector<NodeInputValue<T>> mInputs;
+	std::vector<NodeInputValuePtr> mInputs;
 public:
 	MetaNodeInputValue(
 		const std::string& _name, 
@@ -22,14 +31,7 @@ public:
 		) : 
 			MetaNodeInputValue::MetaNodeInput(_name, NodeItemType::VALUE, _friendlyName, _description) {}
 
-	using _NodeInputIterator = MetaNodeInput<T>::_NodeInputIterator;
-	using NodeInputIterator = MetaNodeInput<T>::NodeInputIterator;
-
-
-	using NodeInputValueType = NodeInputValue<T>;
-	using NodeInputValuePtr = NodeInputValue<T>*;
-	using NodeInputValueIterator = NodeIterator<NodeInputValueType, NodeInputValuePtr>;
-	NodeIteratorAccessorConcrete(NodeInputValueIterator, NodeInputValue, MetaNodeInputValue);
+	
 
 	NodeInputValueIterator NodeInputValueBegin();
 	NodeInputValueIterator NodeInputValueEnd();

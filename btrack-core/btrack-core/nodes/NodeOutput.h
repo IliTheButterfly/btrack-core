@@ -22,8 +22,8 @@ protected:
 			_NodeOutput::NodeIO(_name, _nodeType | NodeItemType::OUTPUT, _friendlyName, _description) {}
 public:
 	using _NodeInputType = _NodeInput;
-    using _NodeInputPtr = _NodeInput*;
-	using _NodeInputIterator = NodeIterator<_NodeInputType, _NodeInputPtr>;
+    using _NodeInputPtr = std::shared_ptr<_NodeInput>;
+	using _NodeInputIterator = NodeIterator<_NodeInputPtr>;
 	NodeIteratorAccessor(_NodeInputIterator, _NodeInput, _NodeOutput);
 };
 
@@ -42,14 +42,14 @@ protected:
 		) : 
 			NodeOutput::_NodeOutput(_name, _nodeType, _friendlyName, _description) {}
 public:
-	using _NodeInputIterator = NodeOutput::_NodeInputIterator;
+	using _NodeInputIterator = _NodeOutput::_NodeInputIterator;
 
     using NodeInputType = NodeInput<T>;
-    using NodeInputPtr = NodeInput<T>*;
-	using NodeInputIterator = NodeIterator<NodeInputType, NodeInputPtr>;
+    using NodeInputPtr = std::shared_ptr<NodeInput<T>>;
+	using NodeInputIterator = NodeIterator<NodeInputPtr>;
 	NodeIteratorAccessor(NodeInputIterator, NodeInput, NodeOutput<T>);
 
-	const std::type_info& dataType() const override { return typeid(T); }
+	constexpr const std::type_info& dataType() const override { return typeid(T); }
 };
 
 }} // namespace btrack::nodes

@@ -1,12 +1,10 @@
 #pragma once
 #include <boost/type_traits.hpp>
 #include <boost/concept_check.hpp>
-#include <concepts>
 
 namespace btrack { namespace nodes { namespace type_traits {
 
 
-using namespace boost;
 
 template <typename T>
 class NodeInput;
@@ -52,33 +50,19 @@ template <typename T> struct remove_container<MetaNodeOutputArray<T>> { typedef 
 
 template <class T> using remove_container_t = typename remove_container<T>::type;
 
-template <typename T> struct remove_all_ext_and_container { typedef remove_container_t<remove_all_extents_t<T>> type; };
+template <typename T> struct remove_all_ext_and_container { typedef remove_container_t<boost::remove_all_extents_t<T>> type; };
 
 template <class T> using remove_all_ext_and_container_t = typename remove_all_ext_and_container<T>::type;
 
-template <typename FROM, typename TO> struct convertable_to : public is_convertible<FROM, TO> {};
+template <typename FROM, typename TO> struct convertible_to : public boost::is_convertible<FROM, TO> {};
 
-template <typename FROM, typename TO> using convertable_to_t = typename convertable_to<FROM, TO>::type;
+template <typename FROM, typename TO> using convertible_to_t = typename convertible_to<FROM, TO>::type;
 
-
-template <typename FROM, typename TO>
-struct has_copyTo : public boost::false_type {};
-
-
-template <typename FROM, typename TO>
-concept has_copyTo_ = requires(FROM from, TO to)
+constexpr bool convertible(const std::type_info& from, const std::type_info& to)
 {
-	{ from.copyTo(to) } -> std::same_as<void>;
-};
+	return btrack::nodes::type_traits::convertible_to_t<decltype(from), decltype(to)>::value;
+}
 
-template <>
-template <typename FROM, typename TO>
-template <has_copyTo_<FROM, TO> T>
-struct has_copyTo<FROM, TO> : public boost::true_type {};
-
-
-template <typename T>
-using move = std::move<T>;
 
 }}} // btrack::nodes::type_traits
 

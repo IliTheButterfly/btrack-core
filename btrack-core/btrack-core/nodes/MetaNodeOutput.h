@@ -19,13 +19,13 @@ protected:
 			_MetaNodeOutput::MetaNodeIO(_name, _nodeType | NodeItemType::OUTPUT, _friendlyName, _description) {}
 public:
 	using _NodeOutputType = _NodeOutput;
-    using _NodeOutputPtr = _NodeOutput*;
-	using _NodeOutputIterator = NodeIterator<_NodeOutputType, _NodeOutputPtr>;
+    using _NodeOutputPtr = std::shared_ptr<_NodeOutput>;
+	using _NodeOutputIterator = NodeIterator<_NodeOutputPtr>;
 	NodeIteratorAccessor(_NodeOutputIterator, _NodeOutput, _MetaNodeOutput);
 
 	using _MetaNodeInputType = _MetaNodeInput;
-    using _MetaNodeInputPtr = _MetaNodeInput*;
-	using _MetaNodeInputIterator = NodeIterator<_MetaNodeInputType, _MetaNodeInputPtr>;
+    using _MetaNodeInputPtr = std::shared_ptr<_MetaNodeInput>;
+	using _MetaNodeInputIterator = NodeIterator<_MetaNodeInputPtr>;
 	NodeIteratorAccessor(_MetaNodeInputIterator, _MetaNodeInput, _MetaNodeOutput);
 };
 
@@ -33,8 +33,6 @@ template <typename T>
 class MetaNodeOutput : public _MetaNodeOutput
 {
 protected:
-	Channel<T> mChannel;
-
 	MetaNodeOutput(
 		const std::string& _name, 
 		const NodeItemType& _nodeType,
@@ -47,17 +45,19 @@ public:
 	using _MetaNodeInputIterator = _MetaNodeOutput::_MetaNodeInputIterator;
 
     using NodeOutputType = NodeOutput<T>;
-    using NodeOutputPtr = NodeOutput<T>*;
-	using NodeOutputIterator = NodeIterator<NodeOutputType, NodeOutputPtr>;
+    using NodeOutputPtr = std::shared_ptr<NodeOutput<T>>;
+	using NodeOutputIterator = NodeIterator<NodeOutputPtr>;
 	NodeIteratorAccessor(NodeOutputIterator, NodeOutput, MetaNodeOutput<T>);
 
 	using MetaNodeInputType = MetaNodeInput<T>;
-    using MetaNodeInputPtr = MetaNodeInput<T>*;
-	using MetaNodeInputIterator = NodeIterator<MetaNodeInputType, MetaNodeInputPtr>;
+    using MetaNodeInputPtr = std::shared_ptr<MetaNodeInput<T>>;
+	using MetaNodeInputIterator = NodeIterator<MetaNodeInputPtr>;
 	NodeIteratorAccessor(MetaNodeInputIterator, MetaNodeInput, MetaNodeOutput<T>);
 
-	const std::type_info& dataType() const override { return typeid(T); }
-	
+	constexpr const std::type_info& dataType() const override { return typeid(T); }
+	virtual void addSender(std::shared_ptr<Sender<T>> sender) = 0;
+	virtual void removeSender(std::shared_ptr<Sender<T>> sender) = 0;
+	virtual void broadcast(SendParam_t<T> value) = 0;
 };
 
 }} // namespace btrack::nodes

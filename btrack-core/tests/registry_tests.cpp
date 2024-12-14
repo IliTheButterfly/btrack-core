@@ -83,9 +83,14 @@ TEST(RegistryTests, TestUnique)
 	bc1->addChannel(ch2);
 
 	auto x = ItemValue<TestObj>::create(5);
-	auto xcp = ItemView<TestObj>::create(x);
+
+	// Build should fail if the next line is uncommented
+	// auto xcpbad = ItemView<TestObj>::create(x);
+
+	ItemView<TestObj> xcp;
+	xcp.copyFrom(x);
 	
-	TestObj const* x_ptr = x.get();
+	TestObj const* x_ptr = xcp.get();
 	bc1->send(xcp);
 	GTEST_ASSERT_EQ(x->x, 5);
 
@@ -99,3 +104,19 @@ TEST(RegistryTests, TestUnique)
 	GTEST_ASSERT_NE(x_ptr, y.get());
 	GTEST_ASSERT_EQ(count, 3);
 }
+
+
+// TEST(RegistryTests, FundamentalConversion)
+// {
+// 	auto ch1 = std::make_shared<Channel<float>>();
+// 	auto ch2 = std::make_shared<Channel<const float>>();
+// 	auto bc1 = std::make_shared<BroadcastChannel<int>>();
+// 	auto bc2 = std::make_shared<BroadcastChannel<float>>();
+
+// 	bc1->addChannel(bc2);
+
+// 	bc2->addChannel(ch1);
+// 	bc2->addChannel(ch2);
+
+// 	auto x = ItemValue<TestObj>::create(5);
+// }

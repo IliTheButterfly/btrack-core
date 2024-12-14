@@ -8,6 +8,8 @@ template <typename T>
 class NodeOutputArray : public NodeOutput<T>
 {
 protected:
+	using Sender_t = BroadcastChannel<T>;
+	std::shared_ptr<Sender_t> mBroadcast;
 	std::vector<NodeInputArray<T>> mChildren;
 public:
 	NodeOutputArray(
@@ -21,11 +23,9 @@ public:
 	using NodeInputIterator = NodeOutput<T>::NodeInputIterator;
 	
 	using NodeInputArrayType = NodeInputArray<T>;
-	using NodeInputArrayPtr = NodeInputArray<T>*;
-	using NodeInputArrayIterator = NodeIterator<NodeInputArrayType, NodeInputArrayPtr>;
+	using NodeInputArrayPtr = std::shared_ptr<NodeInputArray<T>>;
+	using NodeInputArrayIterator = NodeIterator<NodeInputArrayPtr>;
 	NodeIteratorAccessorConcrete(NodeInputArrayIterator, NodeInputArray, NodeOutputArray<T>);
-
-
 
 
 	NodeOutputArray<T>& operator>>(NodeInputArray<T>& input);

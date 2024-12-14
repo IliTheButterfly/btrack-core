@@ -7,8 +7,17 @@ namespace btrack { namespace nodes {
 template <typename T>
 class MetaNodeInputArray : public MetaNodeInput<T>
 {
+public:
+	using _NodeInputIterator = MetaNodeInput<T>::_NodeInputIterator;
+	using NodeInputIterator = MetaNodeInput<T>::NodeInputIterator;
+	
+
+	using NodeInputValueType = NodeInputValue<T>;
+	using NodeInputValuePtr = std::shared_ptr<NodeInputValue<T>>;
+	using NodeInputValueIterator = NodeIterator<NodeInputValuePtr>;
+	NodeIteratorAccessorConcrete(NodeInputValueIterator, NodeInputValue, MetaNodeInputArray<T>);
 protected:
-	std::vector<NodeInputValue<T>> mInputs;
+	std::vector<NodeInputValuePtr> mInputs;
 public:
 	MetaNodeInputArray(
 		const std::string& _name, 
@@ -17,14 +26,7 @@ public:
 		) : 
 			MetaNodeInputArray::MetaNodeInput(_name, NodeItemType::ARRAY, _friendlyName, _description) {}
 
-	using _NodeInputIterator = MetaNodeInput<T>::_NodeInputIterator;
-	using NodeInputIterator = MetaNodeInput<T>::NodeInputIterator;
 	
-
-	using NodeInputValueType = NodeInputValue<T>;
-	using NodeInputValuePtr = NodeInputValue<T>*;
-	using NodeInputValueIterator = NodeIterator<NodeInputValueType, NodeInputValuePtr>;
-	NodeIteratorAccessorConcrete(NodeInputValueIterator, NodeInputValue, MetaNodeInputArray<T>);
 
 	NodeInputValueIterator NodeInputValueBegin();
 	NodeInputValueIterator NodeInputValueEnd();

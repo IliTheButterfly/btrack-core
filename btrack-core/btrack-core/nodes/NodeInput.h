@@ -35,7 +35,7 @@ protected:
 		) : 
 			NodeInput::_Node(_name, _nodeType, _friendlyName, _description) {}
 public:
-	const std::type_info& dataType() const override { return typeid(T); }
+	constexpr const std::type_info& dataType() const override { return typeid(T); }
 };
 
 }} // namespace btrack::nodes

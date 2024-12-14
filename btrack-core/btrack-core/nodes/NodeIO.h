@@ -5,7 +5,8 @@
 #include <boost/uuid/uuid_generators.hpp>
 #include <iterator>
 #include <vector>
-#include <nodes/MemoryRegistry.h>
+#include "nodes/MemoryRegistry.h"
+#include "nodes/type_traits.h"
 
 namespace btrack { namespace nodes
 {
@@ -62,14 +63,14 @@ NodeItemType operator~(NodeItemType x) { return (NodeItemType)(x ^ NodeItemType:
 
 
 
-template <typename NodeType, typename NodePtr>
+template <typename NodeType = std::shared_ptr<int>>
 class NodeIterator
 {
 public:
 	// STL-like iterator traits
 	using iterator_category = std::forward_iterator_tag;
 	using difference_type = std::ptrdiff_t;
-	using pointer = NodePtr;
+	using pointer = NodeType*;
 	using reference = NodeType&;
 
 	struct _IteratorRef
@@ -81,11 +82,11 @@ public:
 
 		// virtual _IteratorRef operator++(int) = 0;
 
-		bool operator==(_IteratorRef& other) const { return (*this).operator->() == (*other).operator->(); }
+		bool operator==(_IteratorRef& other) const { return (*this).operator->() == other.operator->(); }
 		bool operator!=(_IteratorRef& other) const { return !(*this == other); }
 	};
 
-	template <typename IterT>
+	template <typename IterT = std::vector<std::shared_ptr<int>>::iterator>
 	struct IteratorRef : public _IteratorRef
 	{
 		IterT mCurrent;
@@ -93,8 +94,8 @@ public:
 		// IteratorRef(std::vector<IterT>::iterator iter) : mCurrent{mCurrent} {}
 		IteratorRef(IterT iter) : mCurrent{mCurrent} {}
 		
-		reference operator*() const override { return *mCurrent; }
-		pointer operator->() const override  { return &((reference)*(*this)); }
+		reference operator*() const override { return (reference)(*mCurrent); }
+		pointer operator->() const override  { return (pointer)(mCurrent.operator->()); }
 
 		_IteratorRef& operator++() override
 		{
@@ -131,18 +132,18 @@ public:
 	}
 
 	reference operator*() const { return **mCurrent; }
-	pointer operator->() const { return (*mCurrent); }
+	pointer operator->() const { return (*mCurrent).operator->(); }
 
 	NodeIterator& operator++()
 	{
-		(*mCurrent)++;
+		++(*mCurrent);
 		return *this;
 	}
 
 	NodeIterator operator++(int)
 	{
 		NodeIterator temp = *this;
-		(*this)++;
+		++(*this);
 		return temp;
 	}
 
@@ -155,7 +156,6 @@ public:
 		mCurrent = nullptr;
 	}
 };
-
 
 class _NodeItem
 {
@@ -214,7 +214,9 @@ protected:
 		) : 
 			NodeIO::_NodeItem(_name, _nodeType, _friendlyName, _description) {}
 public:
-	virtual const std::type_info& dataType() const = 0;
+	virtual constexpr const std::type_info& dataType() const = 0;
+	constexpr bool convertibleFrom(const std::type_info& from) { return type_traits::convertible(from, dataType()); }
+	constexpr bool convertibleTo(const std::type_info& to) { return type_traits::convertible(dataType(), to); }
 };
 
 #define NodeIteratorAccessor(iteratorType, name, parentType) \
@@ -242,6 +244,15 @@ iteratorType##_ref name##Iter() { return iteratorType##_ref(*this); }
 /*iteratorType name##Begin(); \
 iteratorType name##End(); \*/
 
+enum class ConnectionResult
+{
+	UNKNOWN,
+	SUCCESS,
+	INCOMPATIBLE_TYPES,
+	FROM_NOT_OUTPUT,
+	TO_NOT_INPUT,
+};
+
 
 class _Node : public _NodeItem
 {
@@ -254,13 +265,8 @@ protected:
 		const std::string& _description = ""
 		) : 
 			_Node::_NodeItem(_name, _nodeType | NodeItemType::NODE, _friendlyName, _description) {}
+
 public:
-	// using NodeIOType = NodeIO;
-	// using NodeIOPtr = boost::shared_ptr<NodeIO>;
-	// using NodeIOIterator = NodeIterator<_Node, NodeIOType, NodeIOPtr>;
-	// NodeIteratorAccessor(NodeIOIterator, NodeIO);
-
-
 	virtual size_t inputCount() const = 0;
 	virtual size_t outputCount() const = 0;
 };

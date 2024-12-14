@@ -19,7 +19,7 @@ class ItemView;
 template <typename T>
 struct _ItemValueAccessor
 {
-    static std::unique_ptr<T>&& getPtr(ItemValue<T>&& v) noexcept { return std::forward(v).mPtr; }
+    static std::unique_ptr<T>&& getPtr(ItemValue<T>&& v) noexcept { return std::move(v.mPtr); }
     static std::unique_ptr<T>& getPtr(ItemValue<T>& v) noexcept { return v.mPtr; }
     static const std::unique_ptr<T>& getPtr(const ItemValue<T>& v) noexcept { return v.mPtr; }
 };
@@ -27,15 +27,15 @@ struct _ItemValueAccessor
 template <typename T>
 struct _ItemViewAccessor
 {
-    static std::shared_ptr<T>&& getPtr(ItemView<T>&& v) noexcept { return std::forward(v).mPtr; }
+    static std::shared_ptr<T>&& getPtr(ItemView<T>&& v) noexcept { return v.mPtr; }
     static std::shared_ptr<T>& getPtr(ItemView<T>& v) noexcept { return v.mPtr; }
     static const std::shared_ptr<T>& getPtr(const ItemView<T>& v) noexcept { return v.mPtr; }
 };
 
 
-
-#define _MEM_DEBUG(...)
-// #define _MEM_DEBUG(...) __VA_ARGS__
+// Memory debugging tool
+// #define _MEM_DEBUG(...)
+#define _MEM_DEBUG(...) __VA_ARGS__
 
 template <typename T>
 struct Tracker
@@ -52,16 +52,49 @@ private:
     std::shared_ptr<T> mPtr;
     _MEM_DEBUG(Tracker<ItemView<T>> _;)
 
-    ItemView(std::shared_ptr<T>&& ptr) noexcept
-        : mPtr{ptr} 
+    explicit ItemView(std::shared_ptr<T>&& ptr) noexcept
+        : mPtr(ptr) 
         { _MEM_DEBUG(std::cout << "Allocated " << typeid(T).name() << " from " << __PRETTY_FUNCTION__ << std::endl;) }
 public:
     ItemView() noexcept = default;
-    template <typename ...TArgs>
+
+    template <typename U>
+    static void create(ItemView<U>&& arg) noexcept {}
+
+    template <typename U>
+    static void create(const ItemView<U>& arg) noexcept {}
+
+    template <typename U>
+    static void create(ItemView<U>& arg) noexcept {}
+
+    template <typename U>
+    static void create(ItemValue<U>&& arg) noexcept {}
+
+    template <typename U>
+    static void create(const ItemValue<U>& arg) noexcept {}
+
+    template <typename U>
+    static void create(ItemValue<U>& arg) noexcept {}
+
+    template <typename... TArgs>
     static ItemView create(TArgs&&... args) noexcept
     {
         return ItemView(std::make_shared<T>(std::forward<TArgs>(args)...));
     }
+
+    ItemView(const ItemValue<T>& v) noexcept
+        : mPtr{_ItemValueAccessor<T>::getPtr(v) ? std::make_shared<T>(*(_ItemValueAccessor<T>::getPtr(v))) : std::shared_ptr<T>()} {}
+
+    template <typename U>
+    ItemView(const ItemValue<U>& v) noexcept
+        : mPtr{_ItemValueAccessor<U>::getPtr(v) ? std::make_shared<T>(*(_ItemValueAccessor<U>::getPtr(v))) : std::shared_ptr<T>()} {}
+
+    ItemView(ItemValue<T>&& v) noexcept
+        : mPtr{_ItemValueAccessor<T>::getPtr(v) ? std::move(_ItemValueAccessor<T>::getPtr(v)) : std::shared_ptr<T>()} {}
+
+    template <typename U>
+    ItemView(ItemValue<U>&& v) noexcept
+        : mPtr{_ItemValueAccessor<U>::getPtr(v) ? std::move(_ItemValueAccessor<U>::getPtr(v)) : std::shared_ptr<T>()} {}
 
     ItemView(const ItemView& v) noexcept
         : mPtr{v.mPtr} { _MEM_DEBUG(std::cout << "Copied " << typeid(T).name() << " from " << __PRETTY_FUNCTION__ << std::endl;) }
@@ -153,8 +186,8 @@ private:
     std::unique_ptr<T> mPtr;
     _MEM_DEBUG(Tracker<ItemValue<T>> _;)
 
-    ItemValue(std::unique_ptr<T>&& ptr) noexcept 
-        : mPtr{std::move(ptr)} 
+    explicit ItemValue(std::unique_ptr<T>&& ptr) noexcept 
+        : mPtr(std::move(ptr))
         { _MEM_DEBUG(std::cout << "Allocated " << typeid(T).name() << " from " << __PRETTY_FUNCTION__ << std::endl;) }
 
 public:
@@ -165,10 +198,28 @@ public:
     ItemValue(ItemValue<U>&& val) noexcept
         : mPtr{std::move(_ItemValueAccessor<U>::getPtr(val))} { _MEM_DEBUG(std::cout << "Moved " << typeid(T).name() << " from " << __PRETTY_FUNCTION__ << std::endl;) }
 
-    template <typename ...TArgs>
-    static ItemValue&& create(TArgs&&... args) noexcept
+    template <typename U>
+    static void create(ItemView<U>&& arg) noexcept {}
+
+    template <typename U>
+    static void create(const ItemView<U>& arg) noexcept {}
+
+    template <typename U>
+    static void create(ItemView<U>& arg) noexcept {}
+
+    template <typename U>
+    static void create(ItemValue<U>&& arg) noexcept {}
+
+    template <typename U>
+    static void create(const ItemValue<U>& arg) noexcept {}
+
+    template <typename U>
+    static void create(ItemValue<U>& arg) noexcept {}
+
+    template <typename... TArgs>
+    static ItemValue create(TArgs&&... args) noexcept
     {
-        return std::forward<ItemValue<T>>(ItemValue(std::forward<std::unique_ptr<T>>(std::make_unique<T>(std::forward<TArgs>(args)...))));
+        return ItemValue(std::make_unique<T>(std::forward<TArgs>(args)...));
     }
 
     template <typename U>
@@ -350,6 +401,13 @@ struct ChannelTypeInfo<const cv::Mat>
 };
 
 
+template <typename T>
+using SendParam_t = typename ChannelTypeInfo<T>::sendParam;
+template <typename T>
+using ElemType_t = typename ChannelTypeInfo<T>::elemType;
+template <typename T>
+using ReceiveParam_t = typename ChannelTypeInfo<T>::receiveParam;
+
 // template <typename T>
 // using ChannelTypeInfoSnd = typename ChannelTypeInfo<T>::senderParam;
 // template <typename T>
@@ -363,6 +421,11 @@ class Sender
 public:
     using sendParam = typename ChannelTypeInfo<T>::sendParam;
     virtual void send(sendParam data) = 0;
+    // template <typename U>
+    // void send(ChannelTypeInfo<U>::sendParam data)
+    // {
+    //     send(converter<U, T>(data));
+    // }
 };
 
 template <typename T>
@@ -458,6 +521,30 @@ private:
     std::vector<SndPtr> mSenders;
     std::vector<ConstSndPtr> mConstSenders;
     mutex mMTX;
+
+    int find(SndPtr ptr)
+    {
+        if (ptr.expired()) return -1;
+        int i = 0;
+        for (SndPtr p : mSenders)
+        {
+            if (!p.expired() && p.lock() == ptr.lock()) return i;
+            ++i;
+        }
+        return -1;
+    }
+
+    int find(std::vector<ConstSndPtr>::iterator b, std::vector<ConstSndPtr>::iterator e, ConstSndPtr ptr)
+    {
+        if (ptr.expired()) return -1;
+        int i = 0;
+        for (SndPtr p : mConstSenders)
+        {
+            if (!p.expired() && p.lock() == ptr.lock()) return i;
+            ++i;
+        }
+        return -1;
+    }
 public:
     // Add a sender
     void addChannel(SndPtr sender)
@@ -476,20 +563,20 @@ public:
     void removeChannel(SndPtr sender)
     {
         boost::lock_guard<mutex> lock(mMTX);
-        auto i = std::find(mSenders.begin(), mSenders.end(), sender);
-		if (i != mSenders.end())
+        auto i = find(sender);
+		if (i != -1)
 		{
-        	mSenders.erase(i);
+        	mSenders.erase(mSenders.begin() + i);
 		}
     }
 
     void removeChannel(ConstSndPtr sender)
     {
         boost::lock_guard<mutex> lock(mMTX);
-        auto i = std::find(mConstSenders.begin(), mConstSenders.end(), sender);
-		if (i != mConstSenders.end())
+        auto i = find(sender);
+		if (i != -1)
 		{
-        	mConstSenders.erase(i);
+        	mConstSenders.erase(mConstSenders.begin() + i);
 		}
     }
 

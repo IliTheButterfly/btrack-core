@@ -19,8 +19,8 @@ protected:
 			_MetaNodeInput::MetaNodeIO(_name, _nodeType | NodeItemType::INPUT, _friendlyName, _description) {}
 public:
 	using _NodeInputType = _NodeInput;
-    using _NodeInputPtr = _NodeInput*;
-	using _NodeInputIterator = NodeIterator<_NodeInputType, _NodeInputPtr>;
+    using _NodeInputPtr = std::shared_ptr<_NodeInput>;
+	using _NodeInputIterator = NodeIterator<_NodeInputPtr>;
 	NodeIteratorAccessor(_NodeInputIterator, _NodeInput, _MetaNodeInput);
 };
 
@@ -39,13 +39,11 @@ public:
 	using _NodeInputIterator = _MetaNodeInput::_NodeInputIterator;
 
     using NodeInputType = NodeInput<T>;
-    using NodeInputPtr = NodeInput<T>*;
-	using NodeInputIterator = NodeIterator<NodeInputType, NodeInputPtr>;
+    using NodeInputPtr = std::shared_ptr<NodeInput<T>>;
+	using NodeInputIterator = NodeIterator<NodeInputPtr>;
 	NodeIteratorAccessor(NodeInputIterator, NodeInput, MetaNodeInput);
 
-
-	const std::type_info& dataType() const override { return typeid(T); }
-
+	constexpr const std::type_info& dataType() const override { return typeid(T); }
 };
 
 }} // namespace btrack::nodes

@@ -27,6 +27,8 @@ set(SourceFiles
 	"nodes/NodeInputArray.cpp"
 	"nodes/NodeOutputValue.cpp"
 	"nodes/NodeOutputArray.cpp"
+
+	"nodes/type_traits.cpp"
 )
 
 

@@ -9,8 +9,8 @@ class NodeGraph
 {
 public:
 	using MetaNodeType = MetaNode;
-	using MetaNodePtr = MetaNode*;
-	using MetaNodeIterator = NodeIterator<MetaNodeType, MetaNodePtr>;
+	using MetaNodePtr = std::shared_ptr<MetaNode>;
+	using MetaNodeIterator = NodeIterator<MetaNodePtr>;
 
 private:
 	std::vector<MetaNode> mChildren;

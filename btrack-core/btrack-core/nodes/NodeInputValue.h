@@ -6,6 +6,8 @@ namespace btrack { namespace nodes {
 template <typename T>
 class NodeInputValue : public NodeInput<T>
 {
+private:
+	
 public:
 	NodeInputValue(
 		const std::string& _name, 
@@ -13,6 +15,8 @@ public:
 		const std::string& _description = ""
 		) : 
 			NodeInputValue::NodeInput(_name, NodeItemType::VALUE, _friendlyName, _description) {}
+	
+
 };
 
 }} // namespace btrack::nodes

@@ -10,9 +10,22 @@ namespace btrack { namespace nodes {
 template <typename T>
 class MetaNodeOutputValue : public MetaNodeOutput<T>
 {
+public:
+	// Grab iterators from parent
+	using _NodeOutputIterator = MetaNodeOutput<T>::_NodeOutputIterator;
+	using NodeOutputIterator = MetaNodeOutput<T>::NodeOutputIterator;
+	using _MetaNodeInputIterator = MetaNodeOutput<T>::_MetaNodeInputIterator;
+	using MetaNodeInputIterator = MetaNodeOutput<T>::MetaNodeInputIterator;
+	using MetaNodeInputPtr = MetaNodeOutput<T>::MetaNodeInputPtr;
+
+	// Define iterators
+	using NodeOutputValueType = NodeOutputValue<T>;
+	using NodeOutputValuePtr = std::shared_ptr<NodeOutputValue<T>>;
+	using NodeOutputValueIterator = NodeIterator<NodeOutputValuePtr>;
+	NodeIteratorAccessorConcrete(NodeOutputValueIterator, NodeOutputValue, MetaNodeOutputValue<T>);
 protected:
-	std::vector<NodeOutputValue<T>> mOutputs;
-	std::vector<MetaNodeInput<T>> mChildren;
+	std::vector<NodeOutputValuePtr> mOutputs;
+	std::vector<MetaNodeInputPtr> mChildren;
 public:
 	MetaNodeOutputValue(
 		const std::string& _name, 
@@ -21,17 +34,7 @@ public:
 		) : 
 			MetaNodeOutputValue::MetaNodeOutput(_name, NodeItemType::VALUE, _friendlyName, _description) {}
 	
-	// Grab iterators from parent
-	using _NodeOutputIterator = MetaNodeOutput<T>::_NodeOutputIterator;
-	using NodeOutputIterator = MetaNodeOutput<T>::NodeOutputIterator;
-	using _MetaNodeInputIterator = MetaNodeOutput<T>::_MetaNodeInputIterator;
-	using MetaNodeInputIterator = MetaNodeOutput<T>::MetaNodeInputIterator;
-
-	// Define iterators
-	using NodeOutputValueType = NodeOutputValue<T>;
-	using NodeOutputValuePtr = NodeOutputValue<T>*;
-	using NodeOutputValueIterator = NodeIterator<NodeOutputValueType, NodeOutputValuePtr>;
-	NodeIteratorAccessorConcrete(NodeOutputValueIterator, NodeOutputValue, MetaNodeOutputValue<T>);
+	
 	
 	// Implement iterators
 	MetaNodeInputIterator MetaNodeInputBegin() override;
@@ -46,9 +49,11 @@ public:
 	NodeOutputIterator NodeOutputEnd() override;
 
 
-
-	MetaNodeOutputValue<T>& operator>>(MetaNodeInputValue<T>& input);
-	MetaNodeOutputValue<T>& operator>>(MetaNodeInputArray<T>& input);
+	void addSender(std::shared_ptr<Sender<T>> sender) override;
+	void removeSender(std::shared_ptr<Sender<T>> sender) override;
+	void broadcast(SendParam_t<T> value) override;
+	MetaNodeOutputValue<T>& operator>>(std::shared_ptr<MetaNodeInputValue<T>> input);
+	MetaNodeOutputValue<T>& operator>>(std::shared_ptr<MetaNodeInputArray<T>> input);
 };
 
 template <typename T>
@@ -73,13 +78,28 @@ template <typename T>
 inline MetaNodeOutputValue<T>::NodeOutputIterator MetaNodeOutputValue<T>::NodeOutputEnd() { return MetaNodeOutputValue<T>::NodeOutputIterator::create(mOutputs.end()); }
 
 template <typename T>
-inline MetaNodeOutputValue<T> &MetaNodeOutputValue<T>::operator>>(MetaNodeInputValue<T> &input)
+inline void MetaNodeOutputValue<T>::addSender(std::shared_ptr<Sender<T>> sender)
+{
+}
+
+template <typename T>
+inline void MetaNodeOutputValue<T>::removeSender(std::shared_ptr<Sender<T>> sender)
+{
+}
+
+template <typename T>
+inline void MetaNodeOutputValue<T>::broadcast(SendParam_t<T> value)
+{
+}
+
+template <typename T>
+inline MetaNodeOutputValue<T> &MetaNodeOutputValue<T>::operator>>(std::shared_ptr<MetaNodeInputValue<T>> input)
 {
 	return *this;
 }
 
 template <typename T>
-inline MetaNodeOutputValue<T> &MetaNodeOutputValue<T>::operator>>(MetaNodeInputArray<T> &input)
+inline MetaNodeOutputValue<T> &MetaNodeOutputValue<T>::operator>>(std::shared_ptr<MetaNodeInputArray<T>> input)
 {
 	return *this;
 }

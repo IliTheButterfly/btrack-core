@@ -1,8 +1,8 @@
 #pragma once
-#include "nodes/MetaNode.h"
+#include "nodes/system/MetaNode.h"
 
 
-namespace btrack { namespace nodes {
+namespace btrack { namespace nodes { namespace system {
 
 
 class NodeGraph
@@ -24,4 +24,4 @@ public:
 };
 
 
-}} // btrack::nodes
+}}} // namespace btrack::nodes::system

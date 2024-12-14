@@ -1,25 +1,25 @@
 #pragma once
-#include "nodes/NodeIO.h"
+#include "nodes/system/NodeIO.h"
 #include <vector>
 #include <memory>
 
-namespace btrack { namespace nodes {
+namespace btrack { namespace nodes { namespace system {
 
-class _NodeInput : public NodeIO
+class _Input : public NodeIO
 {
 protected:
-	_NodeInput(
+	_Input(
 		const std::string& _name, 
 		const NodeItemType& _nodeType,
 		const std::string& _friendlyName = "",
 		const std::string& _description = ""
 		) : 
-			_NodeInput::NodeIO(_name, _nodeType | NodeItemType::INPUT, _friendlyName, _description) {}
+			_Input::NodeIO(_name, _nodeType | NodeItemType::INPUT, _friendlyName, _description) {}
 public:
 };
 
 template <typename T>
-class NodeInput : public _NodeInput
+class Input : public _Input
 {
 public:
     using DataPtr = std::shared_ptr<T>;
@@ -27,15 +27,15 @@ public:
 private:
 	
 protected:
-	NodeInput(
+	Input(
 		const std::string& _name, 
 		const NodeItemType& _nodeType,
 		const std::string& _friendlyName = "",
 		const std::string& _description = ""
 		) : 
-			NodeInput::_Node(_name, _nodeType, _friendlyName, _description) {}
+			Input::_Node(_name, _nodeType, _friendlyName, _description) {}
 public:
 	constexpr const std::type_info& dataType() const override { return typeid(T); }
 };
 
-}} // namespace btrack::nodes
+}}} // namespace btrack::nodes::system

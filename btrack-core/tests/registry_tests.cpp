@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
-#include "nodes/MemoryRegistry.h"
+#include "nodes/system/MemoryRegistry.h"
 
-using namespace btrack::nodes;
+using namespace btrack::nodes::system;
 
 TEST(RegistryTests, TestSyntax)
 {

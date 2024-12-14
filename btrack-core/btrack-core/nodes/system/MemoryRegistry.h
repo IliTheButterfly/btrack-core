@@ -5,10 +5,11 @@
 #include <deque>
 #include <boost/thread.hpp>
 #include <boost/smart_ptr.hpp>
+#include <boost/any.hpp>
 #include <opencv2/core.hpp>
 #include <iostream>
 
-namespace btrack { namespace nodes {
+namespace btrack { namespace nodes { namespace system {
 
 template <typename T>
 class ItemValue;
@@ -34,8 +35,8 @@ struct _ItemViewAccessor
 
 
 // Memory debugging tool
-// #define _MEM_DEBUG(...)
-#define _MEM_DEBUG(...) __VA_ARGS__
+#define _MEM_DEBUG(...)
+// #define _MEM_DEBUG(...) __VA_ARGS__
 
 template <typename T>
 struct Tracker
@@ -170,7 +171,7 @@ public:
     const T* operator->() const noexcept { return mPtr.operator->(); }
     operator bool() const noexcept { return (bool)mPtr; }
 
-    ~ItemView()
+    ~ItemView() noexcept
     {
         _MEM_DEBUG(if (mPtr.unique()) std::cout << "Deleted " << typeid(T).name() << " from " << __PRETTY_FUNCTION__ << std::endl;)
     }
@@ -286,7 +287,7 @@ public:
     T* operator->() noexcept { return mPtr.operator->(); }
     operator bool() const noexcept { return (bool)mPtr; }
 
-    ~ItemValue()
+    ~ItemValue() noexcept
     {
         _MEM_DEBUG(if (mPtr) std::cout << "Deleted " << typeid(T).name() << " from " << __PRETTY_FUNCTION__ << std::endl;)
     }
@@ -421,11 +422,6 @@ class Sender
 public:
     using sendParam = typename ChannelTypeInfo<T>::sendParam;
     virtual void send(sendParam data) = 0;
-    // template <typename U>
-    // void send(ChannelTypeInfo<U>::sendParam data)
-    // {
-    //     send(converter<U, T>(data));
-    // }
 };
 
 template <typename T>
@@ -606,4 +602,4 @@ public:
     }
 };
 
-}} // btrack::nodes
+}}} // namespace btrack::nodes::system

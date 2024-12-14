@@ -1,13 +1,13 @@
 #include <gtest/gtest.h>
-#include "nodes/nodes.h"
+#include "nodes/system/nodes.h"
 
-using namespace btrack::nodes;
+using namespace btrack::nodes::system;
 
 class NodeStart : public Node
 {
 public:
-	NodeOutputValue<int> valueOutput{"valueOutput"};
-	NodeOutputValue<int> arrayOutput{"arrayOutput"};
+	OutputValue<int> valueOutput{"valueOutput"};
+	OutputValue<int> arrayOutput{"arrayOutput"};
 
 	void process() override
 	{
@@ -24,8 +24,8 @@ public:
 		const std::string& _description = ""
 		) : 
 			TestNodeStart::MetaNode(_name, _friendlyName, _description) {}
-	std::shared_ptr<MetaNodeOutputValue<int>> valueOutput = std::make_shared<MetaNodeOutputValue<int>>("valueOutput");
-	std::shared_ptr<MetaNodeOutputArray<int>> arrayOutput = std::make_shared<MetaNodeOutputArray<int>>("arrayOutput");
+	std::shared_ptr<MetaOutputValue<int>> valueOutput = std::make_shared<MetaOutputValue<int>>("valueOutput");
+	std::shared_ptr<MetaOutputArray<int>> arrayOutput = std::make_shared<MetaOutputArray<int>>("arrayOutput");
 
 	void generate(int count) override {}
 
@@ -36,8 +36,8 @@ public:
 class NodeStartFloat : public Node
 {
 public:
-	NodeOutputValue<float> valueOutput{"valueOutput"};
-	NodeOutputValue<float> arrayOutput{"arrayOutput"};
+	OutputValue<float> valueOutput{"valueOutput"};
+	OutputValue<float> arrayOutput{"arrayOutput"};
 
 	void process() override
 	{
@@ -54,8 +54,8 @@ public:
 		const std::string& _description = ""
 		) : 
 			TestNodeStartFloat::MetaNode(_name, _friendlyName, _description) {}
-	MetaNodeOutputValue<float> valueOutput{"valueOutput"};
-	MetaNodeOutputArray<float> arrayOutput{"arrayOutput"};
+	MetaOutputValue<float> valueOutput{"valueOutput"};
+	MetaOutputArray<float> arrayOutput{"arrayOutput"};
 
 	void generate(int count) override {}
 
@@ -72,11 +72,11 @@ public:
 		const std::string& _description = ""
 		) : 
 			TestNodeMid1::MetaNode(_name, _friendlyName, _description) {}
-	std::shared_ptr<MetaNodeInputValue<int>> valueInput = std::make_shared<MetaNodeInputValue<int>>("valueInput");
-	std::shared_ptr<MetaNodeInputArray<int>> arrayInput = std::make_shared<MetaNodeInputArray<int>>("arrayInput");
+	std::shared_ptr<MetaInputValue<int>> valueInput = std::make_shared<MetaInputValue<int>>("valueInput");
+	std::shared_ptr<MetaInputArray<int>> arrayInput = std::make_shared<MetaInputArray<int>>("arrayInput");
 	
-	std::shared_ptr<MetaNodeOutputValue<int>> valueOutput = std::make_shared<MetaNodeOutputValue<int>>("valueOutput");
-	std::shared_ptr<MetaNodeOutputArray<int>> arrayOutput = std::make_shared<MetaNodeOutputArray<int>>("arrayOutput");
+	std::shared_ptr<MetaOutputValue<int>> valueOutput = std::make_shared<MetaOutputValue<int>>("valueOutput");
+	std::shared_ptr<MetaOutputArray<int>> arrayOutput = std::make_shared<MetaOutputArray<int>>("arrayOutput");
 
 	void generate(int count) override {}
 
@@ -93,8 +93,8 @@ public:
 		const std::string& _description = ""
 		) : 
 			TestNodeEnd::MetaNode(_name, _friendlyName, _description) {}
-	std::shared_ptr<MetaNodeInputValue<int>> valueInput = std::make_shared<MetaNodeInputValue<int>>("valueInput");
-	std::shared_ptr<MetaNodeInputArray<int>> arrayInput = std::make_shared<MetaNodeInputArray<int>>("arrayInput");
+	std::shared_ptr<MetaInputValue<int>> valueInput = std::make_shared<MetaInputValue<int>>("valueInput");
+	std::shared_ptr<MetaInputArray<int>> arrayInput = std::make_shared<MetaInputArray<int>>("arrayInput");
 
 	void generate(int count) override {}
 
@@ -176,25 +176,4 @@ TEST(NodeTests, OtherChain)
 // 	(*start.arrayOutput)>>mid.arrayInput;
 // }
 
-struct ItTestObj
-{
-	int foo;
-};
-
-struct ItTest
-{
-	using ItTestObjType = ItTestObj;
-    using ItTestObjPtr = std::shared_ptr<ItTestObj>;
-	using ItTestObjIterator = NodeIterator<ItTestObjPtr>;
-	NodeIteratorAccessorConcrete(ItTestObjIterator, ItTestObj, ItTest);
-	std::vector<ItTestObjPtr> objs;
-
-	ItTestObjIterator ItTestObjBegin() { return ItTestObjIterator::create(objs.begin()); }
-	ItTestObjIterator ItTestObjEnd() { return ItTestObjIterator::create(objs.end()); }
-};
-
-TEST(NodeTests, IteratorTest)
-{
-
-}
 

@@ -10,31 +10,9 @@
 #endif()
 
 
-set(SourceFiles
-	"btrack-core.cpp"
-	"processing/camera.cpp"
-	"processing/scene.cpp"
-	"settings/SettingsManager.cpp"
-	
-	"nodes/MetaNode.cpp"
-	"nodes/MetaNodeInputValue.cpp"
-	"nodes/MetaNodeInputArray.cpp"
-	"nodes/MetaNodeOutputValue.cpp"
-	"nodes/MetaNodeOutputArray.cpp"
-
-	"nodes/Node.cpp"
-	"nodes/NodeInputValue.cpp"
-	"nodes/NodeInputArray.cpp"
-	"nodes/NodeOutputValue.cpp"
-	"nodes/NodeOutputArray.cpp"
-
-	"nodes/type_traits.cpp"
-)
-
-
 include_directories(${btrack_core_INCLUDES})
-add_library (btrack-core ${SourceFiles})
-
+file(GLOB_RECURSE BTRACK_CORE_SOURCES "**.cpp")
+add_library(btrack-core ${BTRACK_CORE_SOURCES})
 
 if (USE_CUDA)
 	add_library (btrack-core-cuda ${SourceFiles})

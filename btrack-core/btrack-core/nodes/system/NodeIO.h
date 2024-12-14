@@ -5,11 +5,10 @@
 #include <boost/uuid/uuid_generators.hpp>
 #include <iterator>
 #include <vector>
-#include "nodes/MemoryRegistry.h"
-#include "nodes/type_traits.h"
+#include "nodes/system/MemoryRegistry.h"
+#include "nodes/system/type_traits.h"
 
-namespace btrack { namespace nodes
-{
+namespace btrack { namespace nodes { namespace system {
 
 enum class NodeItemType : uint8_t
 {
@@ -271,4 +270,4 @@ public:
 	virtual size_t outputCount() const = 0;
 };
 
-}} // btrack::nodes
+}}} // namespace btrack::nodes::system

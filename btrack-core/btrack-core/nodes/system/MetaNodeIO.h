@@ -1,11 +1,10 @@
 #pragma once
 
 #include <string>
-#include "nodes/NodeIO.h"
+#include "nodes/system/NodeIO.h"
 
 
-namespace btrack { namespace nodes
-{
+namespace btrack { namespace nodes { namespace system {
 
 class MetaNodeIO : public NodeIO
 {
@@ -20,4 +19,4 @@ protected:
 };
 
 
-}} // btrack::nodes
+}}} // namespace btrack::nodes::system

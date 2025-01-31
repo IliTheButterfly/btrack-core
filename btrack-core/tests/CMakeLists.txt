@@ -14,6 +14,7 @@ endif ()
 
 FetchContent_MakeAvailable(googletest)
 
+include(GoogleTest)
 include_directories(${btrack_core_INCLUDES})
 
 if (USE_CUDA)
@@ -50,7 +51,6 @@ target_link_libraries(
 	btrack-core
 )
 
-include(GoogleTest)
 
 if (USE_CUDA)
 	gtest_discover_tests(cuda_tests)
@@ -102,11 +102,23 @@ target_link_libraries(
     btrack-core
 )
 
+# add_executable(
+#     iterator_tests
+#     iterator_tests.cpp
+# )
+# target_link_libraries(
+#     iterator_tests
+#     GTest::gtest_main
+# )
+
+set_tests_properties(${Tests} PROPERTIES TIMEOUT 10)
+
 gtest_discover_tests(processing_tests_no_cuda)
 gtest_discover_tests(opencv_tests)
 gtest_discover_tests(settings_tests)
 gtest_discover_tests(node_tests)
 gtest_discover_tests(registry_tests)
+# gtest_discover_tests(iterator_tests)
 
 
 message(STATUS ${btrack_core_INCLUDES})

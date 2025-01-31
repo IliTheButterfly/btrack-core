@@ -6,7 +6,7 @@ namespace pt = boost::property_tree;
 
 
 
-void _SettingsManager::setFilename(const std::string& name)
+void _SettingsManager::setFilename(const std::string_view& name)
 {
 	mFilename = name;
 }

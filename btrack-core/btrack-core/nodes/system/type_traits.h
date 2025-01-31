@@ -1,8 +1,13 @@
 #pragma once
 #include <boost/type_traits.hpp>
 #include <boost/concept_check.hpp>
+#include <type_traits>
+#include <memory>
+#include <vector>
+#include <boost/iterator/transform_iterator.hpp>
+#include <iterator>
 
-namespace btrack { namespace nodes { namespace system { namespace type_traits {
+namespace btrack::nodes::system::type_traits {
 
 
 
@@ -48,6 +53,14 @@ template <typename T> struct remove_container<MetaOutput<T>> { typedef T type; }
 template <typename T> struct remove_container<MetaOutputValue<T>> { typedef T type; };
 template <typename T> struct remove_container<MetaOutputArray<T>> { typedef T type; };
 
+
+template <typename T> struct remove_smart_ptr { typedef T type; };
+template <typename T> struct remove_smart_ptr<std::unique_ptr<T>> { typedef T type; };
+template <typename T> struct remove_smart_ptr<std::shared_ptr<T>> { typedef T type; };
+template <typename T> struct remove_smart_ptr<std::weak_ptr<T>> { typedef T type; };
+
+template <class T> using remove_smart_ptr_t = typename remove_smart_ptr<T>::type;
+
 template <class T> using remove_container_t = typename remove_container<T>::type;
 
 template <typename T> struct remove_all_ext_and_container { typedef remove_container_t<boost::remove_all_extents_t<T>> type; };
@@ -63,6 +76,65 @@ constexpr bool convertible(const std::type_info& from, const std::type_info& to)
 	return btrack::nodes::system::type_traits::convertible_to_t<decltype(from), decltype(to)>::value;
 }
 
+template <typename T> struct remove_all { typedef boost::remove_all_extents_t<remove_smart_ptr_t<boost::remove_all_extents_t<remove_smart_ptr_t<T>>>> type; };
 
-}}}} // namespace btrack::nodes::system::type_traits
+template <typename T> using remove_all_t = typename remove_all<T>::type;
+
+template <typename T, typename C> struct is_shared : public boost::false_type {};
+template <typename T> struct is_shared<T, std::shared_ptr<T>> : public boost::true_type {};
+
+template <typename T, typename C> struct is_unique : public boost::false_type {};
+template <typename T> struct is_unique<T, std::unique_ptr<T>> : public boost::true_type {};
+
+template <typename T, typename C> struct is_weak : public boost::false_type {};
+template <typename T> struct is_weak<T, std::weak_ptr<T>> : public boost::true_type {};
+
+template <typename T> struct container_traits { typedef T type; typedef void container; };
+template <typename T> struct container_traits<std::shared_ptr<T>> { typedef T type; typedef std::shared_ptr<T> container; };
+template <typename T> struct container_traits<std::unique_ptr<T>> { typedef T type; typedef std::unique_ptr<T> container; };
+template <typename T> struct container_traits<std::weak_ptr<T>> { typedef T type; typedef std::weak_ptr<T> container; };
+
+template <typename T1, typename C1, typename T2, typename C2> struct _is_same_container : 
+	public boost::integral_constant<bool, 
+		is_shared<T1, C1>::value && is_shared<T2, C2>::value ||
+		is_unique<T1, C1>::value && is_unique<T2, C2>::value ||
+		is_weak<T1, C1>::value && is_weak<T2, C2>::value ||
+		std::is_void<C1>::value && std::is_void<T2>::value>  {};
+
+template <typename T1, typename T2> using is_same_container = 
+	_is_same_container<typename container_traits<T1>::type, typename container_traits<T1>::container,
+						typename container_traits<T2>::type, typename container_traits<T2>::container>;
+
+template<typename _Iter>
+concept any_iterator = std::forward_iterator<_Iter> || 
+						std::bidirectional_iterator<_Iter> || 
+						std::random_access_iterator<_Iter> ||
+						std::input_or_output_iterator<_Iter> ||
+						std::contiguous_iterator<_Iter>;
+
+
+namespace ownership {
+
+template <typename T>
+struct owned_ptr {
+	typedef typename container_traits<T>::type element_type;
+	typedef std::shared_ptr<typename container_traits<T>::type> ptr_type;
+};
+
+template <typename T>
+using owned_ptr_p = typename owned_ptr<T>::ptr_type;
+
+template <typename T>
+struct borrowed_ptr {
+	typedef typename container_traits<T>::type element_type;
+	typedef std::shared_ptr<typename container_traits<T>::type> ptr_type;
+};
+
+template <typename T>
+using borrowed_ptr_p = typename borrowed_ptr<T>::ptr_type;
+
+} // namespace smart_ptr
+
+
+} // namespace btrack::nodes::system::type_traits
 

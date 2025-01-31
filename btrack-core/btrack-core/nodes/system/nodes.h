@@ -10,10 +10,8 @@
 
 #include "nodes/system/Node.h"
 #include "nodes/system/Input.h"
-#include "nodes/system/InputArray.h"
 #include "nodes/system/InputValue.h"
 #include "nodes/system/Output.h"
-#include "nodes/system/OutputArray.h"
 #include "nodes/system/OutputValue.h"
 
 #include "nodes/system/NodeGraph.h"

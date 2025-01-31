@@ -7,8 +7,9 @@
 #include <vector>
 #include "nodes/system/MemoryRegistry.h"
 #include "nodes/system/type_traits.h"
+#include "nodes/exceptions.h"
 
-namespace btrack { namespace nodes { namespace system {
+namespace btrack::nodes::system {
 
 enum class NodeItemType : uint8_t
 {
@@ -61,100 +62,129 @@ NodeItemType operator~(NodeItemType x) { return (NodeItemType)(x ^ NodeItemType:
 // NodeItemType operator~(const NodeItemType x) { return (const NodeItemType)((const uint8_t)x ^ NodeItemType::ANY); }
 
 
+// template <typename T>
+// class NodeIterator
+// {
+// public:
+//     // STL-like iterator traits
+//     using iterator_category = std::forward_iterator_tag;
+//     using difference_type = std::ptrdiff_t;
+//     using pointer = T*;
+//     using reference = T&;
 
-template <typename NodeType = std::shared_ptr<int>>
-class NodeIterator
-{
-public:
-	// STL-like iterator traits
-	using iterator_category = std::forward_iterator_tag;
-	using difference_type = std::ptrdiff_t;
-	using pointer = NodeType*;
-	using reference = NodeType&;
+//     // Abstract base class for iterator reference
+//     struct _IteratorRef
+//     {
+//         virtual ~_IteratorRef() = default;
+//         virtual reference operator*() const = 0;
+//         virtual pointer operator->() const = 0;
+//         virtual _IteratorRef& operator++() = 0;
+//         virtual bool operator==(const _IteratorRef& other) const = 0;
+//         virtual bool operator!=(const _IteratorRef& other) const = 0;
+//         // virtual std::unique_ptr<_IteratorRef> clone() const = 0; // Clone for copy construction
+//     };
 
-	struct _IteratorRef
-	{
-		virtual reference operator*() const = 0;
-		virtual pointer operator->() const = 0;
+//     // IteratorRef to adapt IterT (the actual iterator type)
+//     template <typename IterT>
+//     class IteratorRef : public _IteratorRef {
+//     public:
+// 		using inner_pointer = typename IterT::pointer;
+// 		using inner_reference = typename IterT::reference;
+//         explicit IteratorRef(IterT iter) : mCurrent(iter) {}
 
-		virtual _IteratorRef& operator++() = 0;
+//         reference operator*() const override {
+// 			return static_cast<reference>(*mCurrent); // Ensure this matches NodeIterator<T>::reference
+// 		}
 
-		// virtual _IteratorRef operator++(int) = 0;
+//         pointer operator->() const override {
+//             return &(this->operator*()); // Cast and return pointer
+//         }
 
-		bool operator==(_IteratorRef& other) const { return (*this).operator->() == other.operator->(); }
-		bool operator!=(_IteratorRef& other) const { return !(*this == other); }
-	};
+//         _IteratorRef& operator++() override {
+//             ++mCurrent;
+//             return *this;
+//         }
 
-	template <typename IterT = std::vector<std::shared_ptr<int>>::iterator>
-	struct IteratorRef : public _IteratorRef
-	{
-		IterT mCurrent;
+//         bool operator==(const _IteratorRef& other) const override {
+//             // return &(*mCurrent) == &(*other);
+//         }
 
-		// IteratorRef(std::vector<IterT>::iterator iter) : mCurrent{mCurrent} {}
-		IteratorRef(IterT iter) : mCurrent{mCurrent} {}
-		
-		reference operator*() const override { return (reference)(*mCurrent); }
-		pointer operator->() const override  { return (pointer)(mCurrent.operator->()); }
+//         bool operator!=(const _IteratorRef& other) const override {
+//             // return &(*mCurrent) != &(*other);
+//         }
 
-		_IteratorRef& operator++() override
-		{
-			++mCurrent;
-			return *this;
-		}
+//     private:
+//         IterT mCurrent; // The underlying iterator
+//     };
 
-		IteratorRef operator++(int)
-		{
-			IteratorRef temp = *this;
-			++(*this);
-			return temp;
-		}
 
-		// bool operator==(_IteratorRef& other) const override { return (**this) == (**other); }
-		// bool operator!=(_IteratorRef& other) const override { return !(*this == other); }
-	};
 
-private:
-	_IteratorRef* mCurrent;
 
-	NodeIterator(_IteratorRef* current) : mCurrent(current) {}
-public:
+// private:
+//     std::unique_ptr<_IteratorRef> mCurrent;
 
-	template <typename IterT>
-	NodeIterator(IteratorRef<IterT> current) : mCurrent(new IteratorRef<IterT>(current)) {}
+//     explicit NodeIterator(std::unique_ptr<_IteratorRef> ref) : mCurrent(std::move(ref)) {}
 
-	NodeIterator operator=(const NodeIterator& it) { return NodeIterator(new _IteratorRef(*(it.mCurrent))); }
+// public:
+//     // Constructor for single iterator
+//     template <typename IterT>
+//     explicit NodeIterator(IterT iter)
+//         : mCurrent(std::make_unique<IteratorRef<IterT>>(iter)) {}
 
-	template <typename IterT>
-	static NodeIterator create(IterT iter)
-	{
-		return NodeIterator(new IteratorRef<IterT>(iter));
-	}
+//     // Copy constructor
+//     // NodeIterator(const NodeIterator& other) : mCurrent(other.mCurrent->clone()) {}
 
-	reference operator*() const { return **mCurrent; }
-	pointer operator->() const { return (*mCurrent).operator->(); }
+//     // Move constructor
+//     // NodeIterator(NodeIterator&& other) noexcept = default;
 
-	NodeIterator& operator++()
-	{
-		++(*mCurrent);
-		return *this;
-	}
+//     // Copy assignment
+//     NodeIterator& operator=(const NodeIterator& other)
+//     {
+//         if (this != &other)
+//         {
+//             // mCurrent = other.mCurrent->clone();
+//         }
+//         return *this;
+//     }
 
-	NodeIterator operator++(int)
-	{
-		NodeIterator temp = *this;
-		++(*this);
-		return temp;
-	}
+//     // Move assignment
+//     // NodeIterator& operator=(NodeIterator&& other) noexcept = default;
 
-	bool operator==(const NodeIterator& other) const { return (*mCurrent) == *(other.mCurrent); }
-	bool operator!=(const NodeIterator& other) const { return !(*this == other); }
+//     // Static create function for implicit casts
+//     template <typename IterT>
+// 	static NodeIterator create(IterT iter)
+// 	{
+// 		static_assert(boost::is_base_of<type_traits::remove_all_t<T>, type_traits::remove_all_t<typename IterT::value_type>>::value, "Inner type needs to be derived from T");
+// 		static_assert(type_traits::is_same_container<T, typename IterT::value_type>::value, "Inner type needs to have same container as T");
+// 		return NodeIterator(iter);
+// 	}
 
-	~NodeIterator()
-	{
-		delete mCurrent;
-		mCurrent = nullptr;
-	}
-};
+//     // Dereference operators
+//     reference operator*() const { return **mCurrent; }
+//     pointer operator->() const { return (*mCurrent).operator->(); }
+
+//     // Increment operators
+//     NodeIterator& operator++()
+//     {
+//         ++(*mCurrent);
+//         return *this;
+//     }
+
+//     NodeIterator operator++(int)
+//     {
+//         NodeIterator temp = *this;
+//         ++(*this);
+//         return temp;
+//     }
+
+//     // Comparison operators
+//     bool operator==(const NodeIterator& other) const { return *mCurrent == *other.mCurrent; }
+//     bool operator!=(const NodeIterator& other) const { return !(*this == other); }
+
+//     ~NodeIterator() = default;
+// };
+
+
 
 class _NodeItem
 {
@@ -166,30 +196,30 @@ private:
 	std::string mDescription;
 private:
 	_NodeItem(
-		const std::string& _name, 
+		const std::string_view& _name, 
 		const NodeItemType& _nodeType,
 		const boost::uuids::uuid& _uuid, 
-		const std::string& _friendlyName = "",
-		const std::string& _description = ""
+		const std::string_view& _friendlyName = "",
+		const std::string_view& _description = ""
 		) : 
 			mName(_name), mUUID(_uuid), mNodeType(_nodeType), mFriendlyName(_friendlyName), mDescription(_description) {}
 protected:
 	_NodeItem(
-		const std::string& _name, 
+		const std::string_view& _name, 
 		const NodeItemType& _nodeType,
-		const std::string& _friendlyName = "",
-		const std::string& _description = ""
+		const std::string_view& _friendlyName = "",
+		const std::string_view& _description = ""
 		) : 
 			_NodeItem::_NodeItem(_name, _nodeType, boost::uuids::random_generator()(), _friendlyName, _description) {}
 public:
 	_NodeItem() = delete;
 
-	const std::string& name() const { return mName; }
+	const std::string_view name() const { return mName; }
 	const boost::uuids::uuid& uuid() const { return mUUID; }
 	const NodeItemType& nodeType() const { return mNodeType; }
-	const std::string& friendlyName() const { return mFriendlyName; }
+	const std::string_view friendlyName() const { return mFriendlyName; }
 	std::string& friendlyName() { return mFriendlyName; }
-	const std::string& description() const { return mDescription; }
+	const std::string_view description() const { return mDescription; }
 	std::string& description() { return mDescription; }
 
 	bool isInput() const { return (mNodeType & NodeItemType::INPUT) == NodeItemType::INPUT; }
@@ -206,10 +236,10 @@ class NodeIO : public _NodeItem
 private:
 protected:
 	NodeIO(
-		const std::string& _name, 
+		const std::string_view& _name, 
 		const NodeItemType& _nodeType,
-		const std::string& _friendlyName = "",
-		const std::string& _description = ""
+		const std::string_view& _friendlyName = "",
+		const std::string_view& _description = ""
 		) : 
 			NodeIO::_NodeItem(_name, _nodeType, _friendlyName, _description) {}
 public:
@@ -217,6 +247,8 @@ public:
 	constexpr bool convertibleFrom(const std::type_info& from) { return type_traits::convertible(from, dataType()); }
 	constexpr bool convertibleTo(const std::type_info& to) { return type_traits::convertible(dataType(), to); }
 };
+
+#define EXPAND(x) x
 
 #define NodeIteratorAccessor(iteratorType, name, parentType) \
 struct iteratorType##_ref \
@@ -243,6 +275,43 @@ iteratorType##_ref name##Iter() { return iteratorType##_ref(*this); }
 /*iteratorType name##Begin(); \
 iteratorType name##End(); \*/
 
+#define NodeAtVirtual(returnType) \
+virtual returnType##Ptr returnType##At(int index) const = 0; \
+virtual returnType##Ptr returnType##At(int index) = 0;
+
+#define NodeAtImpl(returnType, vec) \
+returnType##Ptr returnType##At(int index) const override { return vec.at(index); } \
+returnType##Ptr returnType##At(int index) override { return vec.at(index); }
+
+#define NodeAtConcrete(returnType, vec) \
+returnType##Ptr returnType##At(int index) const { return vec.at(index); } \
+returnType##Ptr returnType##At(int index) { return vec.at(index); }
+
+#define NodeAtCastImpl(returnType, vec) \
+returnType##Ptr returnType##At(int index) const override { return std::reinterpret_pointer_cast<typename returnType##Ptr::element_type>(vec.at(index)); } \
+returnType##Ptr returnType##At(int index) override { return std::reinterpret_pointer_cast<typename returnType##Ptr::element_type>(vec.at(index)); }
+
+#define NodeAtWeakCastImpl(returnType, vec) \
+returnType##Ptr returnType##At(int index) const override { return std::reinterpret_pointer_cast<typename returnType##Ptr::element_type>(vec.at(index)); } \
+returnType##Ptr returnType##At(int index) override { return std::reinterpret_pointer_cast<typename returnType##Ptr::element_type>(vec.at(index)); }
+
+// #define NodeAtWeakCastImpl(returnType, vec) \
+// returnType##Ptr returnType##At(int index) const override { return std::reinterpret_pointer_cast<typename returnType##Ptr::element_type>(vec.at(index).lock()); } \
+// returnType##Ptr returnType##At(int index) override { return std::reinterpret_pointer_cast<typename returnType##Ptr::element_type>(vec.at(index).lock()); }
+
+#define NodeAtCastConcrete(returnType, vec) \
+returnType##Ptr returnType##At(int index) const { return std::reinterpret_pointer_cast<typename returnType##Ptr::element_type>(vec.at(index)); } \
+returnType##Ptr returnType##At(int index) { return std::reinterpret_pointer_cast<typename returnType##Ptr::element_type>(vec.at(index)); }
+
+#define NodeAtWeakCastConcrete(returnType, vec) \
+returnType##Ptr returnType##At(int index) const { return std::reinterpret_pointer_cast<typename returnType##Ptr::element_type>(vec.at(index)); } \
+returnType##Ptr returnType##At(int index) { return std::reinterpret_pointer_cast<typename returnType##Ptr::element_type>(vec.at(index)); }
+// #define NodeAtWeakCastConcrete(returnType, vec) \
+// returnType##Ptr returnType##At(int index) const { return std::reinterpret_pointer_cast<typename returnType##Ptr::element_type>(vec.at(index).lock()); } \
+// returnType##Ptr returnType##At(int index) { return std::reinterpret_pointer_cast<typename returnType##Ptr::element_type>(vec.at(index).lock()); }
+
+
+
 enum class ConnectionResult
 {
 	UNKNOWN,
@@ -258,10 +327,10 @@ class _Node : public _NodeItem
 private:
 protected:
 	_Node(
-		const std::string& _name, 
+		const std::string_view& _name, 
 		const NodeItemType& _nodeType,
-		const std::string& _friendlyName = "",
-		const std::string& _description = ""
+		const std::string_view& _friendlyName = "",
+		const std::string_view& _description = ""
 		) : 
 			_Node::_NodeItem(_name, _nodeType | NodeItemType::NODE, _friendlyName, _description) {}
 
@@ -270,4 +339,4 @@ public:
 	virtual size_t outputCount() const = 0;
 };
 
-}}} // namespace btrack::nodes::system
+} // namespace btrack::nodes::system

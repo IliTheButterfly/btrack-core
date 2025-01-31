@@ -1,58 +1,55 @@
 #pragma once
 #include "nodes/system/MetaInput.h"
 
-namespace btrack { namespace nodes { namespace system {
+namespace btrack::nodes::system {
 
-template <typename T>
+template <typename T, ChannelTypeConcept<T> I>
 class InputValue;
 
-template <typename T>
+template <typename T, ChannelTypeConcept<T> I>
 class InputArray;
 
-template <typename T>
-class MetaInputValue : public MetaInput<T>
+template <typename T, ChannelTypeConcept<T> I = DefaultChannelTypeInfo<T>>
+class MetaInputValue : public MetaInput<T, I>
 {
 public:
-	using _InputIterator = MetaInput<T>::_InputIterator;
-	using InputIterator = MetaInput<T>::InputIterator;
+	using _InputType = typename MetaInput<T, I>::_InputType;
+	using _InputPtr = typename MetaInput<T, I>::_InputPtr;
+	using InputType = typename MetaInput<T, I>::InputType;
+	using InputPtr = typename MetaInput<T, I>::InputPtr;
 
 
-	using InputValueType = InputValue<T>;
-	using InputValuePtr = std::shared_ptr<InputValue<T>>;
-	using InputValueIterator = NodeIterator<InputValuePtr>;
-	NodeIteratorAccessorConcrete(InputValueIterator, InputValue, MetaInputValue);
+	using InputValueType = InputValue<T, I>;
+	using InputValuePtr = type_traits::ownership::borrowed_ptr_p<InputValue<T, I>>;
+	// using InputValueIterator = NodeIterator<InputValuePtr>;
+	// NodeIteratorAccessorConcrete(InputValueIterator, InputValue, MetaInputValue);
 protected:
 	std::vector<InputValuePtr> mInputs;
 public:
 	MetaInputValue(
-		const std::string& _name, 
-		const std::string& _friendlyName = "",
-		const std::string& _description = ""
+		const std::string_view& _name, 
+		const std::string_view& _friendlyName = "",
+		const std::string_view& _description = ""
 		) : 
 			MetaInputValue::MetaInput(_name, NodeItemType::VALUE, _friendlyName, _description) {}
 
-	
-
-	InputValueIterator InputValueBegin();
-	InputValueIterator InputValueEnd();
-	_InputIterator _InputBegin() override;
-    _InputIterator _InputEnd() override;
-	InputIterator InputBegin() override;
-	InputIterator InputEnd() override;
+	NodeAtConcrete(InputValue, mInputs);
+	NodeAtWeakCastImpl(_Input, mInputs);
+	NodeAtWeakCastImpl(Input, mInputs);
 };
 
-template <typename T>
-MetaInputValue<T>::InputValueIterator MetaInputValue<T>::InputValueBegin() { return MetaInputValue<T>::InputValueIterator::create(mInputs.begin()); }
-template <typename T>
-MetaInputValue<T>::InputValueIterator MetaInputValue<T>::InputValueEnd() { return MetaInputValue<T>::InputValueIterator::create(mInputs.end()); }
-template <typename T>
-MetaInputValue<T>::_InputIterator MetaInputValue<T>::_InputBegin() { return MetaInputValue<T>::_InputIterator::create(mInputs.begin()); }
-template <typename T>
-MetaInputValue<T>::_InputIterator MetaInputValue<T>::_InputEnd() { return MetaInputValue<T>::_InputIterator::create(mInputs.end()); }
-template <typename T>
-MetaInputValue<T>::InputIterator MetaInputValue<T>::InputBegin() { return MetaInputValue<T>::InputIterator::create(mInputs.begin()); }
-template <typename T>
-MetaInputValue<T>::InputIterator MetaInputValue<T>::InputEnd() { return MetaInputValue<T>::InputIterator::create(mInputs.end()); }
+// template <typename T, ChannelTypeConcept<T> I>
+// MetaInputValue<T, I>::InputValueIterator MetaInputValue<T, I>::InputValueBegin() { return MetaInputValue<T, I>::InputValueIterator::create(mInputs.begin()); }
+// template <typename T, ChannelTypeConcept<T> I>
+// MetaInputValue<T, I>::InputValueIterator MetaInputValue<T, I>::InputValueEnd() { return MetaInputValue<T, I>::InputValueIterator::create(mInputs.end()); }
+// template <typename T, ChannelTypeConcept<T> I>
+// MetaInputValue<T, I>::_InputIterator MetaInputValue<T, I>::_InputBegin() { return MetaInputValue<T, I>::_InputIterator::create(mInputs.begin()); }
+// template <typename T, ChannelTypeConcept<T> I>
+// MetaInputValue<T, I>::_InputIterator MetaInputValue<T, I>::_InputEnd() { return MetaInputValue<T, I>::_InputIterator::create(mInputs.end()); }
+// template <typename T, ChannelTypeConcept<T> I>
+// MetaInputValue<T, I>::InputIterator MetaInputValue<T, I>::InputBegin() { return MetaInputValue<T, I>::InputIterator::create(mInputs.begin()); }
+// template <typename T, ChannelTypeConcept<T> I>
+// MetaInputValue<T, I>::InputIterator MetaInputValue<T, I>::InputEnd() { return MetaInputValue<T, I>::InputIterator::create(mInputs.end()); }
 
 
-}}} // namespace btrack::nodes::system
+} // namespace btrack::nodes::system

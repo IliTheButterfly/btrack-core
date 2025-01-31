@@ -8,8 +8,9 @@
 #include <boost/any.hpp>
 #include <opencv2/core.hpp>
 #include <iostream>
+#include <concepts>
 
-namespace btrack { namespace nodes { namespace system {
+namespace btrack::nodes::system {
 
 template <typename T>
 class ItemValue;
@@ -295,61 +296,152 @@ public:
     friend _ItemValueAccessor<T>;
 };
 
-template <typename T>
-struct _NonConst
-{
-    using sendParam = const ItemView<typename boost::remove_const<T>::type>&;
-    using elemType = ItemView<typename boost::remove_const<T>::type>;
-    using receiveParam = ItemValue<typename boost::remove_const<T>::type>&;
 
-    static void toReceive(elemType& s, receiveParam r)
-    {
-        r.copyFrom(s);
-    }
+// Define the concept for ChannelTypeInfo
+template <typename T, typename DT>
+concept ChannelTypeConcept = requires {
+    typename T::type; // Alias to data type
+    typename T::item; // Alias for containers like arrays or queues
+    typename T::readonlyRef; // Alias for readonly references
+    typename T::readonlyIn; // Alias for readonly input parameters to functions
+    typename T::readonlyOut; // Alias for readonly output parameters to functions
+    typename T::readonlyInOut; // Alias for readonly input/output parameters to functions
+    typename T::writable; // Alias for writable values
+    typename T::writableRef; // Alias for writable references
+    typename T::writableIn; // Alias for writable input parameters to functions
+    typename T::writableOut; // Alias for writable output parameters to functions
+    typename T::writableInOut; // Alias for writable input/output parameters to functions
+
+    // Ensure T::type matches the specified DT
+    std::same_as<typename T::type, DT>;
+
+    // Ensure conversions
+    std::convertible_to<typename T::item, typename T::readonlyRef>;
+    std::convertible_to<typename T::item, typename T::readonlyIn>;
+    std::convertible_to<typename T::item, typename T::readonlyOut>;
+    std::convertible_to<typename T::item, typename T::readonlyInOut>;
+
+    
+    { T::byRef(std::declval<typename T::readonlyRef>(), 
+               std::declval<typename T::readonlyOut>()) } -> std::same_as<void>;
+
+    { T::byCopy(std::declval<typename T::readonlyRef>(), 
+                std::declval<typename T::writableOut>()) } -> std::same_as<void>;
+
+    { T::moveFromRef(std::declval<typename T::readonlyIn>()) } -> std::same_as<typename T::writable>;
+    
+    { T::moveFromCopy(std::declval<typename T::writableIn>()) } -> std::same_as<typename T::writableIn>;
 };
 
 template <typename T>
-struct _Const
+struct DefaultChannelTypeInfo
 {
-    using sendParam = const ItemView<typename boost::remove_const<T>::type>&;
-    using elemType = ItemView<typename boost::remove_const<T>::type>;
-    using receiveParam = ItemView<typename boost::remove_const<T>::type>&;
+    using type = T; // Alias to T
+    using item = ItemView<T>; // Alias for containers like arrays or queues
+    using readonlyRef = ItemView<T>&; // Alias for readonly references
+    using readonlyIn = const ItemView<T>&; // Alias for readonly input parameters to functions
+    using readonlyOut = ItemView<T>&; // Alias for readonly output parameters to functions
+    using readonlyInOut = ItemView<T>&; // Alias for readonly input/output parameters to functions
+    using writable = ItemValue<T>; // Alias for writable values
+    using writableRef = ItemValue<T>&; // Alias for writable references
+    using writableIn = ItemValue<T>&&; // Alias for writable input parameters to functions
+    using writableOut = ItemValue<T>&; // Alias for writable output parameters to functions
+    using writableInOut = ItemValue<T>&; // Alias for writable input/output parameters to functions
 
-    static void toReceive(elemType& s, receiveParam r)
+    static void byCopy(readonlyRef s, writableOut c)
+    {
+        c.copyFrom(s);
+    }
+
+    static void byRef(readonlyRef s, readonlyOut r)
     {
         r = s;
     }
-};
 
-template <typename T>
-struct ChannelTypeInfo
-{
-    using inner = boost::conditional_t<boost::is_const<T>::value, _Const<T>, _NonConst<T>>;
-    using sendParam = typename inner::sendParam;
-    using elemType = typename inner::elemType;
-    using receiveParam = typename inner::receiveParam;
-
-    
-    static void toReceive(elemType s, receiveParam r)
+    static writable moveFromRef(readonlyIn r)
     {
-        inner::toReceive(s, r);
-    };
+        writable res;
+        res.copyFrom(r);
+        return std::move(res);
+    }
+
+    static writableIn moveFromCopy(writableIn r)
+    {
+        return static_cast<writableIn>(std::move(r));
+    }
 };
+
+
+template <>
+struct DefaultChannelTypeInfo<cv::Mat>
+{
+    using type = cv::Mat;
+    using item = cv::InputArray;
+    using readonlyRef = cv::_InputArray&;
+    using readonlyIn = cv::InputArray;
+    using readonlyOut = cv::_InputArray&;
+    using readonlyInOut = cv::_InputArray&;
+    using writable = cv::Mat;
+    using writableRef = cv::Mat&;
+    using writableIn = cv::_InputArray&;
+    using writableOut = cv::OutputArray;
+    using writableInOut = cv::InputOutputArray;
+
+    static void byCopy(readonlyRef s, writableOut c)
+    {
+        s.copyTo(c);
+    }
+
+    static void byRef(readonlyRef s, readonlyOut r)
+    {
+        r = s;
+    }
+
+    static writable moveFromRef(readonlyIn r)
+    {
+        return r.getMat();
+    }
+
+    static writable moveFromCopy(writableIn r)
+    {
+        writable w;
+        r.copyTo(w);
+        return w;
+    }
+};
+
+#define FundamentalChannelTypeInfo(T)\
+template <> struct DefaultChannelTypeInfo<T>\
+{\
+    using type = T;\
+    using item = T;\
+    using readonlyRef = const T&;\
+    using readonlyIn = const T&;\
+    using readonlyOut = T&;\
+    using readonlyInOut = T&;\
+    using writable = T;\
+    using writableRef = T&;\
+    using writableIn = const T&;\
+    using writableOut = T&;\
+    using writableInOut = T&;\
+    \
+    static void byRef(readonlyRef s, readonlyOut r)\
+    {\
+        r = s;\
+    }\
+    static void byCopy(readonlyRef s, writableOut r)\
+    {\
+        r = s;\
+    }\
+    static writable moveFromRef(readonlyIn r) { return r; }\
+    static writableIn moveFromCopy(writableIn r) { return r; }\
+}
+
 
 
 // template <typename T>
 // struct ChannelTypeInfo : public boost::conditional<boost::is_const<T>::value_type, _ConstChannelTypeInfo<T>, _ChannelTypeInfo<T>>::type {};
-#define FundamentalChannelTypeInfo(T)\
-template <> struct ChannelTypeInfo<T>\
-{\
-    using sendParam = const boost::remove_const_t<T>&;\
-    using elemType = boost::remove_const_t<T>;\
-    using receiveParam = boost::remove_const_t<T>&;\
-    static void toReceive(elemType s, receiveParam r)\
-    {\
-        r = s;\
-    }\
-}
+
 
 FundamentalChannelTypeInfo(bool);
 FundamentalChannelTypeInfo(int8_t);
@@ -363,88 +455,35 @@ FundamentalChannelTypeInfo(uint64_t);
 FundamentalChannelTypeInfo(float);
 FundamentalChannelTypeInfo(double);
 
-FundamentalChannelTypeInfo(const bool);
-FundamentalChannelTypeInfo(const int8_t);
-FundamentalChannelTypeInfo(const uint8_t);
-FundamentalChannelTypeInfo(const int16_t);
-FundamentalChannelTypeInfo(const uint16_t);
-FundamentalChannelTypeInfo(const int32_t);
-FundamentalChannelTypeInfo(const uint32_t);
-FundamentalChannelTypeInfo(const int64_t);
-FundamentalChannelTypeInfo(const uint64_t);
-FundamentalChannelTypeInfo(const float);
-FundamentalChannelTypeInfo(const double);
-
-template <> 
-struct ChannelTypeInfo<cv::Mat>
-{
-    using sendParam = cv::InputArray;
-    using elemType = cv::InputArray;
-    using receiveParam = cv::OutputArray;
-
-    static void toReceive(elemType s, receiveParam r)
-    {
-        s.copyTo(r);
-    }
-};
-
-template <> 
-struct ChannelTypeInfo<const cv::Mat>
-{
-    using sendParam = cv::InputArray;
-    using elemType = cv::InputArray;
-    using receiveParam = cv::_InputArray&;
-
-    static void toReceive(elemType s, receiveParam r)
-    {
-        r = s;
-    }
-};
 
 
-template <typename T>
-using SendParam_t = typename ChannelTypeInfo<T>::sendParam;
-template <typename T>
-using ElemType_t = typename ChannelTypeInfo<T>::elemType;
-template <typename T>
-using ReceiveParam_t = typename ChannelTypeInfo<T>::receiveParam;
 
-// template <typename T>
-// using ChannelTypeInfoSnd = typename ChannelTypeInfo<T>::senderParam;
-// template <typename T>
-// using ChannelTypeInfoElem = typename ChannelTypeInfo<T>::elemType;
-// template <typename T>
-// using ChannelTypeInfoRcv = typename ChannelTypeInfo<T>::receiverParam;
-
-template <typename T>
+template <typename T, ChannelTypeConcept<T> I = DefaultChannelTypeInfo<T>>
 class Sender
 {
+    static_assert(ChannelTypeConcept<I, T>, "I must satisfy ChannelTypeConcept");
 public:
-    using sendParam = typename ChannelTypeInfo<T>::sendParam;
-    virtual void send(sendParam data) = 0;
+    virtual void send(typename I::readonlyIn data) = 0;
+    virtual void sendAndTake(typename I::writableIn data) = 0;
 };
 
-template <typename T>
+template <typename T, ChannelTypeConcept<T> I = DefaultChannelTypeInfo<T>>
 class Receiver
 {
+    static_assert(ChannelTypeConcept<I, T>, "I must satisfy ChannelTypeConcept");
 public:
-    using receiverParam = typename ChannelTypeInfo<T>::receiveParam;
-    // Receive data from the sender
-    virtual void receive(receiverParam data) = 0;
-
-    // Non-blocking receive
-    virtual bool try_receive(receiverParam data) = 0;
+    virtual void receive(typename I::readonlyOut data) = 0;
+    virtual bool tryReceive(typename I::readonlyOut data) = 0;
+    virtual void receiveCopy(typename I::writableOut data) = 0;
+    virtual bool tryReceiveCopy(typename I::writableOut data) = 0;
 };
 
-template <typename T>
-class Channel : public Sender<T>, public Receiver<T>
+
+template <typename T, ChannelTypeConcept<T> I = DefaultChannelTypeInfo<T>>
+class Channel : public Sender<T, I>, public Receiver<T, I>
 {
-public:
-    using senderParam = typename ChannelTypeInfo<T>::sendParam;
-    using elemType = typename ChannelTypeInfo<T>::elemType;
-    using receiverParam = typename ChannelTypeInfo<T>::receiveParam;
 private:
-    using queue = std::deque<elemType>;
+    using queue = std::deque<typename I::item>;
     using mutex = boost::mutex;
 
     queue mQueue{};
@@ -466,8 +505,9 @@ public:
         : mCapacity{capacity} {}
 
     // Send data into the sender
-    void send(senderParam data) override
+    void send(typename I::readonlyIn data) override
     {
+        std::cout << "Sending" << std::endl;
         {
             boost::lock_guard<mutex> lock(mMTX);
             mQueue.push_back(data);
@@ -476,46 +516,80 @@ public:
         mCV.notify_one();
     }
 
-    // Receive data from the sender
-    void receive(receiverParam data) override
+    // Send data into the sender
+    void sendAndTake(typename I::writableIn data) override
     {
+        std::cout << "Sending and taking" << std::endl;
+        {
+            boost::lock_guard<mutex> lock(mMTX);
+            mQueue.push_back(I::moveFromCopy(std::forward<typename I::writableIn>(data)));
+            ensureCapacity();
+        }
+        mCV.notify_one();
+    }
+
+    // Receive data from the sender
+    void receive(typename I::readonlyOut data) override
+    {
+        std::cout << "Receiving" << std::endl;
         boost::unique_lock<mutex> lock(mMTX);
         while (mQueue.size() == 0)
         {
             mCV.wait(lock);
         }
 
-        ChannelTypeInfo<T>::toReceive(mQueue.at(0), data);
+        I::byRef(mQueue.at(0), data);
         mQueue.pop_front();
     }
 
     // Non-blocking receive
-    bool try_receive(receiverParam data) override
+    bool tryReceive(typename I::readonlyOut data) override
     {
+        std::cout << "Try receiving" << std::endl;
         boost::lock_guard<mutex> lock(mMTX);
         if (mQueue.size() == 0) return false;
-        ChannelTypeInfo<T>::toReceive(mQueue.at(0), data);
+        I::byRef(mQueue.at(0), data);
+        mQueue.pop_front();
+        return true;
+    }
+
+    // Receive data from the sender
+    void receiveCopy(typename I::writableOut data) override
+    {
+        std::cout << "Receiving a copy" << std::endl;
+        boost::unique_lock<mutex> lock(mMTX);
+        while (mQueue.size() == 0)
+        {
+            mCV.wait(lock);
+        }
+
+        I::byCopy(mQueue.at(0), data);
+        mQueue.pop_front();
+    }
+
+    // Non-blocking receive
+    bool tryReceiveCopy(typename I::writableOut data) override
+    {
+        std::cout << "Try receiving a copy" << std::endl;
+        boost::lock_guard<mutex> lock(mMTX);
+        if (mQueue.size() == 0) return false;
+        I::byCopy(mQueue.at(0), data);
         mQueue.pop_front();
         return true;
     }
 };
 
-template <typename T>
-class BroadcastChannel : public Sender<T>
+template <typename T, ChannelTypeConcept<T> I = DefaultChannelTypeInfo<T>>
+class BroadcastChannel : public Sender<T, I>
 {
 public:
-	using Snd = Sender<T>;
-	using ConstSnd = Sender<const T>;
+	using Snd = Sender<T, I>;
     using SharedSndPtr = std::shared_ptr<Snd>;
-	using SharedConstSndPtr = std::shared_ptr<ConstSnd>;
     using SndPtr = std::weak_ptr<Snd>;
-	using ConstSndPtr = std::weak_ptr<ConstSnd>;
-    using senderParam = typename Sender<T>::sendParam;
 private:
     using mutex = boost::mutex;
 
     std::vector<SndPtr> mSenders;
-    std::vector<ConstSndPtr> mConstSenders;
     mutex mMTX;
 
     int find(SndPtr ptr)
@@ -530,29 +604,12 @@ private:
         return -1;
     }
 
-    int find(std::vector<ConstSndPtr>::iterator b, std::vector<ConstSndPtr>::iterator e, ConstSndPtr ptr)
-    {
-        if (ptr.expired()) return -1;
-        int i = 0;
-        for (SndPtr p : mConstSenders)
-        {
-            if (!p.expired() && p.lock() == ptr.lock()) return i;
-            ++i;
-        }
-        return -1;
-    }
 public:
     // Add a sender
     void addChannel(SndPtr sender)
     {
         boost::lock_guard<mutex> lock(mMTX);
         mSenders.push_back(sender);
-    }
-
-    void addChannel(ConstSndPtr sender)
-    {
-        boost::lock_guard<mutex> lock(mMTX);
-        mConstSenders.push_back(sender);
     }
 
 	// Remove a sender
@@ -566,19 +623,10 @@ public:
 		}
     }
 
-    void removeChannel(ConstSndPtr sender)
-    {
-        boost::lock_guard<mutex> lock(mMTX);
-        auto i = find(sender);
-		if (i != -1)
-		{
-        	mConstSenders.erase(mConstSenders.begin() + i);
-		}
-    }
-
     // Broadcast data to all receivers
-    void send(senderParam data) override
+    void send(typename I::readonlyIn data) override
     {
+        std::cout << "Broadcasting" << std::endl;
         boost::lock_guard<mutex> lock(mMTX);
         int i = 0;
         int remove = -1;
@@ -589,17 +637,26 @@ public:
             ++i;
         }
         if (remove != -1) mSenders.erase(mSenders.begin() + remove);
+    }
 
-        i = 0;
-        remove = -1;
-        for (ConstSndPtr sender : mConstSenders) 
+    // Broadcast data to all receivers
+    void sendAndTake(typename I::writableIn data) override
+    {
+        boost::lock_guard<mutex> lock(mMTX);
+        int i = 0;
+        int remove = -1;
+        if (mSenders.size() == 0) return;
+        else if (mSenders.size() == 1)
         {
-            if (!sender.expired()) sender.lock()->send(data);
-            else remove = i;
-            ++i;
+            if (!mSenders[0].expired()) mSenders[0].lock()->sendAndTake(std::move(data));
+            else mSenders.clear();
         }
-        if (remove != -1) mConstSenders.erase(mConstSenders.begin() + remove);
+        else
+        {
+            send(I::moveFromCopy(std::move(data)));
+        }
     }
 };
 
-}}} // namespace btrack::nodes::system
+
+} // namespace btrack::nodes::system

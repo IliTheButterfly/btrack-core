@@ -18,7 +18,7 @@ protected:
 	std::string mFilename = "default";
 
 public:
-	virtual void setFilename(const std::string& name);
+	virtual void setFilename(const std::string_view& name);
 	virtual const std::string getFilenemae() const;
 	virtual void load() = 0;
 	virtual void save() = 0;

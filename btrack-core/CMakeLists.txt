@@ -10,8 +10,27 @@
 #endif()
 project ("btrack-core")
 
-
+get_filename_component(local_dir ./btrack-core ABSOLUTE)
+set(btrack_core_INCLUDES ${local_dir} GLOBAL_SCOPE)
 include_directories(${btrack_core_INCLUDES})
+
+# Find OpenCV and CUDA
+find_package(OpenCV REQUIRED)
+if (USE_CUDA)
+find_package(CUDA REQUIRED)
+endif ()
+find_package(Boost COMPONENTS thread filesystem serialization REQUIRED)
+
+# Include directories
+# include_directories(${Boost_INCLUDE_DIR})
+# include_directories(${OpenCV_INCLUDE_DIRS})
+
+if (USE_CUDA)
+	# add_definitions(-DUSE_CUDA)
+	include_directories(${CUDA_INCLUDE_DIRS})
+endif()
+
+
 file(GLOB_RECURSE BTRACK_CORE_SOURCES "nodes/**.cpp" "processing/**.cpp" "settings/**.cpp" "btrack-core.cpp")
 add_library(btrack-core ${BTRACK_CORE_SOURCES})
 

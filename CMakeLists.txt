@@ -18,10 +18,19 @@ endif()
 
 project ("btrack")
 
-get_filename_component(local_dir ./btrack-core ABSOLUTE)
-set(btrack_core_INCLUDES ${local_dir} GLOBAL_SCOPE)
-message(STATUS ${btrack_core_INCLUDES})
-include_directories(${btrack_core_INCLUDES})
+include(FetchContent)
+FetchContent_Declare(
+  googletest
+  URL https://github.com/google/googletest/archive/03597a01ee50ed33e9dfd640b249b4be3799d395.zip
+)
+# For Windows: Prevent overriding the parent project's compiler/linker settings
+set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+if (MSVC)
+	set_property(GLOBAL PROPERTY
+		MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+endif ()
+
+FetchContent_MakeAvailable(googletest)
 
 if (MSVC)
 	add_compile_options(
@@ -37,28 +46,6 @@ set(USE_CUDA OFF CACHE BOOL "Should CUDA be used?")
 # Specify the C++ standard
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
-
-# Find OpenCV and CUDA
-find_package(OpenCV REQUIRED)
-if (USE_CUDA)
-find_package(CUDA REQUIRED)
-endif ()
-find_package(Boost COMPONENTS thread filesystem serialization REQUIRED)
-
-# Include directories
-message(STATUS ${Boost_INCLUDE_DIR})
-message(STATUS ${Boost_LIBRARIES})
-message(STATUS ${OpenCV_INCLUDE_DIRS})
-message(STATUS ${OpenCV_LIBS})
-
-# include_directories(${Boost_INCLUDE_DIR})
-# include_directories(${OpenCV_INCLUDE_DIRS})
-
-if (USE_CUDA)
-	# add_definitions(-DUSE_CUDA)
-	include_directories(${CUDA_INCLUDE_DIRS})
-endif()
-
 
 # Include sub-projects.
 

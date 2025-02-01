@@ -8,7 +8,7 @@
 			"name": "(gdb) Launch",
 			"type": "cppdbg",
 			"request": "launch",
-			"program": "${workspaceRoot}/btrack-core/out/build/linux/tests/${fileBasenameNoExtension}",
+			"program": "${workspaceRoot}/build/linux/tests/${fileBasenameNoExtension}",
 			"args": [],
 			"stopAtEntry": false,
 			"cwd": "${fileDirname}",

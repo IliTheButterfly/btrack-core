@@ -16,3 +16,5 @@ CMakePresets.json
 build
 settings.json
 
+btrack-*/
+!btrack-core/

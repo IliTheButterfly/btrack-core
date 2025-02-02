@@ -1,4 +1,7 @@
-#pragma once
+#ifndef __METAOUTPUTVALUE_H__
+#define __METAOUTPUTVALUE_H__
+
+
 #include "nodes/system/MetaOutput.h"
 #include "nodes/system/MetaInputValue.h"
 #include "nodes/system/MetaInputArray.h"
@@ -115,3 +118,4 @@ inline MetaOutputValue<T, I> &MetaOutputValue<T, I>::operator>>(type_traits::own
 }
 
 } // namespace btrack::nodes::system
+#endif // __METAOUTPUTVALUE_H__

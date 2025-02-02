@@ -1,4 +1,7 @@
-#pragma once
+#ifndef __NEGATE_H__
+#define __NEGATE_H__
+
+
 #include "nodes/utilities/math/UnaryOperation.h"
 
 namespace btrack::nodes::utilities::math {
@@ -22,3 +25,4 @@ public:
 };
 
 } // namespace btrack::nodes::utilities::math
+#endif // __NEGATE_H__

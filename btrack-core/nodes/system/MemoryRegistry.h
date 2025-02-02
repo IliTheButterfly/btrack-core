@@ -1,4 +1,7 @@
-#pragma once
+#ifndef __MEMORYREGISTRY_H__
+#define __MEMORYREGISTRY_H__
+
+
 #include <boost/lockfree/queue.hpp>
 #include <boost/optional.hpp>
 #include <memory>
@@ -660,3 +663,4 @@ public:
 
 
 } // namespace btrack::nodes::system
+#endif // __MEMORYREGISTRY_H__

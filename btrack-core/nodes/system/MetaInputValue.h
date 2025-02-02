@@ -1,4 +1,7 @@
-#pragma once
+#ifndef __METAINPUTVALUE_H__
+#define __METAINPUTVALUE_H__
+
+
 #include "nodes/system/MetaInput.h"
 
 namespace btrack::nodes::system {
@@ -53,3 +56,4 @@ public:
 
 
 } // namespace btrack::nodes::system
+#endif // __METAINPUTVALUE_H__

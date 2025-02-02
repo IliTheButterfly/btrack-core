@@ -1,8 +1,11 @@
-#pragma once
+#ifndef __NODEGRAPH_H__
+#define __NODEGRAPH_H__
+
+
 #include "nodes/system/MetaNode.h"
 
 
-namespace btrack { namespace nodes { namespace system {
+namespace btrack::nodes::system {
 
 
 class NodeGraph
@@ -22,4 +25,5 @@ public:
 };
 
 
-}}} // namespace btrack::nodes::system
+} // namespace btrack::nodes::system
+#endif // __NODEGRAPH_H__

@@ -1,4 +1,7 @@
-#pragma once
+#ifndef __NODEIO_H__
+#define __NODEIO_H__
+
+
 
 #include <string>
 #include <boost/uuid/uuid.hpp>
@@ -340,3 +343,4 @@ public:
 };
 
 } // namespace btrack::nodes::system
+#endif // __NODEIO_H__

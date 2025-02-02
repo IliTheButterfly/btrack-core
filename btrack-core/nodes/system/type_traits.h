@@ -1,4 +1,7 @@
-#pragma once
+#ifndef __TYPE_TRAITS_H__
+#define __TYPE_TRAITS_H__
+
+
 #include <boost/type_traits.hpp>
 #include <boost/concept_check.hpp>
 #include <type_traits>
@@ -138,3 +141,5 @@ using borrowed_ptr_p = typename borrowed_ptr<T>::ptr_type;
 
 } // namespace btrack::nodes::system::type_traits
 
+
+#endif // __TYPE_TRAITS_H__

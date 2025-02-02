@@ -1,4 +1,7 @@
-#pragma once
+#ifndef __NODES_H__
+#define __NODES_H__
+
+
 
 #include "nodes/system/MetaNode.h"
 #include "nodes/system/MetaInput.h"
@@ -16,3 +19,4 @@
 
 #include "nodes/system/NodeGraph.h"
 #include "nodes/system/MemoryRegistry.h"
+#endif // __NODES_H__

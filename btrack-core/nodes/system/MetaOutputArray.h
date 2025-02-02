@@ -1,4 +1,7 @@
-#pragma once
+#ifndef __METAOUTPUTARRAY_H__
+#define __METAOUTPUTARRAY_H__
+
+
 #include "nodes/system/MetaOutput.h"
 #include "nodes/system/OutputValue.h"
 #include "nodes/system/MetaInputArray.h"
@@ -110,3 +113,5 @@ inline MetaOutputArray<T, I> &MetaOutputArray<T, I>::operator>>(MetaOutputArray<
 }
 
 } // namespace btrack::nodes::system
+
+#endif // __METAOUTPUTARRAY_H__

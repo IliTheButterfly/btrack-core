@@ -1,4 +1,7 @@
-#pragma once
+#ifndef __METAINPUT_H__
+#define __METAINPUT_H__
+
+
 #include "nodes/system/MetaNodeIO.h"
 #include "nodes/system/Input.h"
 #include <vector>
@@ -51,3 +54,4 @@ public:
 };
 
 } // namespace btrack::nodes::system
+#endif // __METAINPUT_H__

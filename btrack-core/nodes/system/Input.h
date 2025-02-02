@@ -1,4 +1,6 @@
-#pragma once
+#ifndef __INPUT_H__
+#define __INPUT_H__
+
 #include "nodes/system/NodeIO.h"
 #include <vector>
 #include <memory>
@@ -35,3 +37,4 @@ public:
 };
 
 } // namespace btrack::nodes::system
+#endif // __INPUT_H__

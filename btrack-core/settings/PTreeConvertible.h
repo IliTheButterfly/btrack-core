@@ -1,9 +1,12 @@
-#pragma once
+#ifndef __PTREECONVERTIBLE_H__
+#define __PTREECONVERTIBLE_H__
+
+
 #include <boost/property_tree/ptree.hpp>
 #include <opencv2/opencv.hpp>
 #include <opencv2/core/quaternion.hpp>
 
-namespace btrack { namespace settings {
+namespace btrack::settings {
 
 class PTreeConvertible
 {
@@ -102,4 +105,5 @@ inline void convert_from_ptree(boost::property_tree::ptree &pt, T &v)
 {
 }
 
-}} // btrack::settings
+} // btrack::settings
+#endif // __PTREECONVERTIBLE_H__

@@ -1,9 +1,12 @@
-#pragma once
+#ifndef __SCENESETTINGS_H__
+#define __SCENESETTINGS_H__
+
+
 
 #include "PTreeConvertible.h"
 #include "CamSettings.h"
 
-namespace btrack { namespace settings {
+namespace btrack::settings {
 
 struct SceneSettings : public PTreeConvertible
 {
@@ -39,4 +42,5 @@ struct SceneSettings : public PTreeConvertible
 };
 
 
-}} // btrack::settings
+} // btrack::settings
+#endif // __SCENESETTINGS_H__

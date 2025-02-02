@@ -1,6 +1,6 @@
 #include "SettingsManager.h"
 
-namespace btrack { namespace settings {
+namespace btrack::settings {
 
 namespace pt = boost::property_tree;
 
@@ -57,4 +57,4 @@ SettingsContainer::~SettingsContainer()
 	mManager->save();
 }
 
-}} // btrack::settings
+} // btrack::settings

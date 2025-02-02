@@ -1,6 +1,6 @@
 #include "processing/camera.h"
 
-namespace btrack { namespace processing {
+namespace btrack::processing {
 
 CaptureCamera::CaptureCamera(const settings::CameraSettings &settings)
 {
@@ -28,7 +28,7 @@ bool CaptureCamera::grab()
 {
 	if (!isOpen()) return false;
 	if (!mCap.grab()) return false;
-	mLastCapture = boost::chrono::high_resolution_clock::now().time_since_epoch();
+	// mLastCapture = boost::chrono::high_resolution_clock::now().time_since_epoch();
 	return true;
 }
 
@@ -60,4 +60,4 @@ CaptureCamera::~CaptureCamera()
 	close();
 }
 
-}} // btrack::processing
+} // btrack::processing

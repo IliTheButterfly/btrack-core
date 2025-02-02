@@ -1,4 +1,7 @@
-#pragma once
+#ifndef __SHORTCUTS_H__
+#define __SHORTCUTS_H__
+
+
 #include "nodes/system/nodes.h"
 #include <boost/type_traits.hpp>
 #include <concepts>
@@ -24,3 +27,5 @@ public:
 };
 
 } // namespace btrack::nodes::system
+
+#endif // __SHORTCUTS_H__

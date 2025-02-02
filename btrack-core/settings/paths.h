@@ -1,9 +1,12 @@
-#pragma once
+#ifndef __PATHS_H__
+#define __PATHS_H__
+
+
 
 #include <boost/filesystem.hpp>
 
 
-namespace btrack { namespace settings {
+namespace btrack::settings {
 
 namespace paths
 {
@@ -34,4 +37,5 @@ namespace paths
 	}
 };
 
-}} // btrack::settings
+} // btrack::settings
+#endif // __PATHS_H__

@@ -1,4 +1,7 @@
-#pragma once
+#ifndef __INPUTVALUE_H__
+#define __INPUTVALUE_H__
+
+
 #include "nodes/system/Input.h"
 
 namespace btrack::nodes::system {
@@ -30,3 +33,4 @@ inline InputValue<T, I>& InputValue<T, I>::operator>>(typename I::readonlyOut da
 
 
 } // namespace btrack::nodes::system
+#endif // __INPUTVALUE_H__

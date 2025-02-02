@@ -1,4 +1,7 @@
-#pragma once
+#ifndef __METAOUTPUT_H__
+#define __METAOUTPUT_H__
+
+
 #include <vector>
 #include <iterator>
 #include "nodes/system/MetaNodeIO.h"
@@ -70,3 +73,4 @@ public:
 	NodeAtVirtual(MetaInput);
 };
 } // namespace btrack::nodes::system
+#endif // __METAOUTPUT_H__

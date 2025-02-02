@@ -1,10 +1,13 @@
-#pragma once
+#ifndef __SCENE_H__
+#define __SCENE_H__
+
+
 
 #include "settings/SettingsManager.h"
 #include "settings/SceneSettings.h"
 #include "processing/camera.h"
 
-namespace btrack { namespace processing {
+namespace btrack::processing {
 
 class Scene
 {
@@ -21,4 +24,5 @@ public:
 	virtual ~Scene() = default;
 };
 
-}} // btrack::processing
+} // btrack::processing
+#endif // __SCENE_H__

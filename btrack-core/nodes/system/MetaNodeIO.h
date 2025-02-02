@@ -1,4 +1,7 @@
-#pragma once
+#ifndef __METANODEIO_H__
+#define __METANODEIO_H__
+
+
 
 #include <string>
 #include "nodes/system/NodeIO.h"
@@ -20,3 +23,4 @@ protected:
 
 
 } // namespace btrack::nodes::system
+#endif // __METANODEIO_H__

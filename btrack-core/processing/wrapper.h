@@ -1,8 +1,11 @@
-#pragma once
+#ifndef __WRAPPER_H__
+#define __WRAPPER_H__
+
+
 
 #include <opencv2/opencv.hpp>
 
-namespace btrack { namespace processing {
+namespace btrack::processing {
 
 #ifdef USE_CUDA
 
@@ -25,4 +28,5 @@ using procMat = cv::Mat;
 #endif // USE_CUDA
 
 
-}} // btrack::processing
+} // btrack::processing
+#endif // __WRAPPER_H__

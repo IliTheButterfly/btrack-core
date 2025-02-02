@@ -1,4 +1,7 @@
-#pragma once
+#ifndef __METANODE_H__
+#define __METANODE_H__
+
+
 
 #include <vector>
 #include <memory>
@@ -130,3 +133,4 @@ public:
 };
 
 } // namespace btrack::nodes::system
+#endif // __METANODE_H__

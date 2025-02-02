@@ -1,4 +1,7 @@
-#pragma once
+#ifndef __SETTINGSMANAGER_H__
+#define __SETTINGSMANAGER_H__
+
+
 
 #include <string>
 #include <boost/property_tree/ptree.hpp>
@@ -7,7 +10,7 @@
 #include "SceneSettings.h"
 #include "paths.h"
 
-namespace btrack { namespace settings {
+namespace btrack::settings {
 
 class SettingsContainer;
 
@@ -44,4 +47,5 @@ public:
 	~SettingsContainer();
 };
 
-}} // btrack::settings
+} // btrack::settings
+#endif // __SETTINGSMANAGER_H__

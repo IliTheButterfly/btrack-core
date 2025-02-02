@@ -1,4 +1,7 @@
-#pragma once
+#ifndef __OUTPUTVALUE_H__
+#define __OUTPUTVALUE_H__
+
+
 #include "nodes/system/Output.h"
 #include "nodes/system/InputValue.h"
 
@@ -72,3 +75,4 @@ public:
 };
 
 } // namespace btrack::nodes::system
+#endif // __OUTPUTVALUE_H__

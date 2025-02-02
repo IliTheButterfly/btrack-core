@@ -1,16 +1,19 @@
+#ifndef __CAMERA_H__
+#define __CAMERA_H__
+
 #include "wrapper.h"
 #include "settings/CamSettings.h"
 #include <boost/chrono/system_clocks.hpp>
 #include <boost/thread/mutex.hpp>
 
 
-namespace btrack { namespace processing {
+namespace btrack::processing {
 
 
 template <typename T>
 struct _StampedImage
 {
-	boost::chrono::nanoseconds time;
+	// boost::chrono::nanoseconds time;
 	T image;
 };
 
@@ -70,7 +73,7 @@ class CaptureCamera : public Camera
 private:
 	cv::VideoCapture mCap;
 	settings::CameraSettings mSettings;
-	boost::chrono::nanoseconds mLastCapture;
+	// boost::chrono::nanoseconds mLastCapture;
 
 public:
 	CaptureCamera() = default;
@@ -92,4 +95,5 @@ public:
 
 
 
-}} // btrack::processing
+} // btrack::processing
+#endif // __CAMERA_H__

@@ -1,4 +1,7 @@
-#pragma once
+#ifndef __NODE_H__
+#define __NODE_H__
+
+
 
 #include "nodes/system/NodeIO.h"
 #include "nodes/system/InputValue.h"
@@ -87,3 +90,4 @@ public:
 
 
 } // namespace btrack::nodes::system
+#endif // __NODE_H__

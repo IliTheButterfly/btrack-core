@@ -1,4 +1,7 @@
-#pragma once
+#ifndef __UNARYOPERATION_H__
+#define __UNARYOPERATION_H__
+
+
 
 #include "nodes/system/nodes.h"
 
@@ -35,3 +38,5 @@ public:
 
 
 } // namespace btrack::nodes::utilities::math
+
+#endif // __UNARYOPERATION_H__

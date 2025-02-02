@@ -1,4 +1,7 @@
-#pragma once
+#ifndef __OUTPUT_H__
+#define __OUTPUT_H__
+
+
 #include <vector>
 #include <iterator>
 #include "nodes/system/NodeIO.h"
@@ -58,3 +61,4 @@ public:
 };
 
 } // namespace btrack::nodes::system
+#endif // __OUTPUT_H__

@@ -1,10 +1,10 @@
 #include "scene.h"
 
-namespace btrack { namespace processing {
+namespace btrack::processing {
 
 Scene::Scene()
 {
 	
 }
 
-}} // btrack::processing
+} // btrack::processing

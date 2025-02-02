@@ -1,4 +1,7 @@
-#pragma once
+#ifndef __CAMSETTINGS_H__
+#define __CAMSETTINGS_H__
+
+
 
 #include <string>
 #include <vector>
@@ -8,7 +11,7 @@
 
 #include "PTreeConvertible.h"
 
-namespace btrack { namespace settings {
+namespace btrack::settings {
 
 struct CameraIntrinsics : public PTreeConvertible {
     cv::Matx<double, 1, 5> distCoeffs{};
@@ -182,4 +185,5 @@ struct CameraSettings : public PTreeConvertible
     }
 };
 
-}} // btrack::settings
+} // btrack::settings
+#endif // __CAMSETTINGS_H__

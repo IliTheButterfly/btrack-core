@@ -1,4 +1,7 @@
-#pragma once
+#ifndef __METAINPUTARRAY_H__
+#define __METAINPUTARRAY_H__
+
+
 #include "nodes/system/MetaInput.h"
 #include "nodes/system/InputValue.h"
 
@@ -55,3 +58,4 @@ public:
 // inline MetaInputArray<T, I>::InputIterator MetaInputArray<T, I>::InputEnd() { return MetaInputArray<T, I>::InputIterator::create(mInputs.end()); }
 
 } // namespace btrack::nodes::system
+#endif // __METAINPUTARRAY_H__

@@ -46,6 +46,9 @@ public:
 	}
 	virtual bool connectTo(std::shared_ptr<_MetaInput> other) = 0;
 	virtual bool disconnectFrom(std::shared_ptr<_MetaInput> other) = 0;
+
+	virtual void attach(std::shared_ptr<_Output> input) = 0;
+	virtual void detach(std::shared_ptr<_Output> input) = 0;
 };
 
 template <typename T, ChannelTypeConcept<T> I = DefaultChannelTypeInfo<T>>

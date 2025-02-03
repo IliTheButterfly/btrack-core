@@ -61,6 +61,9 @@ public:
 	MetaOutputArray<T, I>& operator>>(MetaInputArrayPtr input);
 	bool connectTo(std::shared_ptr<_MetaInput> other) override;
 	bool disconnectFrom(std::shared_ptr<_MetaInput> other) override;
+
+	void attach(std::shared_ptr<_Output> output) override;
+	void detach(std::shared_ptr<_Output> output) override;
 };
 
 
@@ -143,6 +146,25 @@ inline bool MetaOutputArray<T, I>::disconnectFrom(std::shared_ptr<_MetaInput> ot
 	if (i == -1) return false;
 	mChildren.erase(mChildren.begin() + i);
 	return true;
+}
+
+template <typename T, ChannelTypeConcept<T> I>
+inline void MetaOutputArray<T, I>::attach(std::shared_ptr<_Output> output)
+{
+	this->mOutputs.emplace_back(std::reinterpret_pointer_cast<OutputValue<T, I>>(output));
+}
+
+template <typename T, ChannelTypeConcept<T> I>
+inline void MetaOutputArray<T, I>::detach(std::shared_ptr<_Output> output)
+{
+	for (int i = 0; i < mOutputs.size(); ++i)
+	{
+		if (this->mOutputs.at(i)->uuid() == output->uuid())
+		{
+			this->mOutputs.erase(mOutputs.begin() + i);
+			return;
+		}
+	}
 }
 
 } // namespace btrack::nodes::system

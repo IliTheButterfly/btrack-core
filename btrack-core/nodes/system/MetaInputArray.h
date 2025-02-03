@@ -36,6 +36,9 @@ public:
 	NodeAtWeakCastImpl(_Input, mInputs);
 	NodeAtWeakCastImpl(Input, mInputs);
 
+
+	void attach(std::shared_ptr<_Input> input) override;
+	void detach(std::shared_ptr<_Input> input) override;
 	// InputValueIterator InputValueBegin();
 	// InputValueIterator InputValueEnd();
 	// _InputIterator _InputBegin() override;
@@ -56,6 +59,25 @@ public:
 // inline MetaInputArray<T, I>::InputIterator MetaInputArray<T, I>::InputBegin() { return MetaInputArray<T, I>::InputIterator::create(mInputs.begin()); }
 // template <typename T, ChannelTypeConcept<T> I>
 // inline MetaInputArray<T, I>::InputIterator MetaInputArray<T, I>::InputEnd() { return MetaInputArray<T, I>::InputIterator::create(mInputs.end()); }
+
+template <typename T, ChannelTypeConcept<T> I>
+inline void MetaInputArray<T, I>::attach(std::shared_ptr<_Input> input)
+{
+	this->mInputs.emplace_back(std::reinterpret_pointer_cast<InputValue<T, I>>(input));
+}
+
+template <typename T, ChannelTypeConcept<T> I>
+inline void MetaInputArray<T, I>::detach(std::shared_ptr<_Input> input)
+{
+	for (int i = 0; i < mInputs.size(); ++i)
+	{
+		if (this->mInputs.at(i)->uuid() == input->uuid())
+		{
+			this->mInputs.erase(mInputs.begin() + i);
+			return;
+		}
+	}
+}
 
 } // namespace btrack::nodes::system
 #endif // __METAINPUTARRAY_H__

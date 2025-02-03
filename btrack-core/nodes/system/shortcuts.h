@@ -24,7 +24,12 @@ public:
 		T dummy = T(std::string{_name} + "_dummy", std::string{_friendlyName} + "_dummy");
 	}
 
+	void generate(int count)
+	{
+	}
 };
+
+
 
 } // namespace btrack::nodes::system
 

@@ -25,6 +25,9 @@ public:
     using _InputPtr = type_traits::ownership::borrowed_ptr_p<_Input>;
 	// using _InputIterator = NodeIterator<_InputPtr>;
 	// NodeIteratorAccessor(_InputIterator, _Input, _MetaInput);
+	
+	virtual void attach(std::shared_ptr<_Input> input) = 0;
+	virtual void detach(std::shared_ptr<_Input> input) = 0;
 
 	NodeAtVirtual(_Input);
 };
@@ -52,6 +55,8 @@ public:
 
 	constexpr const std::type_info& dataType() const override { return typeid(T); }
 };
+
+
 
 } // namespace btrack::nodes::system
 #endif // __METAINPUT_H__

@@ -39,6 +39,9 @@ public:
 	NodeAtConcrete(InputValue, mInputs);
 	NodeAtWeakCastImpl(_Input, mInputs);
 	NodeAtWeakCastImpl(Input, mInputs);
+
+	void attach(std::shared_ptr<_Input> input) override;
+	void detach(std::shared_ptr<_Input> input) override;
 };
 
 // template <typename T, ChannelTypeConcept<T> I>
@@ -54,6 +57,24 @@ public:
 // template <typename T, ChannelTypeConcept<T> I>
 // MetaInputValue<T, I>::InputIterator MetaInputValue<T, I>::InputEnd() { return MetaInputValue<T, I>::InputIterator::create(mInputs.end()); }
 
+template <typename T, ChannelTypeConcept<T> I>
+inline void MetaInputValue<T, I>::attach(std::shared_ptr<_Input> input)
+{
+	this->mInputs.emplace_back(std::reinterpret_pointer_cast<InputValue<T, I>>(input));
+}
+
+template <typename T, ChannelTypeConcept<T> I>
+inline void MetaInputValue<T, I>::detach(std::shared_ptr<_Input> input)
+{
+	for (int i = 0; i < mInputs.size(); ++i)
+	{
+		if (this->mInputs.at(i)->uuid() == input->uuid())
+		{
+			this->mInputs.erase(mInputs.begin() + i);
+			return;
+		}
+	}
+}
 
 } // namespace btrack::nodes::system
 #endif // __METAINPUTVALUE_H__

@@ -59,6 +59,8 @@ public:
 	void removeSender(std::weak_ptr<Sender<T, I>> sender) override;
 	void broadcast(typename I::readonlyRef value) override;
 	MetaOutputArray<T, I>& operator>>(MetaInputArrayPtr input);
+	bool connectTo(std::shared_ptr<_MetaInput> other) override;
+	bool disconnectFrom(std::shared_ptr<_MetaInput> other) override;
 };
 
 
@@ -110,6 +112,37 @@ inline MetaOutputArray<T, I> &MetaOutputArray<T, I>::operator>>(MetaOutputArray<
 {
 	mChildren.push_back(input);
 	return *this;
+}
+
+template <typename T, ChannelTypeConcept<T> I>
+inline bool MetaOutputArray<T, I>::connectTo(std::shared_ptr<_MetaInput> other)
+{
+	if (!this->canConnectTo(other)) return false;
+	if (this->dataType() == other->dataType())
+	{
+		mChildren.push_back(std::reinterpret_pointer_cast<MetaInputArray<T, I>>(other));
+	}
+	return false;
+}
+
+
+template <typename T, ChannelTypeConcept<T> I>
+inline bool MetaOutputArray<T, I>::disconnectFrom(std::shared_ptr<_MetaInput> other)
+{
+	int i = -1;
+	int ii = 0;
+	for (std::weak_ptr<MetaInputArray<T, I>> input : mChildren)
+	{
+		if (!input.expired() && input.lock()->uuid() == other->uuid()) 
+		{
+			i = ii;
+			break;
+		}
+		++ii;
+	}
+	if (i == -1) return false;
+	mChildren.erase(mChildren.begin() + i);
+	return true;
 }
 
 } // namespace btrack::nodes::system

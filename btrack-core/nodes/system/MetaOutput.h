@@ -7,11 +7,18 @@
 #include "nodes/system/MetaNodeIO.h"
 #include "nodes/system/MetaInput.h"
 #include "nodes/system/Output.h"
+#include <boost/type_traits.hpp>
 
 namespace btrack::nodes::system {
 
 class _MetaOutput : public MetaNodeIO
 {
+public:
+	using _OutputType = _Output;
+    using _OutputPtr = type_traits::ownership::borrowed_ptr_p<_Output>;
+
+	using _MetaInputType = _MetaInput;
+    using _MetaInputPtr = type_traits::ownership::borrowed_ptr_p<_MetaInput>;
 protected:
 	_MetaOutput(
 		const std::string_view& _name, 
@@ -20,21 +27,25 @@ protected:
 		const std::string_view& _description = ""
 		) : 
 			_MetaOutput::MetaNodeIO(_name, _nodeType | NodeItemType::OUTPUT, _friendlyName, _description) {}
-public:
-	using _OutputType = _Output;
-    using _OutputPtr = type_traits::ownership::borrowed_ptr_p<_Output>;
-	// using _OutputIterator = NodeIterator<_OutputPtr>;
-	// NodeIteratorAccessor(_OutputIterator, _Output, _MetaOutput);
+	
 
-	using _MetaInputType = _MetaInput;
-    using _MetaInputPtr = type_traits::ownership::borrowed_ptr_p<_MetaInput>;
-	// using _MetaInputIterator = NodeIterator<_MetaInputPtr>;
-	// NodeIteratorAccessor(_MetaInputIterator, _MetaInput, _MetaOutput);
+public:
+	
+	
 	virtual _OutputPtr _OutputAt(int index) = 0;
 	virtual _OutputPtr _OutputAt(int index) const = 0;
 	virtual _MetaInputPtr _MetaInputAt(int index) = 0;
 	virtual _MetaInputPtr _MetaInputAt(int index) const = 0;
 
+	bool canConnectTo(const std::shared_ptr<_MetaInput> other) const {
+		return convertibleTo(other->dataType()) && 
+			(
+				(isArray() && other->isArray()) ||
+				isValue()
+			);
+	}
+	virtual bool connectTo(std::shared_ptr<_MetaInput> other) = 0;
+	virtual bool disconnectFrom(std::shared_ptr<_MetaInput> other) = 0;
 };
 
 template <typename T, ChannelTypeConcept<T> I = DefaultChannelTypeInfo<T>>
@@ -48,19 +59,19 @@ protected:
 		const std::string_view& _description = ""
 		) : 
 			MetaOutput::_MetaOutput(_name, _nodeType, _friendlyName, _description) {}
+	
 public:
-	using _OutputPtr = _MetaOutput::_OutputPtr;
-	using _OutputType = _MetaOutput::_OutputType;
-	using _MetaInputPtr = _MetaOutput::_MetaInputPtr;
-	using _MetaInputType = _MetaOutput::_MetaInputType;
-
-    using OutputType = Output<T, I>;
+	using _OutputPtr = typename _MetaOutput::_OutputPtr;
+	using _MetaInputPtr = typename _MetaOutput::_MetaInputPtr;
+	using OutputType = Output<T, I>;
     using OutputPtr = type_traits::ownership::borrowed_ptr_p<Output<T, I>>;
-	// using OutputIterator = NodeIterator<OutputPtr>;
-	// NodeIteratorAccessor(OutputIterator, Output, MetaOutput);
+	// using _OutputIterator = NodeIterator<_OutputPtr>;
+	// NodeIteratorAccessor(_OutputIterator, _Output, _MetaOutput);
 
 	using MetaInputType = MetaInput<T, I>;
     using MetaInputPtr = type_traits::ownership::borrowed_ptr_p<MetaInput<T, I>>;
+	// using _MetaInputIterator = NodeIterator<_MetaInputPtr>;
+	// NodeIteratorAccessor(_MetaInputIterator, _MetaInput, _MetaOutput);
 	// using MetaInputIterator = NodeIterator<MetaInputPtr>;
 	// NodeIteratorAccessor(MetaInputIterator, MetaInput, MetaOutput);
 

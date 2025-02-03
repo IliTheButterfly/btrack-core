@@ -38,28 +38,28 @@ enum class NodeItemType : uint8_t
 	ANY_VALUE = META | INPUT | OUTPUT | VALUE,
 };
 
-NodeItemType operator&(uint8_t x, NodeItemType y) { return (NodeItemType)((uint8_t)x & (uint8_t)y); }
-NodeItemType operator&(NodeItemType x, uint8_t y) { return (NodeItemType)((uint8_t)x & (uint8_t)y); }
-NodeItemType operator&(NodeItemType x, NodeItemType y) { return (NodeItemType)((uint8_t)x & (uint8_t)y); }
+inline NodeItemType operator&(uint8_t x, NodeItemType y) { return (NodeItemType)((uint8_t)x & (uint8_t)y); }
+inline NodeItemType operator&(NodeItemType x, uint8_t y) { return (NodeItemType)((uint8_t)x & (uint8_t)y); }
+inline NodeItemType operator&(NodeItemType x, NodeItemType y) { return (NodeItemType)((uint8_t)x & (uint8_t)y); }
 // NodeItemType operator&(const uint8_t x, const NodeItemType y) { return (const NodeItemType)((const uint8_t)x & (const uint8_t)y); }
 // NodeItemType operator&(const NodeItemType x, const uint8_t y) { return (const NodeItemType)((const uint8_t)x & (const uint8_t)y); }
 // NodeItemType operator&(const NodeItemType x, const NodeItemType y) { return (const NodeItemType)((const uint8_t)x & (const uint8_t)y); }
 
-NodeItemType operator|(uint8_t x, NodeItemType y) { return (NodeItemType)((uint8_t)x | (uint8_t)y); }
-NodeItemType operator|(NodeItemType x, uint8_t y) { return (NodeItemType)((uint8_t)x | (uint8_t)y); }
-NodeItemType operator|(NodeItemType x, NodeItemType y) { return (NodeItemType)((uint8_t)x | (uint8_t)y); }
+inline NodeItemType operator|(uint8_t x, NodeItemType y) { return (NodeItemType)((uint8_t)x | (uint8_t)y); }
+inline NodeItemType operator|(NodeItemType x, uint8_t y) { return (NodeItemType)((uint8_t)x | (uint8_t)y); }
+inline NodeItemType operator|(NodeItemType x, NodeItemType y) { return (NodeItemType)((uint8_t)x | (uint8_t)y); }
 // NodeItemType operator|(const uint8_t x, const NodeItemType y) { return (const NodeItemType)((const uint8_t)x | (const uint8_t)y); }
 // NodeItemType operator|(const NodeItemType x, const uint8_t y) { return (const NodeItemType)((const uint8_t)x | (const uint8_t)y); }
 // NodeItemType operator|(const NodeItemType x, const NodeItemType y) { return (const NodeItemType)((const uint8_t)x | (const uint8_t)y); }
 
-NodeItemType operator^(uint8_t x, NodeItemType y) { return (NodeItemType)((uint8_t)x ^ (uint8_t)y); }
-NodeItemType operator^(NodeItemType x, uint8_t y) { return (NodeItemType)((uint8_t)x ^ (uint8_t)y); }
-NodeItemType operator^(NodeItemType x, NodeItemType y) { return (NodeItemType)((uint8_t)x ^ (uint8_t)y); }
+inline NodeItemType operator^(uint8_t x, NodeItemType y) { return (NodeItemType)((uint8_t)x ^ (uint8_t)y); }
+inline NodeItemType operator^(NodeItemType x, uint8_t y) { return (NodeItemType)((uint8_t)x ^ (uint8_t)y); }
+inline NodeItemType operator^(NodeItemType x, NodeItemType y) { return (NodeItemType)((uint8_t)x ^ (uint8_t)y); }
 // NodeItemType operator^(const uint8_t x, const NodeItemType y) { return (const NodeItemType)((const uint8_t)x ^ (const uint8_t)y); }
 // NodeItemType operator^(const NodeItemType x, const uint8_t y) { return (const NodeItemType)((const uint8_t)x ^ (const uint8_t)y); }
 // NodeItemType operator^(const NodeItemType x, const NodeItemType y) { return (const NodeItemType)((const uint8_t)x ^ (const uint8_t)y); }
 
-NodeItemType operator~(NodeItemType x) { return (NodeItemType)(x ^ NodeItemType::ANY); }
+inline NodeItemType operator~(NodeItemType x) { return (NodeItemType)(x ^ NodeItemType::ANY); }
 // NodeItemType operator~(NodeItemType x) { return (NodeItemType)(x ^ NodeItemType::ANY); }
 // NodeItemType operator~(const NodeItemType x) { return (const NodeItemType)((const uint8_t)x ^ NodeItemType::ANY); }
 // NodeItemType operator~(const NodeItemType x) { return (const NodeItemType)((const uint8_t)x ^ NodeItemType::ANY); }
@@ -247,8 +247,8 @@ protected:
 			NodeIO::_NodeItem(_name, _nodeType, _friendlyName, _description) {}
 public:
 	virtual constexpr const std::type_info& dataType() const = 0;
-	constexpr bool convertibleFrom(const std::type_info& from) { return type_traits::convertible(from, dataType()); }
-	constexpr bool convertibleTo(const std::type_info& to) { return type_traits::convertible(dataType(), to); }
+	constexpr bool convertibleFrom(const std::type_info& from) const { return type_traits::convertible(from, dataType()); }
+	constexpr bool convertibleTo(const std::type_info& to) const { return type_traits::convertible(dataType(), to); }
 };
 
 #define EXPAND(x) x

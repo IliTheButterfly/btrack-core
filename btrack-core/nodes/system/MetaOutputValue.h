@@ -60,6 +60,9 @@ public:
 	void broadcast(typename I::readonlyRef value) override;
 	MetaOutputValue<T, I>& operator>>(type_traits::ownership::borrowed_ptr_p<MetaInputValue<T, I>> input);
 	MetaOutputValue<T, I>& operator>>(type_traits::ownership::borrowed_ptr_p<MetaInputArray<T, I>> input);
+
+	bool connectTo(std::shared_ptr<_MetaInput> other) override;
+	bool disconnectFrom(std::shared_ptr<_MetaInput> other) override;
 };
 
 // template <typename T, ChannelTypeConcept<T> I>
@@ -115,6 +118,36 @@ inline MetaOutputValue<T, I> &MetaOutputValue<T, I>::operator>>(type_traits::own
 {
 	mChildren.push_back(input);
 	return *this;
+}
+
+template <typename T, ChannelTypeConcept<T> I>
+inline bool MetaOutputValue<T, I>::connectTo(std::shared_ptr<_MetaInput> other)
+{
+	if (!this->canConnectTo(other)) return false;
+	if (this->dataType() == other->dataType())
+	{
+		mChildren.push_back(std::reinterpret_pointer_cast<MetaInputArray<T, I>>(other));
+	}
+	return false;
+}
+
+template <typename T, ChannelTypeConcept<T> I>
+inline bool MetaOutputValue<T, I>::disconnectFrom(std::shared_ptr<_MetaInput> other)
+{
+	int i = -1;
+	int ii = 0;
+	for (std::weak_ptr<MetaInput<T, I>> input : mChildren)
+	{
+		if (!input.expired() && input.lock()->uuid() == other->uuid()) 
+		{
+			i = ii;
+			break;
+		}
+		++ii;
+	}
+	if (i == -1) return false;
+	mChildren.erase(mChildren.begin() + i);
+	return true;
 }
 
 } // namespace btrack::nodes::system

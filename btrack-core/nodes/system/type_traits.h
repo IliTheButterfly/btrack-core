@@ -66,6 +66,7 @@ template <class T> using remove_smart_ptr_t = typename remove_smart_ptr<T>::type
 
 template <class T> using remove_container_t = typename remove_container<T>::type;
 
+
 template <typename T> struct remove_all_ext_and_container { typedef remove_container_t<boost::remove_all_extents_t<T>> type; };
 
 template <class T> using remove_all_ext_and_container_t = typename remove_all_ext_and_container<T>::type;
@@ -137,6 +138,34 @@ template <typename T>
 using borrowed_ptr_p = typename borrowed_ptr<T>::ptr_type;
 
 } // namespace smart_ptr
+
+
+template <typename T> struct is_meta : public boost::false_type {};
+template <typename T> struct is_meta<MetaInput<T>> : public boost::true_type {};
+template <typename T> struct is_meta<MetaInputValue<T>> : public boost::true_type {};
+template <typename T> struct is_meta<MetaInputArray<T>> : public boost::true_type {};
+template <typename T> struct is_meta<MetaOutput<T>> : public boost::true_type {};
+template <typename T> struct is_meta<MetaOutputValue<T>> : public boost::true_type {};
+template <typename T> struct is_meta<MetaOutputArray<T>> : public boost::true_type {};
+
+template <typename T> struct is_input : public boost::false_type {};
+template <typename T> struct is_input<Input<T>> : public boost::true_type {};
+template <typename T> struct is_input<InputValue<T>> : public boost::true_type {};
+template <typename T> struct is_input<MetaInput<T>> : public boost::true_type {};
+template <typename T> struct is_input<MetaInputValue<T>> : public boost::true_type {};
+template <typename T> struct is_input<MetaInputArray<T>> : public boost::true_type {};
+
+template <typename T> struct is_output : public boost::false_type {};
+template <typename T> struct is_output<Output<T>> : public boost::true_type {};
+template <typename T> struct is_output<OutputValue<T>> : public boost::true_type {};
+template <typename T> struct is_output<MetaOutput<T>> : public boost::true_type {};
+template <typename T> struct is_output<MetaOutputValue<T>> : public boost::true_type {};
+template <typename T> struct is_output<MetaOutputArray<T>> : public boost::true_type {};
+
+
+
+template <typename FROM, typename TO> struct connectable_to : public boost::false_type {};
+
 
 
 } // namespace btrack::nodes::system::type_traits

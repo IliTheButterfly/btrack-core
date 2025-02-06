@@ -14,14 +14,17 @@ class InputValue : public Input<T, I>
 {
 public:
 	InputValue(
+		std::shared_ptr<NodeRunner> runner,
 		const std::string_view& _name, 
 		const std::string_view& _friendlyName = "",
 		const std::string_view& _description = ""
 		) : 
-			InputValue::Input(_name, NodeItemType::VALUE, _friendlyName, _description) {}
+			InputValue::Input(runner, _name, NodeItemType::VALUE, _friendlyName, _description) {}
 	
 	InputValue<T, I>& operator>>(typename I::readonlyOut data);
 	friend OutputValue<T, I>;
+
+	virtual ~InputValue() = default;
 };
 
 template <typename T, ChannelTypeConcept<T> I>

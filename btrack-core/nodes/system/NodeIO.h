@@ -2,7 +2,6 @@
 #define __NODEIO_H__
 
 
-
 #include <string>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_generators.hpp>
@@ -11,8 +10,12 @@
 #include "nodes/system/MemoryRegistry.h"
 #include "nodes/system/type_traits.h"
 #include "nodes/exceptions.h"
+#include "nodes/runners/NodeRunner.h"
+
 
 namespace btrack::nodes::system {
+
+using NodeRunner = runners::NodeRunner;
 
 enum class NodeItemType : uint8_t
 {
@@ -197,23 +200,30 @@ private:
 	const NodeItemType mNodeType;
 	std::string mFriendlyName;
 	std::string mDescription;
+	std::weak_ptr<_NodeItem> mPtr;
 private:
 	_NodeItem(
+		std::shared_ptr<NodeRunner> runner,
 		const std::string_view& _name, 
 		const NodeItemType& _nodeType,
 		const boost::uuids::uuid& _uuid, 
 		const std::string_view& _friendlyName = "",
 		const std::string_view& _description = ""
 		) : 
-			mName(_name), mUUID(_uuid), mNodeType(_nodeType), mFriendlyName(_friendlyName), mDescription(_description) {}
+			mRunner(runner), mName(_name), mUUID(_uuid), mNodeType(_nodeType), mFriendlyName(_friendlyName), mDescription(_description) 
+			{
+				mPtr = std::make_shared<_NodeItem>(this);
+			}
 protected:
+	std::shared_ptr<NodeRunner> mRunner;
 	_NodeItem(
+		std::shared_ptr<NodeRunner> runner,
 		const std::string_view& _name, 
 		const NodeItemType& _nodeType,
 		const std::string_view& _friendlyName = "",
 		const std::string_view& _description = ""
 		) : 
-			_NodeItem::_NodeItem(_name, _nodeType, boost::uuids::random_generator()(), _friendlyName, _description) {}
+			_NodeItem::_NodeItem(runner, _name, _nodeType, boost::uuids::random_generator()(), _friendlyName, _description) {}
 public:
 	_NodeItem() = delete;
 
@@ -232,23 +242,36 @@ public:
 	bool isArray() const { return (mNodeType & NodeItemType::ARRAY) == NodeItemType::ARRAY; }
 	bool isValue() const { return (mNodeType & NodeItemType::VALUE) == NodeItemType::VALUE; }
 	bool matches(NodeItemType pattern) const { return (mNodeType | pattern) == pattern; }
+
+	bool operator==(const _NodeItem& other) const { return uuid() == other.uuid(); }
+	bool operator!=(const _NodeItem& other) const { return uuid() != other.uuid(); }
+
+	// std::shared_ptr<_NodeItem> asShared() { return mPtr.lock(); }
+	template <typename T>
+	std::shared_ptr<T> asShared() { return std::reinterpret_pointer_cast<T>(mPtr.lock()); }
+
+	virtual ~_NodeItem() = default;
 };
+
 
 class NodeIO : public _NodeItem
 {
 private:
 protected:
 	NodeIO(
+		std::shared_ptr<NodeRunner> runner,
 		const std::string_view& _name, 
 		const NodeItemType& _nodeType,
 		const std::string_view& _friendlyName = "",
 		const std::string_view& _description = ""
 		) : 
-			NodeIO::_NodeItem(_name, _nodeType, _friendlyName, _description) {}
+			NodeIO::_NodeItem(runner, _name, _nodeType, _friendlyName, _description) {}
 public:
 	virtual constexpr const std::type_info& dataType() const = 0;
 	constexpr bool convertibleFrom(const std::type_info& from) const { return type_traits::convertible(from, dataType()); }
 	constexpr bool convertibleTo(const std::type_info& to) const { return type_traits::convertible(dataType(), to); }
+
+	virtual ~NodeIO() = default;
 };
 
 #define EXPAND(x) x
@@ -325,21 +348,26 @@ enum class ConnectionResult
 };
 
 
-class _Node : public _NodeItem
+class _Node : public _NodeItem, public NodeRunner
 {
 private:
 protected:
 	_Node(
+		std::shared_ptr<NodeRunner> runner,
 		const std::string_view& _name, 
 		const NodeItemType& _nodeType,
 		const std::string_view& _friendlyName = "",
 		const std::string_view& _description = ""
 		) : 
-			_Node::_NodeItem(_name, _nodeType | NodeItemType::NODE, _friendlyName, _description) {}
+			_Node::_NodeItem(runner, _name, _nodeType | NodeItemType::NODE, _friendlyName, _description) {}
 
 public:
 	virtual size_t inputCount() const = 0;
 	virtual size_t outputCount() const = 0;
+
+	void update() override { mRunner->update(); }
+
+	virtual ~_Node() = default;
 };
 
 } // namespace btrack::nodes::system

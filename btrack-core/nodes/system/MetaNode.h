@@ -14,21 +14,23 @@
 
 namespace btrack::nodes::system {
 
+using namespace type_traits::ownership;
+
 class _MetaNode : public _Node
 {
 public:
 	using NodeType = Node;
-	using NodePtr = type_traits::ownership::borrowed_ptr_p<Node>;
+	using NodePtr = owned_ptr_p<Node>;
 	// using NodeIt = NodeIterator<NodePtr>;
 	// NodeIteratorAccessor(NodeIt, Node, _MetaNode);
 
 	using _MetaOutputType = _MetaOutput;
-	using _MetaOutputPtr = type_traits::ownership::borrowed_ptr_p<_MetaOutput>;
+	using _MetaOutputPtr = owned_ptr_p<_MetaOutput>;
 	// using MetaOutputIterator = NodeIterator<MetaOutputPtr>;
 	// NodeIteratorAccessorConcrete(MetaOutputIterator, Outputs, _MetaNode);
 
 	using _MetaInputType = _MetaInput;
-	using _MetaInputPtr = type_traits::ownership::borrowed_ptr_p<_MetaInput>;
+	using _MetaInputPtr = owned_ptr_p<_MetaInput>;
 	// using MetaInputIterator = NodeIterator<MetaInputPtr>;
 	// NodeIteratorAccessorConcrete(MetaInputIterator, Inputs, _MetaNode);
 protected:
@@ -41,7 +43,8 @@ protected:
 		const std::string_view& _friendlyName = "",
 		const std::string_view& _description = "")
 	{
-		auto input = std::make_shared<MetaInputValue<T, I>>(_name, _friendlyName, _description); 
+		auto input = MetaInputValue<T, I>(this->asShared<NodeRunner>(), _name, _friendlyName, _description).asShared<MetaInputValue<T, I>>();
+		mRunner->addItem(input);
 		mInputs.push_back(input);
 		return input;
 	}
@@ -52,7 +55,8 @@ protected:
 		const std::string_view& _friendlyName = "",
 		const std::string_view& _description = "")
 	{
-		auto input = std::make_shared<MetaInputArray<T, I>>(_name, _friendlyName, _description); 
+		auto input = MetaInputArray<T, I>(this->asShared<NodeRunner>(), _name, _friendlyName, _description).asShared<MetaInputArray<T, I>>();
+		mRunner->addItem(input);
 		mInputs.push_back(input);
 		return input;
 	}
@@ -63,7 +67,8 @@ protected:
 		const std::string_view& _friendlyName = "",
 		const std::string_view& _description = "")
 	{
-		auto output = std::make_shared<MetaOutputValue<T, I>>(_name, _friendlyName, _description); 
+		auto output = MetaOutputValue<T, I>(this->asShared<NodeRunner>(), _name, _friendlyName, _description).asShared<MetaOutputValue<T, I>>();
+		mRunner->addItem(output);
 		mOutputs.push_back(output);
 		return output;
 	}
@@ -74,17 +79,19 @@ protected:
 		const std::string_view& _friendlyName = "",
 		const std::string_view& _description = "")
 	{
-		auto output = std::make_shared<MetaOutputArray<T, I>>(_name, _friendlyName, _description); 
+		auto output = MetaOutputArray<T, I>(this->asShared<NodeRunner>(), _name, _friendlyName, _description).asShared<MetaOutputArray<T, I>>();
+		mRunner->addItem(output);
 		mOutputs.push_back(output);
 		return output;
 	}
 public:
 	_MetaNode(
+		std::shared_ptr<NodeRunner> runner,
 		const std::string_view& _name, 
 		const std::string_view& _friendlyName = "",
 		const std::string_view& _description = ""
 		) : 
-			_MetaNode::_Node(_name, NodeItemType::META | NodeItemType::NODE, _friendlyName, _description) {}
+			_MetaNode::_Node(runner, _name, NodeItemType::META | NodeItemType::NODE, _friendlyName, _description) {}
 
 
 	NodeAtVirtual(Node);
@@ -92,44 +99,75 @@ public:
 	NodeAtConcrete(_MetaInput, mInputs);
 
 
-	_MetaInputPtr getInput(const std::string name)
+	_MetaInputPtr getInput(const std::string_view name)
 	{
-		for (_MetaInputPtr input : mInputs)
-		{
-			// if (!input.expired() && input.lock()->name() == name) return input;
-		}
+		auto it = std::find_if(mInputs.begin(), mInputs.end(), [&](_MetaInputPtr i){ return i->name() == name; });
+		if (it != mInputs.end()) return *it;
 		return _MetaInputPtr();
 	}
 
-	_MetaOutputPtr getOutput(const std::string name)
+	_MetaOutputPtr getOutput(const std::string_view name)
 	{
-		for (_MetaOutputPtr output : mOutputs)
-		{
-			// if (!output.expired() && output.lock()->name() == name) return output;
-		}
+		auto it = std::find_if(mOutputs.begin(), mOutputs.end(), [&](_MetaOutputPtr i){ return i->name() == name; });
+		if (it != mOutputs.end()) return *it;
 		return _MetaOutputPtr();
 	}
 
 	virtual void generate(int count) = 0;
 	friend class NodeGraph;
+	virtual ~_MetaNode()
+	{
+		while (mInputs.size())
+		{
+			mRunner->removeItem(mInputs[0]);
+		}
+		while (mOutputs.size())
+		{
+			mRunner->removeItem(mOutputs[0]);
+		}
+	}
 };
 
 class MetaNode : public _MetaNode
 {
 protected:
 	std::vector<std::shared_ptr<Node>> mNodes;
+
+	template <std::derived_from<Node> NodeType>
+	void generateImpl(int count)
+	{
+		for (int i = 0; i < count; ++i)
+		{
+			auto node = NodeType(asShared<NodeRunner>(), name(), description()).asShared<NodeType>();
+			mRunner->addItem(node);
+			for (int ii = 0; ii < this->inputCount(); ++ii)
+			{
+				this->_MetaInputAt(ii)->attach(node->_InputAt(ii));
+			}
+			for (int ii = 0; ii < this->outputCount(); ++ii)
+			{
+				this->_MetaOutputAt(ii)->attach(node->_OutputAt(ii));
+			}
+		}
+	}
 public:
 	MetaNode(
+		std::shared_ptr<NodeRunner> runner,
 		const std::string_view& _name, 
 		const std::string_view& _friendlyName = "",
 		const std::string_view& _description = ""
 		) : 
-			MetaNode::_MetaNode(_name, _friendlyName, _description) {}
+			MetaNode::_MetaNode(runner, _name, _friendlyName, _description) {}
 	// using NodeIOIterator = _MetaNode::NodeIOIterator;
 	using NodePtr = typename _MetaNode::NodePtr;
 	using NodeType = typename _MetaNode::NodeType;
 
 	NodeAtImpl(Node, mNodes);
+
+	virtual ~MetaNode()
+	{
+
+	}
 };
 
 } // namespace btrack::nodes::system

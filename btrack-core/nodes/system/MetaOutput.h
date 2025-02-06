@@ -21,12 +21,13 @@ public:
     using _MetaInputPtr = type_traits::ownership::borrowed_ptr_p<_MetaInput>;
 protected:
 	_MetaOutput(
+		std::shared_ptr<NodeRunner> runner,
 		const std::string_view& _name, 
 		const NodeItemType& _nodeType,
 		const std::string_view& _friendlyName = "",
 		const std::string_view& _description = ""
 		) : 
-			_MetaOutput::MetaNodeIO(_name, _nodeType | NodeItemType::OUTPUT, _friendlyName, _description) {}
+			_MetaOutput::MetaNodeIO(runner, _name, _nodeType | NodeItemType::OUTPUT, _friendlyName, _description) {}
 	
 
 public:
@@ -56,12 +57,13 @@ class MetaOutput : public _MetaOutput
 {
 protected:
 	MetaOutput(
+		std::shared_ptr<NodeRunner> runner,
 		const std::string_view& _name, 
 		const NodeItemType& _nodeType,
 		const std::string_view& _friendlyName = "",
 		const std::string_view& _description = ""
 		) : 
-			MetaOutput::_MetaOutput(_name, _nodeType, _friendlyName, _description) {}
+			MetaOutput::_MetaOutput(runner, _name, _nodeType, _friendlyName, _description) {}
 	
 public:
 	using _OutputPtr = typename _MetaOutput::_OutputPtr;

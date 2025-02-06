@@ -30,11 +30,12 @@ protected:
 	std::vector<MetaInputPtr> mChildren;
 public:
 	MetaOutputValue(
+		std::shared_ptr<NodeRunner> runner,
 		const std::string_view& _name, 
 		const std::string_view& _friendlyName = "",
 		const std::string_view& _description = ""
 		) : 
-			MetaOutputValue::MetaOutput(_name, NodeItemType::VALUE, _friendlyName, _description) {}
+			MetaOutputValue::MetaOutput(runner, _name, NodeItemType::VALUE, _friendlyName, _description) {}
 	
 	NodeAtConcrete(MetaInput, mChildren)
 	NodeAtWeakCastImpl(_MetaInput, mChildren)

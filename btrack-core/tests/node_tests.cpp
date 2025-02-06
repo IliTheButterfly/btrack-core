@@ -33,11 +33,12 @@ public:
 	std::shared_ptr<MetaOutputValue<int>> valueOutput;
 	std::shared_ptr<MetaOutputArray<int>> arrayOutput;
 	TestNodeStart(
+		std::shared_ptr<NodeRunner> runner,
 		const std::string_view& _name, 
 		const std::string_view& _friendlyName = "",
 		const std::string_view& _description = ""
 		) : 
-			TestNodeStart::MetaNode(_name, _friendlyName, _description) 
+			TestNodeStart::MetaNode(runner, _name, _friendlyName, _description) 
 			{
 				valueOutput = addOutputValue<int>("valueOutput");
 				arrayOutput = addOutputArray<int>("arrayOutput");
@@ -73,11 +74,12 @@ public:
 	std::shared_ptr<MetaOutputValue<float>> valueOutput;
 	std::shared_ptr<MetaOutputArray<float>> arrayOutput;
 	TestNodeStartFloat(
+		std::shared_ptr<NodeRunner> runner,
 		const std::string_view& _name, 
 		const std::string_view& _friendlyName = "",
 		const std::string_view& _description = ""
 		) : 
-			TestNodeStartFloat::MetaNode(_name, _friendlyName, _description) 
+			TestNodeStartFloat::MetaNode(runner, _name, _friendlyName, _description) 
 			{
 				valueOutput = addOutputValue<float>("valueOutput");
 				arrayOutput = addOutputArray<float>("arrayOutput");
@@ -99,11 +101,12 @@ public:
 	std::shared_ptr<MetaOutputArray<int>> arrayOutput;
 
 	TestNodeMid1(
+		std::shared_ptr<NodeRunner> runner,
 		const std::string_view& _name, 
 		const std::string_view& _friendlyName = "",
 		const std::string_view& _description = ""
 		) : 
-			TestNodeMid1::MetaNode(_name, _friendlyName, _description) 
+			TestNodeMid1::MetaNode(runner, _name, _friendlyName, _description) 
 			{
 				valueInput = addInputValue<int>("valueInput");
 				arrayInput = addInputArray<int>("arrayInput");
@@ -121,11 +124,12 @@ class TestNodeEnd : public MetaNode
 {
 public:
 	TestNodeEnd(
+		std::shared_ptr<NodeRunner> runner,
 		const std::string_view& _name, 
 		const std::string_view& _friendlyName = "",
 		const std::string_view& _description = ""
 		) : 
-			TestNodeEnd::MetaNode(_name, _friendlyName, _description) {}
+			TestNodeEnd::MetaNode(runner, _name, _friendlyName, _description) {}
 	std::shared_ptr<MetaInputValue<int>> valueInput;
 	std::shared_ptr<MetaInputArray<int>> arrayInput;
 

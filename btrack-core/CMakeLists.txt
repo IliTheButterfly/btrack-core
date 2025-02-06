@@ -23,8 +23,6 @@ if (USE_CUDA)
 	include_directories(${CUDA_INCLUDE_DIRS})
 endif()
 
-
-
 include_directories(${btrack_core_INCLUDES})
 file(GLOB_RECURSE BTRACK_CORE_SOURCES "**.cpp")
 list(FILTER BTRACK_CORE_SOURCES EXCLUDE REGEX "tests/.*")
@@ -45,7 +43,6 @@ if (MSVC)
 else ()
 	target_link_libraries(btrack-core ${OpenCV_LIBS} ${Boost_LIBRARIES})
 endif ()
-
 
 enable_testing()
 add_subdirectory("tests")

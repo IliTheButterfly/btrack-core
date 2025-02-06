@@ -13,12 +13,13 @@ class MetaNodeIO : public NodeIO
 {
 protected:
 	MetaNodeIO(
+		std::shared_ptr<NodeRunner> runner,
 		const std::string_view& _name, 
 		const NodeItemType& _nodeType,
 		const std::string_view& _friendlyName = "",
 		const std::string_view& _description = ""
 		) : 
-			MetaNodeIO::NodeIO(_name, _nodeType | NodeItemType::META, _friendlyName, _description) {}
+			MetaNodeIO::NodeIO(runner, _name, _nodeType | NodeItemType::META, _friendlyName, _description) {}
 };
 
 

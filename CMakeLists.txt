@@ -39,6 +39,8 @@ set(USE_CUDA OFF CACHE BOOL "Should CUDA be used?")
 # Specify the C++ standard
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
+set(CMAKE_CXX20_STANDARD_COMPILE_OPTION  "-std=c++2a")
+set(CMAKE_CXX20_EXTENSION_COMPILE_OPTION  "-std=gnu++2a")
 
 # Find OpenCV and CUDA
 find_package(OpenCV REQUIRED)

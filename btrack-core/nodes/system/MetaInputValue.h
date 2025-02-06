@@ -30,11 +30,12 @@ protected:
 	std::vector<InputValuePtr> mInputs;
 public:
 	MetaInputValue(
+		std::shared_ptr<NodeRunner> runner,
 		const std::string_view& _name, 
 		const std::string_view& _friendlyName = "",
 		const std::string_view& _description = ""
 		) : 
-			MetaInputValue::MetaInput(_name, NodeItemType::VALUE, _friendlyName, _description) {}
+			MetaInputValue::MetaInput(runner, _name, NodeItemType::VALUE, _friendlyName, _description) {}
 
 	NodeAtConcrete(InputValue, mInputs);
 	NodeAtWeakCastImpl(_Input, mInputs);
@@ -42,6 +43,8 @@ public:
 
 	void attach(std::shared_ptr<_Input> input) override;
 	void detach(std::shared_ptr<_Input> input) override;
+
+	virtual ~MetaInputValue() = default;
 };
 
 // template <typename T, ChannelTypeConcept<T> I>

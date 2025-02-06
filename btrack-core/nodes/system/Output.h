@@ -17,12 +17,13 @@ class _Output : public NodeIO
 {
 protected:
 	_Output(
+		std::shared_ptr<NodeRunner> runner,
 		const std::string_view& _name, 
 		const NodeItemType& _nodeType,
 		const std::string_view& _friendlyName = "",
 		const std::string_view& _description = ""
 		) : 
-			_Output::NodeIO(_name, _nodeType | NodeItemType::OUTPUT, _friendlyName, _description) {}
+			_Output::NodeIO(runner, _name, _nodeType | NodeItemType::OUTPUT, _friendlyName, _description) {}
 public:
 	using _InputType = _Input;
     using _InputPtr = type_traits::ownership::borrowed_ptr_p<_Input>;
@@ -30,6 +31,7 @@ public:
 	// NodeIteratorAccessor(_InputIterator, _Input, _Output);
 	
 	NodeAtVirtual(_Input)
+	virtual ~_Output() = default;
 };
 
 template <typename T, ChannelTypeConcept<T> I = DefaultChannelTypeInfo<T>>
@@ -41,12 +43,13 @@ public:
 protected:
 	ChannelPtr mChannel;
 	Output(
+		std::shared_ptr<NodeRunner> runner,
 		const std::string_view& _name, 
 		const NodeItemType& _nodeType,
 		const std::string_view& _friendlyName = "",
 		const std::string_view& _description = ""
 		) : 
-			_Output::_Output(_name, _nodeType, _friendlyName, _description), mChannel{std::make_shared<ChannelType>()} {}
+			_Output::_Output(runner, _name, _nodeType, _friendlyName, _description), mChannel{std::make_shared<ChannelType>()} {}
 public:
 	// using _InputIterator = _Output::_InputIterator;
 
@@ -58,6 +61,7 @@ public:
 
 	constexpr const std::type_info& dataType() const override { return typeid(T); }
 	friend class Input<T, I>;
+	virtual ~Output() = default;
 };
 
 } // namespace btrack::nodes::system

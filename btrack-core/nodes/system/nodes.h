@@ -17,6 +17,5 @@
 #include "nodes/system/Output.h"
 #include "nodes/system/OutputValue.h"
 
-#include "nodes/system/NodeGraph.h"
 #include "nodes/system/MemoryRegistry.h"
 #endif // __NODES_H__

@@ -39,11 +39,12 @@ protected:
 	std::vector<MetaInputArrayPtr> mChildren;
 public:
 	MetaOutputArray(
+		std::shared_ptr<NodeRunner> runner,
 		const std::string_view& _name, 
 		const std::string_view& _friendlyName = "",
 		const std::string_view& _description = ""
 		) : 
-			MetaOutputArray::MetaOutput(_name, NodeItemType::ARRAY, _friendlyName, _description) {}
+			MetaOutputArray::MetaOutput(runner, _name, NodeItemType::ARRAY, _friendlyName, _description) {}
 
 	
 	
@@ -151,6 +152,7 @@ inline bool MetaOutputArray<T, I>::disconnectFrom(std::shared_ptr<_MetaInput> ot
 template <typename T, ChannelTypeConcept<T> I>
 inline void MetaOutputArray<T, I>::attach(std::shared_ptr<_Output> output)
 {
+	
 	this->mOutputs.emplace_back(std::reinterpret_pointer_cast<OutputValue<T, I>>(output));
 }
 

@@ -131,7 +131,7 @@ using owned_ptr_p = typename owned_ptr<T>::ptr_type;
 template <typename T>
 struct borrowed_ptr {
 	typedef typename container_traits<T>::type element_type;
-	typedef std::shared_ptr<typename container_traits<T>::type> ptr_type;
+	typedef std::unique_ptr<typename container_traits<T>::type> ptr_type;
 };
 
 template <typename T>

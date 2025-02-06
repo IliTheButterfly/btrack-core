@@ -7,6 +7,8 @@
 
 namespace btrack::nodes::system {
 
+using namespace type_traits::ownership;
+
 template <typename T, ChannelTypeConcept<T> I = DefaultChannelTypeInfo<T>>
 class OutputValue : public Output<T, I>
 {
@@ -15,16 +17,17 @@ public:
 	using InputPtr = typename Output<T, I>::InputPtr;
 
 	using InputValueType = InputValue<T, I>;
-    using InputValuePtr = type_traits::ownership::borrowed_ptr_p<InputValue<T, I>>;
+    using InputValuePtr = borrowed_ptr_p<InputValue<T, I>>;
 protected:
 	std::vector<InputValuePtr> mChildren{};
 public:
 	OutputValue(
+		std::shared_ptr<NodeRunner> runner,
 		const std::string_view& _name, 
 		const std::string_view& _friendlyName = "",
 		const std::string_view& _description = ""
 		) : 
-			OutputValue::Output(_name, NodeItemType::VALUE, _friendlyName, _description) {}
+			OutputValue::Output(runner, _name, NodeItemType::VALUE, _friendlyName, _description) {}
 	// using InputValueIterator = NodeIterator<InputValuePtr>;
 	// NodeIteratorAccessorConcrete(InputValueIterator, InputValue, OutputValue);
 
@@ -44,6 +47,7 @@ public:
 	{ 
 		mChildren.push_back(input.lock());
 		std::cout << "Size " << mChildren.size() << std::endl;
+		
 		return *this;
 	}
 	OutputValue<T, I>& operator<<(typename I::readonlyRef value)

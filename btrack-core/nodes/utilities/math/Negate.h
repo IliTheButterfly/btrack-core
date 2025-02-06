@@ -3,6 +3,9 @@
 
 
 #include "nodes/utilities/math/UnaryOperation.h"
+#include "nodes/metadata.h"
+#include <typeinfo>
+
 
 namespace btrack::nodes::utilities::math {
 
@@ -13,8 +16,8 @@ public:
 	inline static const std::string defaultFriendlyName = "Negate";
 	inline static const std::string description = "Negates the input value";
 
-	Negate(const std::string_view& _name, const std::string_view& _friendlyName = defaultFriendlyName)
-		: Negate::UnaryOperation(_name, _friendlyName, description)
+	Negate(std::shared_ptr<NodeRunner> runner, const std::string_view& _name = defaultFriendlyName, const std::string_view& _friendlyName = defaultFriendlyName)
+		: Negate::UnaryOperation(runner, _name, _friendlyName, description)
 		{ }
 	void process() override
 	{
@@ -31,15 +34,17 @@ public:
 	inline static const std::string defaultFriendlyName = "Negate";
 	inline static const std::string description = "Negates the input value";
 
-	MetaNegate(const std::string_view& _name, const std::string_view& _friendlyName = defaultFriendlyName)
-		: MetaNegate::MetaUnaryOperation(_name, _friendlyName, description)
+	static const std::string_view Name() { return defaultFriendlyName; }
+
+	MetaNegate(std::shared_ptr<NodeRunner> runner, const std::string_view& _name = defaultFriendlyName, const std::string_view& _friendlyName = defaultFriendlyName)
+		: MetaNegate::MetaUnaryOperation(runner, _name, _friendlyName, description)
 		{ }
 	
 	void generate(int count) override
 	{
 		for (int i = 0; i < count; ++i)
 		{
-			auto node = std::make_shared<Negate<T, I>>(this->name());
+			auto node = std::make_shared<Negate<T, I>>(this, this->name());
 			for (int ii = 0; ii < this->inputCount(); ++ii)
 			{
 				this->_MetaInputAt(ii)->attach(node->_InputAt(ii));
@@ -56,4 +61,15 @@ public:
 
 
 } // namespace btrack::nodes::utilities::math
+
+BEGIN_METADATA(
+	Negate,
+	"Negate",
+	"",
+	btrack::nodes::utilities::math::Negate<int>,
+	btrack::nodes::utilities::math::MetaNegate<int>
+)
+INPUT_VALUE_META(Parameter, "Parameter", "", int)
+END_METADATA
+
 #endif // __NEGATE_H__

@@ -4,13 +4,17 @@
 
 #include <exception>
 
-class UndefinedIO : public std::exception
+namespace btrack::nodes {
+
+class ImproperGraphManagementError : public std::exception
 {
 public:
 	const char * what() const throw()
 	{
-		return "IO was not added to the list!\n";  
+		return "Node was released withought an observation.";
 	}
 };
+
+}
 
 #endif // __EXCEPTIONS_H__

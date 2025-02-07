@@ -4,9 +4,15 @@
 #include <memory>
 #include "nodes/system/NodeObserver.h"
 
-namespace btrack::nodes::runners {
+namespace btrack::nodes::system {
 
 class _NodeItem;
+
+}
+
+namespace btrack::nodes::runners {
+
+using _NodeItem = system::_NodeItem;
 
 class NodeRunner : public system::NodeObserver
 {

@@ -162,13 +162,6 @@ public:
 
 	NodeAtImpl(Node, mNodes);
 
-	void addItem(std::shared_ptr<_NodeItem> node)
-	{
-		
-	}
-	void removeItem(std::shared_ptr<_NodeItem> node);
-	void addConnection(std::shared_ptr<_NodeItem> from, std::shared_ptr<_NodeItem> to);
-	void removeConnection(std::shared_ptr<_NodeItem> from, std::shared_ptr<_NodeItem> to);
 
 	virtual ~MetaNode()
 	{

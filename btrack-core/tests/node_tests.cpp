@@ -125,7 +125,11 @@ public:
 		const std::string_view& _friendlyName = "",
 		const std::string_view& _description = ""
 		) : 
-			TestNodeEnd::MetaNode(_name, _friendlyName, _description) {}
+			TestNodeEnd::MetaNode(_name, _friendlyName, _description) 
+			{
+				valueInput = addInputValue<int>("valueInput");
+				arrayInput = addInputArray<int>("arrayInput");
+			}
 	std::shared_ptr<MetaInputValue<int>> valueInput;
 	std::shared_ptr<MetaInputArray<int>> arrayInput;
 
@@ -272,7 +276,7 @@ void run()
 
 TEST(NodeUtilitiesMathTests, NegateOperation)
 {
-	// auto t = boost::thread(run);
+	auto t = boost::thread(run);
 	// auto t1 = UnaryNodeTester<Negate<int>, const int, const int>(5, -5);
 	auto n = std::make_shared<Negate<int, DefaultChannelTypeInfo<int>>>("UnaryTest");
 	std::shared_ptr<OutputValue<int>> parameter = std::make_shared<OutputValue<int>>("parameter");

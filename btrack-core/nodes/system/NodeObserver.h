@@ -14,11 +14,11 @@ class NodeObserver
 public:
 	virtual void update() = 0;
 
-	virtual void addItem(std::shared_ptr<_NodeItem> node) = 0;
-	virtual void removeItem(std::shared_ptr<_NodeItem> node) = 0;
+	virtual void addItem(std::shared_ptr<_NodeItem> node) {}
+	virtual void removeItem(std::shared_ptr<_NodeItem> node) {}
 
-	virtual void addConnection(std::shared_ptr<_NodeItem> from, std::shared_ptr<_NodeItem> to) = 0;
-	virtual void removeConnection(std::shared_ptr<_NodeItem> from, std::shared_ptr<_NodeItem> to) = 0;
+	virtual void addConnection(std::shared_ptr<_NodeItem> from, std::shared_ptr<_NodeItem> to) {}
+	virtual void removeConnection(std::shared_ptr<_NodeItem> from, std::shared_ptr<_NodeItem> to) {}
 };
 
 }

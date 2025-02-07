@@ -135,7 +135,7 @@ inline bool MetaOutputValue<T, I>::disconnectFrom(std::shared_ptr<_MetaInput> ot
 template <typename T, ChannelTypeConcept<T> I>
 inline void MetaOutputValue<T, I>::attach(std::shared_ptr<_Output> output)
 {
-	if (std::find(mOutputs.begin(), mOutputs.end(), output) == mOutputs.end())
+	if (std::find_if(mOutputs.begin(), mOutputs.end(), [&](OutputValuePtr i){ return !i.expired() && i.lock() == output; }) == mOutputs.end())
 	{
 		mOutputs.emplace_back(std::dynamic_pointer_cast<OutputValue<T, I>>(output));
 	}

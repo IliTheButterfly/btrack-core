@@ -43,7 +43,7 @@ public:
 template <typename T, ChannelTypeConcept<T> I>
 inline void MetaInputArray<T, I>::attach(std::shared_ptr<_Input> input)
 {
-	if (std::find(mInputs.begin(), mInputs.end(), input) == mInputs.end())
+	if (std::find_if(mInputs.begin(), mInputs.end(), [&](InputValuePtr i){ return !i.expired() && i.lock() == input; }) == mInputs.end())
 	{
 		mInputs.emplace_back(std::reinterpret_pointer_cast<InputValue<T, I>>(input));
 	}

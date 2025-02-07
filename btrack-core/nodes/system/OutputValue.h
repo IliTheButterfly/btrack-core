@@ -60,7 +60,7 @@ public:
 
 	bool disconnectFrom(std::shared_ptr<_Input> other)
 	{
-		for (auto i = mChildren.begin(); i == mChildren.end(); )
+		for (auto i = mChildren.begin(); i != mChildren.end(); )
 		{
 			if (i->expired() || !i->lock()) 
 			{
@@ -90,7 +90,7 @@ public:
 	OutputValue<T, I>& operator<<(typename I::readonlyRef value)
 	{
 		std::cout << "Sending <<" << std::endl;
-		for (auto i = mChildren.begin(); i == mChildren.end(); )
+		for (auto i = mChildren.begin(); i != mChildren.end(); )
 		{
 			if (i->expired() || !i->lock()) 
 			{
@@ -99,8 +99,7 @@ public:
 				IF_WEAK_VALID(this->mObserver)->removeConnection(this->shared_from_this(), i->lock());
 				continue;
 			}
-			removeSender(i->lock()->mChannel);
-			IF_WEAK_VALID(this->mObserver)->removeConnection(this->shared_from_this(), i->lock());
+			i->lock()->mChannel->send(value);
 			++i;
 		}
 		return *this;

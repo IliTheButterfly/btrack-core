@@ -59,7 +59,7 @@ inline void MetaInputValue<T, I>::attach(std::shared_ptr<_Input> input)
 template <typename T, ChannelTypeConcept<T> I>
 inline void MetaInputValue<T, I>::detach(std::shared_ptr<_Input> input)
 {
-	for (auto i = mInputs.begin(); i == mInputs.end(); )
+	for (auto i = mInputs.begin(); i != mInputs.end(); )
 	{
 		if (i->expired() || !i->lock()) 
 		{

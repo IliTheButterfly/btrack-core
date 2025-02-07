@@ -276,7 +276,7 @@ void run()
 
 TEST(NodeUtilitiesMathTests, NegateOperation)
 {
-	auto t = boost::thread(run);
+	// auto t = boost::thread(run);
 	// auto t1 = UnaryNodeTester<Negate<int>, const int, const int>(5, -5);
 	auto n = std::make_shared<Negate<int, DefaultChannelTypeInfo<int>>>("UnaryTest");
 	std::shared_ptr<OutputValue<int>> parameter = std::make_shared<OutputValue<int>>("parameter");
@@ -286,7 +286,7 @@ TEST(NodeUtilitiesMathTests, NegateOperation)
 	(*parameter) >> n->Parameter;
 	*(n->Result) >> result;
 	std::cout << "Passing value" << std::endl;
-	*parameter << 5;
+	(*parameter) << 5;
 	int res;
 	std::cout << "Processing" << std::endl;
 	n->process();

@@ -113,7 +113,7 @@ inline bool MetaOutputValue<T, I>::connectTo(std::shared_ptr<_MetaInput> other)
 template <typename T, ChannelTypeConcept<T> I>
 inline bool MetaOutputValue<T, I>::disconnectFrom(std::shared_ptr<_MetaInput> other)
 {
-	for (auto i = mChildren.begin(); i == mChildren.end(); )
+	for (auto i = mChildren.begin(); i != mChildren.end(); )
 	{
 		if (i->expired() || !i->lock()) 
 		{
@@ -144,7 +144,7 @@ inline void MetaOutputValue<T, I>::attach(std::shared_ptr<_Output> output)
 template <typename T, ChannelTypeConcept<T> I>
 inline void MetaOutputValue<T, I>::detach(std::shared_ptr<_Output> output)
 {
-	for (auto i = mOutputs.begin(); i == mOutputs.end(); )
+	for (auto i = mOutputs.begin(); i != mOutputs.end(); )
 	{
 		if (i->expired() || !i->lock()) 
 		{

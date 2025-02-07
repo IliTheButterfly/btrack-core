@@ -115,7 +115,7 @@ inline MetaOutputArray<T, I> &MetaOutputArray<T, I>::operator<<(typename I::read
 template <typename T, ChannelTypeConcept<T> I>
 inline bool MetaOutputArray<T, I>::disconnectFrom(std::shared_ptr<_MetaInput> other)
 {
-	for (auto i = mChildren.begin(); i == mChildren.end(); )
+	for (auto i = mChildren.begin(); i != mChildren.end(); )
 	{
 		if (i->expired() || !i->lock()) 
 		{
@@ -146,7 +146,7 @@ inline void MetaOutputArray<T, I>::attach(std::shared_ptr<_Output> output)
 template <typename T, ChannelTypeConcept<T> I>
 inline void MetaOutputArray<T, I>::detach(std::shared_ptr<_Output> output)
 {
-	for (auto i = mOutputs.begin(); i == mOutputs.end(); )
+	for (auto i = mOutputs.begin(); i != mOutputs.end(); )
 	{
 		if (i->expired() || !i->lock()) 
 		{

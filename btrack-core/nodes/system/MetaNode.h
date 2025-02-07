@@ -135,7 +135,7 @@ protected:
 	template <std::derived_from<Node> NodeType>
 	void generateImpl(int count)
 	{
-		for (int i = 0; i < count; ++i)
+		for (int i = 0; i != count; ++i)
 		{
 			auto node = std::make_shared<NodeType>(name(), friendlyName(), description());
 			IF_WEAK_VALID(mObserver)->addItem(node);

@@ -17,7 +17,7 @@ public:
 	inline static const std::string description = "Negates the input value";
 
 	Negate(std::shared_ptr<NodeRunner> runner, const std::string_view& _name = defaultFriendlyName, const std::string_view& _friendlyName = defaultFriendlyName)
-		: Negate::UnaryOperation(runner, _name, _friendlyName, description)
+		: Negate::UnaryOperation(_name, _friendlyName, description)
 		{ }
 	void process() override
 	{
@@ -37,7 +37,7 @@ public:
 	static const std::string_view Name() { return defaultFriendlyName; }
 
 	MetaNegate(std::shared_ptr<NodeRunner> runner, const std::string_view& _name = defaultFriendlyName, const std::string_view& _friendlyName = defaultFriendlyName)
-		: MetaNegate::MetaUnaryOperation(runner, _name, _friendlyName, description)
+		: MetaNegate::MetaUnaryOperation(_name, _friendlyName, description)
 		{ }
 	
 	void generate(int count) override

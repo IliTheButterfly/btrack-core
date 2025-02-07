@@ -98,6 +98,10 @@ template <typename T> struct container_traits<std::shared_ptr<T>> { typedef T ty
 template <typename T> struct container_traits<std::unique_ptr<T>> { typedef T type; typedef std::unique_ptr<T> container; };
 template <typename T> struct container_traits<std::weak_ptr<T>> { typedef T type; typedef std::weak_ptr<T> container; };
 
+template <typename C> inline constexpr bool is_shared_v = is_shared<typename container_traits<C>::type, typename container_traits<C>::container>::value;
+template <typename C> inline constexpr bool is_unique_v = is_unique<typename container_traits<C>::type, typename container_traits<C>::container>::value;
+template <typename C> inline constexpr bool is_weak_v = is_weak<typename container_traits<C>::type, typename container_traits<C>::container>::value;
+
 template <typename T1, typename C1, typename T2, typename C2> struct _is_same_container : 
 	public boost::integral_constant<bool, 
 		is_shared<T1, C1>::value && is_shared<T2, C2>::value ||
@@ -128,14 +132,26 @@ struct owned_ptr {
 template <typename T>
 using owned_ptr_p = typename owned_ptr<T>::ptr_type;
 
+
+
 template <typename T>
 struct borrowed_ptr {
 	typedef typename container_traits<T>::type element_type;
-	typedef std::unique_ptr<typename container_traits<T>::type> ptr_type;
+	typedef std::weak_ptr<typename container_traits<T>::type> ptr_type;
 };
 
 template <typename T>
 using borrowed_ptr_p = typename borrowed_ptr<T>::ptr_type;
+
+template <typename T>
+struct ref_ptr {
+	typedef typename container_traits<T>::type element_type;
+	typedef std::shared_ptr<typename container_traits<T>::type> ptr_type;
+};
+
+template <typename T>
+using ref_ptr_p = typename ref_ptr<T>::ptr_type;
+
 
 } // namespace smart_ptr
 

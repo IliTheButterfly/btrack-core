@@ -595,34 +595,26 @@ private:
     std::vector<SndPtr> mSenders;
     mutex mMTX;
 
-    int find(SndPtr ptr)
-    {
-        if (ptr.expired()) return -1;
-        int i = 0;
-        for (SndPtr p : mSenders)
-        {
-            if (!p.expired() && p.lock() == ptr.lock()) return i;
-            ++i;
-        }
-        return -1;
-    }
-
 public:
     // Add a sender
-    void addChannel(SndPtr sender)
+    void addChannel(SharedSndPtr sender)
     {
         boost::lock_guard<mutex> lock(mMTX);
-        mSenders.push_back(sender);
+        auto i = std::find_if(mSenders.begin(), mSenders.end(), [&](SndPtr p){ return !p.expired() && p.lock() == sender; });
+		if (i == mSenders.end())
+		{
+        	mSenders.push_back(sender);
+		}
     }
 
 	// Remove a sender
-    void removeChannel(SndPtr sender)
+    void removeChannel(SharedSndPtr sender)
     {
         boost::lock_guard<mutex> lock(mMTX);
-        auto i = find(sender);
-		if (i != -1)
+        auto i = std::find_if(mSenders.begin(), mSenders.end(), [&](SndPtr p){ return !p.expired() && p.lock() == sender; });
+		if (i != mSenders.end())
 		{
-        	mSenders.erase(mSenders.begin() + i);
+        	mSenders.erase(i);
 		}
     }
 

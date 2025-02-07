@@ -14,18 +14,15 @@ class _MetaInput : public MetaNodeIO
 {
 protected:
 	_MetaInput(
-		std::shared_ptr<NodeRunner> runner,
 		const std::string_view& _name, 
 		const NodeItemType& _nodeType,
 		const std::string_view& _friendlyName = "",
 		const std::string_view& _description = ""
 		) : 
-			_MetaInput::MetaNodeIO(runner, _name, _nodeType | NodeItemType::INPUT, _friendlyName, _description) {}
+			_MetaInput::MetaNodeIO(_name, _nodeType | NodeItemType::INPUT, _friendlyName, _description) {}
 public:
 	using _InputType = _Input;
-    using _InputPtr = type_traits::ownership::borrowed_ptr_p<_Input>;
-	// using _InputIterator = NodeIterator<_InputPtr>;
-	// NodeIteratorAccessor(_InputIterator, _Input, _MetaInput);
+    using _InputPtr = borrowed_ptr_p<_Input>;
 	
 	virtual void attach(std::shared_ptr<_Input> input) = 0;
 	virtual void detach(std::shared_ptr<_Input> input) = 0;
@@ -40,20 +37,15 @@ class MetaInput : public _MetaInput
 {
 protected:
 	MetaInput(
-		std::shared_ptr<NodeRunner> runner,
 		const std::string_view& _name, 
 		const NodeItemType& _nodeType,
 		const std::string_view& _friendlyName = "",
 		const std::string_view& _description = ""
 		) : 
-			MetaInput::_MetaInput(runner, _name, _nodeType, _friendlyName, _description) {}
+			MetaInput::_MetaInput(_name, _nodeType, _friendlyName, _description) {}
 public:
-	// using _InputIterator = _MetaInput::_InputIterator;
-
     using InputType = Input<T, I>;
-    using InputPtr = std::shared_ptr<Input<T, I>>;
-	// using InputIterator = NodeIterator<InputPtr>;
-	// NodeIteratorAccessor(InputIterator, Input, MetaInput);
+    using InputPtr = borrowed_ptr_p<Input<T, I>>;
 
 	NodeAtVirtual(Input);
 

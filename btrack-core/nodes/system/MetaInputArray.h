@@ -18,22 +18,19 @@ public:
 	
 
 	using InputValueType = InputValue<T, I>;
-	using InputValuePtr = type_traits::ownership::borrowed_ptr_p<InputValue<T, I>>;
-	// using InputValueIterator = NodeIterator<InputValuePtr>;
-	// NodeIteratorAccessorConcrete(InputValueIterator, InputValue, MetaInputArray);
+	using InputValuePtr = borrowed_ptr_p<InputValue<T, I>>;
 protected:
 	std::vector<InputValuePtr> mInputs;
 public:
 	MetaInputArray(
-		std::shared_ptr<NodeRunner> runner,
 		const std::string_view& _name, 
 		const std::string_view& _friendlyName = "",
 		const std::string_view& _description = ""
 		) : 
-			MetaInputArray::MetaInput(runner, _name, NodeItemType::ARRAY, _friendlyName, _description) {}
+			MetaInputArray::MetaInput(_name, NodeItemType::ARRAY, _friendlyName, _description) {}
 
 
-	NodeAtConcrete(InputValue, mInputs);
+	NodeAtWeakConcrete(InputValue, mInputs);
 	NodeAtWeakCastImpl(_Input, mInputs);
 	NodeAtWeakCastImpl(Input, mInputs);
 
@@ -55,8 +52,20 @@ inline void MetaInputArray<T, I>::attach(std::shared_ptr<_Input> input)
 template <typename T, ChannelTypeConcept<T> I>
 inline void MetaInputArray<T, I>::detach(std::shared_ptr<_Input> input)
 {
-	auto it = std::find(mInputs.begin(), mInputs.end(), input);
-	if (it != mInputs.end()) mInputs.erase(it);
+	for (auto i = mInputs.begin(); i == mInputs.end(); )
+	{
+		if (i->expired() || !i->lock()) 
+		{
+			mInputs.erase(i);
+			continue;
+		}
+		if (i->lock()->uuid() == input->uuid()) 
+		{
+			mInputs.erase(i);
+			return;
+		}
+		++i;
+	}
 }
 
 } // namespace btrack::nodes::system

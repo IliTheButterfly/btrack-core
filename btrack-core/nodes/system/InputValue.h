@@ -14,12 +14,11 @@ class InputValue : public Input<T, I>
 {
 public:
 	InputValue(
-		std::shared_ptr<NodeRunner> runner,
 		const std::string_view& _name, 
 		const std::string_view& _friendlyName = "",
 		const std::string_view& _description = ""
 		) : 
-			InputValue::Input(runner, _name, NodeItemType::VALUE, _friendlyName, _description) {}
+			InputValue::Input(_name, NodeItemType::VALUE, _friendlyName, _description) {}
 	
 	InputValue<T, I>& operator>>(typename I::readonlyOut data);
 	friend OutputValue<T, I>;
@@ -30,7 +29,7 @@ public:
 template <typename T, ChannelTypeConcept<T> I>
 inline InputValue<T, I>& InputValue<T, I>::operator>>(typename I::readonlyOut data)
 {
-	if (this->chan) (this->chan)->receive(data);
+	if (this->mChannel) (this->mChannel)->receive(data);
 	return *this; 
 }
 

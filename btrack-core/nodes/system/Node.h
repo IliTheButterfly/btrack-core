@@ -29,27 +29,25 @@ protected:
 
 	template <typename T, ChannelTypeConcept<T> I = DefaultChannelTypeInfo<T>>
 	std::shared_ptr<InputValue<T, I>> addInputValue(
-		std::shared_ptr<NodeRunner> runner,
 		const std::string_view& _name, 
 		const std::string_view& _friendlyName = "",
 		const std::string_view& _description = "")
 	{
-		auto input = InputValue<T, I>(asShared<NodeRunner>(), _name, _friendlyName, _description).asShared<InputValue<T, I>>();
-		mRunner->addItem(input);
+		auto input = std::make_shared<InputValue<T, I>>(_name, _friendlyName, _description);
 		mInputs.push_back(input);
+		IF_WEAK_VALID(mObserver)->addItem(input);
 		return input;
 	}
 
 	template <typename T, ChannelTypeConcept<T> I = DefaultChannelTypeInfo<T>>
 	std::shared_ptr<OutputValue<T, I>> addOutputValue(
-		std::shared_ptr<NodeRunner> runner,
 		const std::string_view& _name, 
 		const std::string_view& _friendlyName = "",
 		const std::string_view& _description = "")
 	{
-		auto output = OutputValue<T, I>(asShared<NodeRunner>(), _name, _friendlyName, _description).asShared<OutputValue<T, I>>(); 
-		mRunner->addItem(output);
+		auto output = std::make_shared<OutputValue<T, I>>(_name, _friendlyName, _description);
 		mOutputs.push_back(output);
+		IF_WEAK_VALID(mObserver)->addItem(output);
 		return output;
 	}
 
@@ -57,21 +55,15 @@ public:
 	virtual void process() = 0;
 
 	Node(
-		std::shared_ptr<NodeRunner> runner,
 		const std::string_view& _name, 
 		const std::string_view& _friendlyName = "",
 		const std::string_view& _description = ""
 		) : 
-			_Node::_Node(runner, _name, NodeItemType::NODE, _friendlyName, _description) {}
+			_Node::_Node(_name, NodeItemType::NODE, _friendlyName, _description) {}
 
 
 	NodeAtConcrete(_Input, mInputs)
 	NodeAtConcrete(_Output, mOutputs)
-
-	// OutputIterator OutputsBegin() { return OutputIterator::create(mOutputs.begin()); }
-	// OutputIterator OutputsEnd() { return OutputIterator::create(mOutputs.end()); }
-	// InputIterator InputsBegin() { return InputIterator::create(mInputs.begin()); }
-	// InputIterator InputsEnd() { return InputIterator::create(mInputs.end()); }
 
 	_InputPtr getInput(const std::string name)
 	{
@@ -89,13 +81,13 @@ public:
 
 	virtual ~Node()
 	{
-		while (mInputs.size())
+		for (auto i : mInputs)
 		{
-			mRunner->removeItem(mInputs[0]);
+			IF_WEAK_VALID(mObserver)->removeItem(i);
 		}
-		while (mOutputs.size())
+		for (auto i : mOutputs)
 		{
-			mRunner->removeItem(mOutputs[0]);
+			IF_WEAK_VALID(mObserver)->removeItem(i);
 		}
 	}
 };

@@ -138,8 +138,8 @@
 //     _CastIterator(UnderlyingIterator it) : iter(it) { std::cout << __PRETTY_FUNCTION__ << std::endl; }
 
 
-//     reference operator*() const override { std::cout << __PRETTY_FUNCTION__ << std::endl; return std::reinterpret_pointer_cast<To>(*iter); }
-//     pointer operator->() const override { std::cout << __PRETTY_FUNCTION__ << std::endl; return std::reinterpret_pointer_cast<To>(*iter); }
+//     reference operator*() const override { std::cout << __PRETTY_FUNCTION__ << std::endl; return std::dynamic_pointer_cast<To>(*iter); }
+//     pointer operator->() const override { std::cout << __PRETTY_FUNCTION__ << std::endl; return std::dynamic_pointer_cast<To>(*iter); }
 
 // 	void inc() override { std::cout << __PRETTY_FUNCTION__ << std::endl; ++iter; }
 
@@ -347,7 +347,7 @@
 // };
 
 // template <typename T>
-// using CastIterator = boost::transform_iterator<std::reinterpret_pointer_cast<T>>;
+// using CastIterator = boost::transform_iterator<std::dynamic_pointer_cast<T>>;
 
 
 // class BarBase
@@ -481,7 +481,7 @@ public:
 
     auto FooBegin() -> std::vector<std::shared_ptr<Foo>>::iterator override {
         auto transformFunc = [](std::shared_ptr<FooConcrete1> foo) -> std::shared_ptr<FooBase> {
-            return std::reinterpret_pointer_cast<FooBase>(foo);
+            return std::dynamic_pointer_cast<FooBase>(foo);
         };
         return boost::make_transform_iterator(vec.begin(), transformFunc);
     }
@@ -492,14 +492,14 @@ public:
 
     auto FooBaseBegin() override -> boost::transform_iterator<std::function<std::shared_ptr<FooBase>(std::shared_ptr<Foo>)>, std::vector<std::shared_ptr<Foo>>::iterator> {
         auto transformFunc = [](std::shared_ptr<Foo> foo) -> std::shared_ptr<FooBase> {
-            return std::reinterpret_pointer_cast<FooBase>(foo);
+            return std::dynamic_pointer_cast<FooBase>(foo);
         };
         return boost::make_transform_iterator(vec.begin(), transformFunc);
     }
 
     auto FooBaseEnd() override -> boost::transform_iterator<std::function<std::shared_ptr<FooBase>(std::shared_ptr<Foo>)>, std::vector<std::shared_ptr<Foo>>::iterator> {
         auto transformFunc = [](std::shared_ptr<Foo> foo) -> std::shared_ptr<FooBase> {
-            return std::reinterpret_pointer_cast<FooBase>(foo);
+            return std::dynamic_pointer_cast<FooBase>(foo);
         };
         return boost::make_transform_iterator(vec.end(), transformFunc);
     }

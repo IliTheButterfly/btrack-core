@@ -22,60 +22,100 @@ protected:
 	std::vector<InputValuePtr> mChildren{};
 public:
 	OutputValue(
-		std::shared_ptr<NodeRunner> runner,
 		const std::string_view& _name, 
 		const std::string_view& _friendlyName = "",
 		const std::string_view& _description = ""
 		) : 
-			OutputValue::Output(runner, _name, NodeItemType::VALUE, _friendlyName, _description) {}
-	// using InputValueIterator = NodeIterator<InputValuePtr>;
-	// NodeIteratorAccessorConcrete(InputValueIterator, InputValue, OutputValue);
+			OutputValue::Output(_name, NodeItemType::VALUE, _friendlyName, _description) {}
 
 	NodeAtWeakCastImpl(_Input, mChildren)
 	NodeAtWeakCastImpl(Input, mChildren)
 	NodeAtConcrete(InputValue, mChildren)
 
-	// InputValueIterator InputValueBegin() { return InputValueIterator::create(mChildren.begin()); }
-	// InputValueIterator InputValueEnd() { return InputValueIterator::create(mChildren.end()); }
-	// InputIterator InputBegin() { return InputIterator::create(mChildren.begin()); }
-	// InputIterator InputEnd() { return InputIterator::create(mChildren.end()); }
-	// _InputIterator _InputBegin() { return _InputIterator::create(mChildren.begin()); }
-	// _InputIterator _InputEnd() { return _InputIterator::create(mChildren.end()); }
+	void addSender(std::shared_ptr<Sender<T, I>> sender) override
+	{
+		this->mChannel->addChannel(sender);
+	}
+	void removeSender(std::shared_ptr<Sender<T, I>> sender) override
+	{
+		this->mChannel->removeChannel(sender);
+	}
+	void broadcast(typename I::readonlyRef value) override
+	{
+		this->mChannel->send(value);
+	}
+	bool connectTo(std::shared_ptr<_Input> other)
+	{
+		if (!this->canConnectTo(other)) return false;
+		if (this->dataType() == other->dataType())
+		{
+			auto o = std::dynamic_pointer_cast<InputValue<T, I>>(other);
+			mChildren.push_back(o);
+			addSender(o->mChannel);
+			IF_WEAK_VALID(this->mObserver)->addConnection(this->shared_from_this(), other);
+			return true;
+		}
+		return false;
+	}
+
+	bool disconnectFrom(std::shared_ptr<_Input> other)
+	{
+		for (auto i = mChildren.begin(); i == mChildren.end(); )
+		{
+			if (i->expired() || !i->lock()) 
+			{
+				mChildren.erase(i);
+				removeSender(i->lock()->mChannel);
+				IF_WEAK_VALID(this->mObserver)->removeConnection(this->shared_from_this(), other);
+				continue;
+			}
+			if (i->lock()->uuid() == other->uuid()) 
+			{
+				mChildren.erase(i);
+				removeSender(i->lock()->mChannel);
+				IF_WEAK_VALID(this->mObserver)->removeConnection(this->shared_from_this(), other);
+				return true;
+			}
+			++i;
+		}
+		return false;
+	}
 
 
-	OutputValue<T, I>& operator>>(std::weak_ptr<InputValue<T, I>> input) 
-	{ 
-		mChildren.push_back(input.lock());
-		std::cout << "Size " << mChildren.size() << std::endl;
-		
+	OutputValue<T, I>& operator>>(std::shared_ptr<InputValue<T, I>> input) 
+	{
+		connectTo(input);
 		return *this;
 	}
 	OutputValue<T, I>& operator<<(typename I::readonlyRef value)
 	{
 		std::cout << "Sending <<" << std::endl;
-		int i = 0;
-		int invalid = -1;
-		for (std::weak_ptr<InputValue<T, I>> input : mChildren)
+		for (auto i = mChildren.begin(); i == mChildren.end(); )
 		{
-			std::cout << "Sending to " << i << std::endl;
-
-			if (!input.expired()) input.lock()->chan->send(value);
-			else 
+			if (i->expired() || !i->lock()) 
 			{
-				invalid = i;
-				std::cout << "Expired " << i << std::endl;
-
+				mChildren.erase(i);
+				removeSender(i->lock()->mChannel);
+				IF_WEAK_VALID(this->mObserver)->removeConnection(this->shared_from_this(), i->lock());
+				continue;
 			}
+			removeSender(i->lock()->mChannel);
+			IF_WEAK_VALID(this->mObserver)->removeConnection(this->shared_from_this(), i->lock());
 			++i;
-		}
-		if (invalid != -1)
-		{
-			mChildren.erase(mChildren.begin() + invalid);
 		}
 		return *this;
 	}
 
 
+	virtual ~OutputValue()
+	{
+		for (auto i : mChildren)
+		{
+			if (i.expired() || !i.lock()) continue;
+			removeSender(i.lock()->mChannel);
+			IF_WEAK_VALID(this->mObserver)->removeConnection(this->shared_from_this(), i.lock());
+		}
+	}
 };
 
 } // namespace btrack::nodes::system

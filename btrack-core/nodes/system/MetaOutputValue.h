@@ -22,45 +22,34 @@ public:
 
 	// Define iterators
 	using OutputValueType = OutputValue<T, I>;
-	using OutputValuePtr = type_traits::ownership::borrowed_ptr_p<OutputValue<T, I>>;
-	// using OutputValueIterator = NodeIterator<OutputValuePtr>;
-	// NodeIteratorAccessorConcrete(OutputValueIterator, OutputValue, MetaOutputValue);
+	using OutputValuePtr = borrowed_ptr_p<OutputValue<T, I>>;
 protected:
+	using Sender_t = BroadcastChannel<T, I>;
+	std::shared_ptr<Sender_t> mBroadcast;
 	std::vector<OutputValuePtr> mOutputs;
 	std::vector<MetaInputPtr> mChildren;
 public:
 	MetaOutputValue(
-		std::shared_ptr<NodeRunner> runner,
 		const std::string_view& _name, 
 		const std::string_view& _friendlyName = "",
 		const std::string_view& _description = ""
 		) : 
-			MetaOutputValue::MetaOutput(runner, _name, NodeItemType::VALUE, _friendlyName, _description) {}
+			MetaOutputValue::MetaOutput(_name, NodeItemType::VALUE, _friendlyName, _description) {}
 	
-	NodeAtConcrete(MetaInput, mChildren)
+	NodeAtWeakConcrete(MetaInput, mChildren)
 	NodeAtWeakCastImpl(_MetaInput, mChildren)
-	NodeAtConcrete(OutputValue, mOutputs)
+	NodeAtWeakConcrete(OutputValue, mOutputs)
 	NodeAtWeakCastImpl(_Output, mOutputs)
 	NodeAtWeakCastImpl(Output, mOutputs)
 	
-	// Implement iterators
-	// MetaInputIterator MetaInputBegin() override;
-	// MetaInputIterator MetaInputEnd() override;
-	// _MetaInputIterator _MetaInputBegin() override;
-	// _MetaInputIterator _MetaInputEnd() override;
-	// OutputValueIterator OutputValueBegin();
-	// OutputValueIterator OutputValueEnd();
-	// _OutputIterator _OutputBegin() override;
-    // _OutputIterator _OutputEnd() override;
-	// OutputIterator OutputBegin() override;
-	// OutputIterator OutputEnd() override;
 
-
-	void addSender(std::weak_ptr<Sender<T, I>> sender) override;
-	void removeSender(std::weak_ptr<Sender<T, I>> sender) override;
+	void addSender(std::shared_ptr<Sender<T, I>> sender) override;
+	void removeSender(std::shared_ptr<Sender<T, I>> sender) override;
 	void broadcast(typename I::readonlyRef value) override;
-	MetaOutputValue<T, I>& operator>>(type_traits::ownership::borrowed_ptr_p<MetaInputValue<T, I>> input);
-	MetaOutputValue<T, I>& operator>>(type_traits::ownership::borrowed_ptr_p<MetaInputArray<T, I>> input);
+	MetaOutputValue<T, I>& operator>>(std::shared_ptr<MetaInputValue<T, I>> input);
+	MetaOutputValue<T, I>& operator>>(std::shared_ptr<MetaInputArray<T, I>> input);
+	MetaOutputValue<T, I>& operator<<(typename I::readonlyRef value);
+
 
 	bool connectTo(std::shared_ptr<_MetaInput> other) override;
 	bool disconnectFrom(std::shared_ptr<_MetaInput> other) override;
@@ -69,58 +58,42 @@ public:
 	void detach(std::shared_ptr<_Output> output) override;
 };
 
-// template <typename T, ChannelTypeConcept<T> I>
-// inline MetaOutputValue<T, I>::MetaInputIterator MetaOutputValue<T, I>::MetaInputBegin() { return MetaOutputValue<T, I>::MetaInputIterator::create(mChildren.begin()); }
-// template <typename T, ChannelTypeConcept<T> I>
-// inline MetaOutputValue<T, I>::MetaInputIterator MetaOutputValue<T, I>::MetaInputEnd() { return MetaOutputValue<T, I>::MetaInputIterator::create(mChildren.end()); }
-// template <typename T, ChannelTypeConcept<T> I>
-// inline MetaOutputValue<T, I>::_MetaInputIterator MetaOutputValue<T, I>::_MetaInputBegin() { return MetaOutputValue<T, I>::_MetaInputIterator::create(mChildren.begin()); }
-// template <typename T, ChannelTypeConcept<T> I>
-// inline MetaOutputValue<T, I>::_MetaInputIterator MetaOutputValue<T, I>::_MetaInputEnd() { return MetaOutputValue<T, I>::_MetaInputIterator::create(mChildren.end()); }
-// template <typename T, ChannelTypeConcept<T> I>
-// inline MetaOutputValue<T, I>::OutputValueIterator MetaOutputValue<T, I>::OutputValueBegin() { return MetaOutputValue<T, I>::OutputValueIterator::create(mOutputs.begin()); }
-// template <typename T, ChannelTypeConcept<T> I>
-// inline MetaOutputValue<T, I>::OutputValueIterator MetaOutputValue<T, I>::OutputValueEnd() { return MetaOutputValue<T, I>::OutputValueIterator::create(mOutputs.end()); }
-// template <typename T, ChannelTypeConcept<T> I>
-// inline MetaOutputValue<T, I>::_OutputIterator MetaOutputValue<T, I>::_OutputBegin() { return MetaOutputValue<T, I>::_OutputIterator::create(mOutputs.begin()); }
-// template <typename T, ChannelTypeConcept<T> I>
-// inline MetaOutputValue<T, I>::_OutputIterator MetaOutputValue<T, I>::_OutputEnd() { return MetaOutputValue<T, I>::_OutputIterator::create(mOutputs.end()); }
-// template <typename T, ChannelTypeConcept<T> I>
-// inline MetaOutputValue<T, I>::OutputIterator MetaOutputValue<T, I>::OutputBegin() { return MetaOutputValue<T, I>::OutputIterator::create(mOutputs.begin()); }
-// template <typename T, ChannelTypeConcept<T> I>
-// inline MetaOutputValue<T, I>::OutputIterator MetaOutputValue<T, I>::OutputEnd() { return MetaOutputValue<T, I>::OutputIterator::create(mOutputs.end()); }
-
 template <typename T, ChannelTypeConcept<T> I>
-inline void MetaOutputValue<T, I>::addSender(std::weak_ptr<Sender<T, I>> sender)
+inline void MetaOutputValue<T, I>::addSender(std::shared_ptr<Sender<T, I>> sender)
 {
-	
+	mBroadcast->addChannel(sender);
 }
 
 template <typename T, ChannelTypeConcept<T> I>
-inline void MetaOutputValue<T, I>::removeSender(std::weak_ptr<Sender<T, I>> sender)
+inline void MetaOutputValue<T, I>::removeSender(std::shared_ptr<Sender<T, I>> sender)
 {
+	mBroadcast->removeChannel(sender);
 }
 
 template <typename T, ChannelTypeConcept<T> I>
 inline void MetaOutputValue<T, I>::broadcast(typename I::readonlyRef value)
 {
-	for (type_traits::ownership::borrowed_ptr_p<OutputValue<T, I>> output : mOutputs)
-	{
-		// *output.lock() << value;
-	}
+	mBroadcast->send(value);
 }
 
 template <typename T, ChannelTypeConcept<T> I>
-inline MetaOutputValue<T, I> &MetaOutputValue<T, I>::operator>>(type_traits::ownership::borrowed_ptr_p<MetaInputValue<T, I>> input)
+inline MetaOutputValue<T, I> &MetaOutputValue<T, I>::operator>>(std::shared_ptr<MetaInputValue<T, I>> input)
 {
-	mChildren.push_back(input);
+	this->connectTo(input);
 	return *this;
 }
 
 template <typename T, ChannelTypeConcept<T> I>
-inline MetaOutputValue<T, I> &MetaOutputValue<T, I>::operator>>(type_traits::ownership::borrowed_ptr_p<MetaInputArray<T, I>> input)
+inline MetaOutputValue<T, I> &MetaOutputValue<T, I>::operator>>(std::shared_ptr<MetaInputArray<T, I>> input)
 {
-	mChildren.push_back(input);
+	this->connectTo(input);
+	return *this;
+}
+
+template <typename T, ChannelTypeConcept<T> I>
+inline MetaOutputValue<T, I> &MetaOutputValue<T, I>::operator<<(typename I::readonlyRef value)
+{
+	this->broadcast(value);
 	return *this;
 }
 
@@ -130,7 +103,8 @@ inline bool MetaOutputValue<T, I>::connectTo(std::shared_ptr<_MetaInput> other)
 	if (!this->canConnectTo(other)) return false;
 	if (this->dataType() == other->dataType())
 	{
-		mChildren.push_back(std::reinterpret_pointer_cast<MetaInputArray<T, I>>(other));
+		mChildren.push_back(std::dynamic_pointer_cast<MetaInputArray<T, I>>(other));
+		IF_WEAK_VALID(this->mObserver)->addConnection(this->shared_from_this(), other);
 		return true;
 	}
 	return false;
@@ -139,38 +113,50 @@ inline bool MetaOutputValue<T, I>::connectTo(std::shared_ptr<_MetaInput> other)
 template <typename T, ChannelTypeConcept<T> I>
 inline bool MetaOutputValue<T, I>::disconnectFrom(std::shared_ptr<_MetaInput> other)
 {
-	int i = -1;
-	int ii = 0;
-	for (std::weak_ptr<MetaInput<T, I>> input : mChildren)
+	for (auto i = mChildren.begin(); i == mChildren.end(); )
 	{
-		if (!input.expired() && input.lock()->uuid() == other->uuid()) 
+		if (i->expired() || !i->lock()) 
 		{
-			i = ii;
-			break;
+			mChildren.erase(i);
+			IF_WEAK_VALID(this->mObserver)->removeConnection(this->shared_from_this(), other);
+			continue;
 		}
-		++ii;
+		if (i->lock()->uuid() == other->uuid()) 
+		{
+			mChildren.erase(i);
+			IF_WEAK_VALID(this->mObserver)->removeConnection(this->shared_from_this(), other);
+			return true;
+		}
+		++i;
 	}
-	if (i == -1) return false;
-	mChildren.erase(mChildren.begin() + i);
-	return true;
+	return false;
 }
 
 template <typename T, ChannelTypeConcept<T> I>
 inline void MetaOutputValue<T, I>::attach(std::shared_ptr<_Output> output)
 {
-	this->mOutputs.emplace_back(std::reinterpret_pointer_cast<OutputValue<T, I>>(output));
+	if (std::find(mOutputs.begin(), mOutputs.end(), output) == mOutputs.end())
+	{
+		mOutputs.emplace_back(std::dynamic_pointer_cast<OutputValue<T, I>>(output));
+	}
 }
 
 template <typename T, ChannelTypeConcept<T> I>
 inline void MetaOutputValue<T, I>::detach(std::shared_ptr<_Output> output)
 {
-	for (int i = 0; i < mOutputs.size(); ++i)
+	for (auto i = mOutputs.begin(); i == mOutputs.end(); )
 	{
-		if (this->mOutputs.at(i)->uuid() == output->uuid())
+		if (i->expired() || !i->lock()) 
 		{
-			this->mOutputs.erase(mOutputs.begin() + i);
+			mOutputs.erase(i);
+			continue;
+		}
+		if (i->lock()->uuid() == output->uuid()) 
+		{
+			mOutputs.erase(i);
 			return;
 		}
+		++i;
 	}
 }
 

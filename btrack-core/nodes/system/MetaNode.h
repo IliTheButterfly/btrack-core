@@ -43,9 +43,9 @@ protected:
 		const std::string_view& _friendlyName = "",
 		const std::string_view& _description = "")
 	{
-		auto input = MetaInputValue<T, I>(this->asShared<NodeRunner>(), _name, _friendlyName, _description).asShared<MetaInputValue<T, I>>();
-		mRunner->addItem(input);
+		auto input = std::make_shared<MetaInputValue<T, I>>(_name, _friendlyName, _description); 
 		mInputs.push_back(input);
+		IF_WEAK_VALID(mObserver)->addItem(input);
 		return input;
 	}
 
@@ -55,9 +55,9 @@ protected:
 		const std::string_view& _friendlyName = "",
 		const std::string_view& _description = "")
 	{
-		auto input = MetaInputArray<T, I>(this->asShared<NodeRunner>(), _name, _friendlyName, _description).asShared<MetaInputArray<T, I>>();
-		mRunner->addItem(input);
+		auto input = std::make_shared<MetaInputArray<T, I>>(_name, _friendlyName, _description); 
 		mInputs.push_back(input);
+		IF_WEAK_VALID(mObserver)->addItem(input);
 		return input;
 	}
 
@@ -67,9 +67,9 @@ protected:
 		const std::string_view& _friendlyName = "",
 		const std::string_view& _description = "")
 	{
-		auto output = MetaOutputValue<T, I>(this->asShared<NodeRunner>(), _name, _friendlyName, _description).asShared<MetaOutputValue<T, I>>();
-		mRunner->addItem(output);
+		auto output = std::make_shared<MetaOutputValue<T, I>>(_name, _friendlyName, _description); 
 		mOutputs.push_back(output);
+		IF_WEAK_VALID(mObserver)->addItem(output);
 		return output;
 	}
 
@@ -79,19 +79,18 @@ protected:
 		const std::string_view& _friendlyName = "",
 		const std::string_view& _description = "")
 	{
-		auto output = MetaOutputArray<T, I>(this->asShared<NodeRunner>(), _name, _friendlyName, _description).asShared<MetaOutputArray<T, I>>();
-		mRunner->addItem(output);
+		auto output = std::make_shared<MetaOutputArray<T, I>>(_name, _friendlyName, _description); 
 		mOutputs.push_back(output);
+		IF_WEAK_VALID(mObserver)->addItem(output);
 		return output;
 	}
 public:
 	_MetaNode(
-		std::shared_ptr<NodeRunner> runner,
 		const std::string_view& _name, 
 		const std::string_view& _friendlyName = "",
 		const std::string_view& _description = ""
 		) : 
-			_MetaNode::_Node(runner, _name, NodeItemType::META | NodeItemType::NODE, _friendlyName, _description) {}
+			_MetaNode::_Node(_name, NodeItemType::META | NodeItemType::NODE, _friendlyName, _description) {}
 
 
 	NodeAtVirtual(Node);
@@ -117,13 +116,13 @@ public:
 	friend class NodeGraph;
 	virtual ~_MetaNode()
 	{
-		while (mInputs.size())
+		for (auto input : mInputs)
 		{
-			mRunner->removeItem(mInputs[0]);
+			IF_WEAK_VALID(mObserver)->removeItem(input);
 		}
-		while (mOutputs.size())
+		for (auto output : mOutputs)
 		{
-			mRunner->removeItem(mOutputs[0]);
+			IF_WEAK_VALID(mObserver)->removeItem(output);
 		}
 	}
 };
@@ -138,8 +137,8 @@ protected:
 	{
 		for (int i = 0; i < count; ++i)
 		{
-			auto node = NodeType(asShared<NodeRunner>(), name(), description()).asShared<NodeType>();
-			mRunner->addItem(node);
+			auto node = std::make_shared<NodeType>(name(), friendlyName(), description());
+			IF_WEAK_VALID(mObserver)->addItem(node);
 			for (int ii = 0; ii < this->inputCount(); ++ii)
 			{
 				this->_MetaInputAt(ii)->attach(node->_InputAt(ii));
@@ -152,21 +151,31 @@ protected:
 	}
 public:
 	MetaNode(
-		std::shared_ptr<NodeRunner> runner,
 		const std::string_view& _name, 
 		const std::string_view& _friendlyName = "",
 		const std::string_view& _description = ""
 		) : 
-			MetaNode::_MetaNode(runner, _name, _friendlyName, _description) {}
+			MetaNode::_MetaNode(_name, _friendlyName, _description) {}
 	// using NodeIOIterator = _MetaNode::NodeIOIterator;
 	using NodePtr = typename _MetaNode::NodePtr;
 	using NodeType = typename _MetaNode::NodeType;
 
 	NodeAtImpl(Node, mNodes);
 
+	void addItem(std::shared_ptr<_NodeItem> node)
+	{
+		
+	}
+	void removeItem(std::shared_ptr<_NodeItem> node);
+	void addConnection(std::shared_ptr<_NodeItem> from, std::shared_ptr<_NodeItem> to);
+	void removeConnection(std::shared_ptr<_NodeItem> from, std::shared_ptr<_NodeItem> to);
+
 	virtual ~MetaNode()
 	{
-
+		for (auto node : mNodes)
+		{
+			IF_WEAK_VALID(mObserver)->removeItem(node);
+		}
 	}
 };
 

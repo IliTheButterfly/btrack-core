@@ -11,6 +11,7 @@
 #include "nodes/system/type_traits.h"
 #include "nodes/exceptions.h"
 #include "nodes/runners/NodeRunner.h"
+#include "nodes/system/NodeObserver.h"
 
 
 namespace btrack::nodes::system {
@@ -66,6 +67,10 @@ inline NodeItemType operator~(NodeItemType x) { return (NodeItemType)(x ^ NodeIt
 // NodeItemType operator~(NodeItemType x) { return (NodeItemType)(x ^ NodeItemType::ANY); }
 // NodeItemType operator~(const NodeItemType x) { return (const NodeItemType)((const uint8_t)x ^ NodeItemType::ANY); }
 // NodeItemType operator~(const NodeItemType x) { return (const NodeItemType)((const uint8_t)x ^ NodeItemType::ANY); }
+
+
+#define IF_PTR_VALID(_ptr) if (_ptr) _ptr
+#define IF_WEAK_VALID(_ptr) if (!_ptr.expired() && _ptr.lock()) _ptr.lock()
 
 
 // template <typename T>
@@ -192,7 +197,7 @@ inline NodeItemType operator~(NodeItemType x) { return (NodeItemType)(x ^ NodeIt
 
 
 
-class _NodeItem
+class _NodeItem : public std::enable_shared_from_this<_NodeItem>
 {
 private:
 	const std::string mName;
@@ -200,30 +205,24 @@ private:
 	const NodeItemType mNodeType;
 	std::string mFriendlyName;
 	std::string mDescription;
-	std::weak_ptr<_NodeItem> mPtr;
 private:
 	_NodeItem(
-		std::shared_ptr<NodeRunner> runner,
 		const std::string_view& _name, 
 		const NodeItemType& _nodeType,
 		const boost::uuids::uuid& _uuid, 
 		const std::string_view& _friendlyName = "",
 		const std::string_view& _description = ""
 		) : 
-			mRunner(runner), mName(_name), mUUID(_uuid), mNodeType(_nodeType), mFriendlyName(_friendlyName), mDescription(_description) 
-			{
-				mPtr = std::make_shared<_NodeItem>(this);
-			}
+			mName(_name), mUUID(_uuid), mNodeType(_nodeType), mFriendlyName(_friendlyName), mDescription(_description) {}
 protected:
-	std::shared_ptr<NodeRunner> mRunner;
+	std::weak_ptr<NodeObserver> mObserver;
 	_NodeItem(
-		std::shared_ptr<NodeRunner> runner,
 		const std::string_view& _name, 
 		const NodeItemType& _nodeType,
 		const std::string_view& _friendlyName = "",
 		const std::string_view& _description = ""
 		) : 
-			_NodeItem::_NodeItem(runner, _name, _nodeType, boost::uuids::random_generator()(), _friendlyName, _description) {}
+			_NodeItem::_NodeItem(_name, _nodeType, boost::uuids::random_generator()(), _friendlyName, _description) {}
 public:
 	_NodeItem() = delete;
 
@@ -246,9 +245,7 @@ public:
 	bool operator==(const _NodeItem& other) const { return uuid() == other.uuid(); }
 	bool operator!=(const _NodeItem& other) const { return uuid() != other.uuid(); }
 
-	// std::shared_ptr<_NodeItem> asShared() { return mPtr.lock(); }
-	template <typename T>
-	std::shared_ptr<T> asShared() { return std::reinterpret_pointer_cast<T>(mPtr.lock()); }
+
 
 	virtual ~_NodeItem() = default;
 };
@@ -259,13 +256,12 @@ class NodeIO : public _NodeItem
 private:
 protected:
 	NodeIO(
-		std::shared_ptr<NodeRunner> runner,
 		const std::string_view& _name, 
 		const NodeItemType& _nodeType,
 		const std::string_view& _friendlyName = "",
 		const std::string_view& _description = ""
 		) : 
-			NodeIO::_NodeItem(runner, _name, _nodeType, _friendlyName, _description) {}
+			NodeIO::_NodeItem(_name, _nodeType, _friendlyName, _description) {}
 public:
 	virtual constexpr const std::type_info& dataType() const = 0;
 	constexpr bool convertibleFrom(const std::type_info& from) const { return type_traits::convertible(from, dataType()); }
@@ -309,32 +305,46 @@ virtual returnType##Ptr returnType##At(int index) = 0;
 returnType##Ptr returnType##At(int index) const override { return vec.at(index); } \
 returnType##Ptr returnType##At(int index) override { return vec.at(index); }
 
+// #define NodeAtConcrete(returnType, vec) \
+// returnType##Ptr returnType##At(int index) const { return vec.at(index); } \
+// returnType##Ptr returnType##At(int index) { return vec.at(index); }
+
 #define NodeAtConcrete(returnType, vec) \
 returnType##Ptr returnType##At(int index) const { return vec.at(index); } \
 returnType##Ptr returnType##At(int index) { return vec.at(index); }
 
 #define NodeAtCastImpl(returnType, vec) \
-returnType##Ptr returnType##At(int index) const override { return std::reinterpret_pointer_cast<typename returnType##Ptr::element_type>(vec.at(index)); } \
-returnType##Ptr returnType##At(int index) override { return std::reinterpret_pointer_cast<typename returnType##Ptr::element_type>(vec.at(index)); }
-
-#define NodeAtWeakCastImpl(returnType, vec) \
-returnType##Ptr returnType##At(int index) const override { return std::reinterpret_pointer_cast<typename returnType##Ptr::element_type>(vec.at(index)); } \
-returnType##Ptr returnType##At(int index) override { return std::reinterpret_pointer_cast<typename returnType##Ptr::element_type>(vec.at(index)); }
-
-// #define NodeAtWeakCastImpl(returnType, vec) \
-// returnType##Ptr returnType##At(int index) const override { return std::reinterpret_pointer_cast<typename returnType##Ptr::element_type>(vec.at(index).lock()); } \
-// returnType##Ptr returnType##At(int index) override { return std::reinterpret_pointer_cast<typename returnType##Ptr::element_type>(vec.at(index).lock()); }
+returnType##Ptr returnType##At(int index) const override { return std::dynamic_pointer_cast<typename returnType##Ptr::element_type>(vec.at(index)); } \
+returnType##Ptr returnType##At(int index) override { return std::dynamic_pointer_cast<typename returnType##Ptr::element_type>(vec.at(index)); }
 
 #define NodeAtCastConcrete(returnType, vec) \
-returnType##Ptr returnType##At(int index) const { return std::reinterpret_pointer_cast<typename returnType##Ptr::element_type>(vec.at(index)); } \
-returnType##Ptr returnType##At(int index) { return std::reinterpret_pointer_cast<typename returnType##Ptr::element_type>(vec.at(index)); }
+returnType##Ptr returnType##At(int index) const { return std::dynamic_pointer_cast<typename returnType##Ptr::element_type>(vec.at(index)); } \
+returnType##Ptr returnType##At(int index) { return std::dynamic_pointer_cast<typename returnType##Ptr::element_type>(vec.at(index)); }
 
-#define NodeAtWeakCastConcrete(returnType, vec) \
-returnType##Ptr returnType##At(int index) const { return std::reinterpret_pointer_cast<typename returnType##Ptr::element_type>(vec.at(index)); } \
-returnType##Ptr returnType##At(int index) { return std::reinterpret_pointer_cast<typename returnType##Ptr::element_type>(vec.at(index)); }
+// Weak
+
+#define NodeAtWeakImpl(returnType, vec) \
+returnType##Ptr returnType##At(int index) const override { return vec.at(index).lock(); } \
+returnType##Ptr returnType##At(int index) override { return vec.at(index).lock(); }
+
+#define NodeAtWeakConcrete(returnType, vec) \
+returnType##Ptr returnType##At(int index) const { return std::dynamic_pointer_cast<typename returnType##Ptr::element_type>(vec.at(index).lock()); } \
+returnType##Ptr returnType##At(int index) { return std::dynamic_pointer_cast<typename returnType##Ptr::element_type>(vec.at(index).lock()); }
+
+// #define NodeAtWeakCastImpl(returnType, vec) \
+// returnType##Ptr returnType##At(int index) const override { return std::dynamic_pointer_cast<typename returnType##Ptr::element_type>(vec.at(index)); } \
+// returnType##Ptr returnType##At(int index) override { return std::dynamic_pointer_cast<typename returnType##Ptr::element_type>(vec.at(index)); }
+
+#define NodeAtWeakCastImpl(returnType, vec) \
+returnType##Ptr returnType##At(int index) const override { return std::dynamic_pointer_cast<typename returnType##Ptr::element_type>(vec.at(index).lock()); } \
+returnType##Ptr returnType##At(int index) override { return std::dynamic_pointer_cast<typename returnType##Ptr::element_type>(vec.at(index).lock()); }
+
 // #define NodeAtWeakCastConcrete(returnType, vec) \
-// returnType##Ptr returnType##At(int index) const { return std::reinterpret_pointer_cast<typename returnType##Ptr::element_type>(vec.at(index).lock()); } \
-// returnType##Ptr returnType##At(int index) { return std::reinterpret_pointer_cast<typename returnType##Ptr::element_type>(vec.at(index).lock()); }
+// returnType##Ptr returnType##At(int index) const { return std::dynamic_pointer_cast<typename returnType##Ptr::element_type>(vec.at(index)); } \
+// returnType##Ptr returnType##At(int index) { return std::dynamic_pointer_cast<typename returnType##Ptr::element_type>(vec.at(index)); }
+#define NodeAtWeakCastConcrete(returnType, vec) \
+returnType##Ptr returnType##At(int index) const { return std::dynamic_pointer_cast<typename returnType##Ptr::element_type>(vec.at(index).lock()); } \
+returnType##Ptr returnType##At(int index) { return std::dynamic_pointer_cast<typename returnType##Ptr::element_type>(vec.at(index).lock()); }
 
 
 
@@ -348,24 +358,23 @@ enum class ConnectionResult
 };
 
 
-class _Node : public _NodeItem, public NodeRunner
+class _Node : public _NodeItem, public NodeObserver
 {
 private:
 protected:
 	_Node(
-		std::shared_ptr<NodeRunner> runner,
 		const std::string_view& _name, 
 		const NodeItemType& _nodeType,
 		const std::string_view& _friendlyName = "",
 		const std::string_view& _description = ""
 		) : 
-			_Node::_NodeItem(runner, _name, _nodeType | NodeItemType::NODE, _friendlyName, _description) {}
+			_Node::_NodeItem(_name, _nodeType | NodeItemType::NODE, _friendlyName, _description) {}
 
 public:
 	virtual size_t inputCount() const = 0;
 	virtual size_t outputCount() const = 0;
 
-	void update() override { mRunner->update(); }
+	void update() override { if (!mObserver.expired() && mObserver.lock()) mObserver.lock()->update(); }
 
 	virtual ~_Node() = default;
 };

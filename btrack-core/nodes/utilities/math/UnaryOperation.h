@@ -19,7 +19,6 @@ public:
 	std::shared_ptr<OutputValue<Out, OutI>> Result;
 	
 	UnaryOperation(
-		std::shared_ptr<NodeRunner> runner,
 		const std::string_view& _name, 
 		const std::string_view& _friendlyName = "",
 		const std::string_view& _description = "",
@@ -27,7 +26,7 @@ public:
 		const std::string_view& _inputDescription = "The input value",
 		const std::string_view& _outputFriendlyName = "Output",
 		const std::string_view& _outputDescription = "The result") :
-		UnaryOperation::Node(runner, _name, _friendlyName, _description)
+		UnaryOperation::Node(_name, _friendlyName, _description)
 	{
 		Parameter = this->addInputValue<In, InI>("input", _inputFriendlyName, _inputDescription);
 		Result = this->addOutputValue<Out, OutI>("output", _outputFriendlyName, _outputDescription);
@@ -47,7 +46,6 @@ public:
 	std::shared_ptr<MetaOutputValue<Out, OutI>> Result;
 	
 	MetaUnaryOperation(
-		std::shared_ptr<NodeRunner> runner,
 		const std::string_view& _name, 
 		const std::string_view& _friendlyName = "",
 		const std::string_view& _description = "",
@@ -55,7 +53,7 @@ public:
 		const std::string_view& _inputDescription = "The input value",
 		const std::string_view& _outputFriendlyName = "Output",
 		const std::string_view& _outputDescription = "The result") :
-		MetaUnaryOperation::MetaNode(runner, _name, _friendlyName, _description)
+		MetaUnaryOperation::MetaNode(_name, _friendlyName, _description)
 	{
 		Parameter = this->addInputValue<In, InI>("input", _inputFriendlyName, _inputDescription);
 		Result = this->addOutputValue<Out, OutI>("output", _outputFriendlyName, _outputDescription);

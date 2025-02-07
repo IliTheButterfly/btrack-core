@@ -11,23 +11,24 @@
 
 namespace btrack::nodes::system {
 
+
+
 class _MetaOutput : public MetaNodeIO
 {
 public:
 	using _OutputType = _Output;
-    using _OutputPtr = type_traits::ownership::borrowed_ptr_p<_Output>;
+    using _OutputPtr = borrowed_ptr_p<_Output>;
 
 	using _MetaInputType = _MetaInput;
-    using _MetaInputPtr = type_traits::ownership::borrowed_ptr_p<_MetaInput>;
+    using _MetaInputPtr = borrowed_ptr_p<_MetaInput>;
 protected:
 	_MetaOutput(
-		std::shared_ptr<NodeRunner> runner,
 		const std::string_view& _name, 
 		const NodeItemType& _nodeType,
 		const std::string_view& _friendlyName = "",
 		const std::string_view& _description = ""
 		) : 
-			_MetaOutput::MetaNodeIO(runner, _name, _nodeType | NodeItemType::OUTPUT, _friendlyName, _description) {}
+			_MetaOutput::MetaNodeIO(_name, _nodeType | NodeItemType::OUTPUT, _friendlyName, _description) {}
 	
 
 public:
@@ -57,32 +58,25 @@ class MetaOutput : public _MetaOutput
 {
 protected:
 	MetaOutput(
-		std::shared_ptr<NodeRunner> runner,
 		const std::string_view& _name, 
 		const NodeItemType& _nodeType,
 		const std::string_view& _friendlyName = "",
 		const std::string_view& _description = ""
 		) : 
-			MetaOutput::_MetaOutput(runner, _name, _nodeType, _friendlyName, _description) {}
+			MetaOutput::_MetaOutput(_name, _nodeType, _friendlyName, _description) {}
 	
 public:
 	using _OutputPtr = typename _MetaOutput::_OutputPtr;
 	using _MetaInputPtr = typename _MetaOutput::_MetaInputPtr;
 	using OutputType = Output<T, I>;
-    using OutputPtr = type_traits::ownership::borrowed_ptr_p<Output<T, I>>;
-	// using _OutputIterator = NodeIterator<_OutputPtr>;
-	// NodeIteratorAccessor(_OutputIterator, _Output, _MetaOutput);
+    using OutputPtr = borrowed_ptr_p<Output<T, I>>;
 
 	using MetaInputType = MetaInput<T, I>;
-    using MetaInputPtr = type_traits::ownership::borrowed_ptr_p<MetaInput<T, I>>;
-	// using _MetaInputIterator = NodeIterator<_MetaInputPtr>;
-	// NodeIteratorAccessor(_MetaInputIterator, _MetaInput, _MetaOutput);
-	// using MetaInputIterator = NodeIterator<MetaInputPtr>;
-	// NodeIteratorAccessor(MetaInputIterator, MetaInput, MetaOutput);
+    using MetaInputPtr = borrowed_ptr_p<MetaInput<T, I>>;
 
 	constexpr const std::type_info& dataType() const override { return typeid(T); }
-	virtual void addSender(std::weak_ptr<Sender<T, I>> sender) = 0;
-	virtual void removeSender(std::weak_ptr<Sender<T, I>> sender) = 0;
+	virtual void addSender(std::shared_ptr<Sender<T, I>> sender) = 0;
+	virtual void removeSender(std::shared_ptr<Sender<T, I>> sender) = 0;
 	virtual void broadcast(typename I::readonlyRef value) = 0;
 
 	NodeAtVirtual(Output);

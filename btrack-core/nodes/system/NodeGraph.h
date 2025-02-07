@@ -6,7 +6,7 @@
 
 namespace btrack::nodes::system {
 
-class NodeGraph
+class NodeGraph : public NodeObserver
 {
 public:
 	using MetaNodePtr = std::shared_ptr<MetaNode>;

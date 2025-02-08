@@ -9,17 +9,42 @@
 using namespace btrack::nodes::system;
 using namespace btrack::nodes::utilities::math;
 
+class DummyGraph : public NodeObserver
+{
+public:
+	void update() {}
+};
+
+class DummyNode : public _Node
+{
+public:
+	DummyNode() : _Node::_Node("", NodeItemType::UNKNOWN) {}
+	size_t inputCount() const { return 1; }
+	size_t outputCount() const { return 1; }
+};
+
+auto dummy = std::make_shared<DummyNode>();
+
 class NodeStart : public Node
 {
+private:
+	struct Protected { explicit Protected() = default; };
 public:
 	std::shared_ptr<OutputValue<int>> valueOutput;
 	std::shared_ptr<OutputValue<int>> arrayOutput;
 
-	NodeStart() : NodeStart::Node("nodeStart")
+	NodeStart(Protected _) : NodeStart::Node("nodeStart") { }
+
+	static std::shared_ptr<NodeStart> create()
 	{
-		valueOutput = addOutputValue<int>("valueOutput");
-		arrayOutput = addOutputValue<int>("arrayOutput");
+		auto ret = std::make_shared<NodeStart>(Protected());
+		ret->valueOutput = ret->addOutputValue<int>("valueOutput");
+		ret->arrayOutput = ret->addOutputValue<int>("arrayOutput");
+		return ret;
 	}
+
+	size_t inputCount() const override { return 0; }
+	size_t outputCount() const override { return 2; }
 
 	void process() override
 	{
@@ -29,19 +54,28 @@ public:
 
 class TestNodeStart : public MetaNode
 {
+private:
+	struct Protected { explicit Protected() = default; };
 public:
 	std::shared_ptr<MetaOutputValue<int>> valueOutput;
 	std::shared_ptr<MetaOutputArray<int>> arrayOutput;
-	TestNodeStart(
+	TestNodeStart(Protected _,
 		const std::string_view& _name, 
 		const std::string_view& _friendlyName = "",
 		const std::string_view& _description = ""
 		) : 
 			TestNodeStart::MetaNode(_name, _friendlyName, _description) 
 			{
-				valueOutput = addOutputValue<int>("valueOutput");
-				arrayOutput = addOutputArray<int>("arrayOutput");
+				
 			}
+
+	static std::shared_ptr<TestNodeStart> create()
+	{
+		auto ret = std::make_shared<TestNodeStart>(Protected(), "");
+		ret->valueOutput = ret->addOutputValue<int>("valueOutput");
+		ret->arrayOutput = ret->addOutputArray<int>("arrayOutput");
+		return ret;
+	}
 
 	void generate(int count) override {}
 
@@ -51,15 +85,26 @@ public:
 
 class NodeStartFloat : public Node
 {
+private:
+	struct Protected { explicit Protected() = default; };
 public:
 	std::shared_ptr<OutputValue<float>> valueOutput;
 	std::shared_ptr<OutputValue<float>> arrayOutput;
 
-	NodeStartFloat() : NodeStartFloat::Node("nodeStartFloat")
+	NodeStartFloat(Protected _) : NodeStartFloat::Node("nodeStartFloat")
 	{
-		valueOutput = addOutputValue<float>("valueOutput");
-		arrayOutput = addOutputValue<float>("arrayOutput");
+		
 	}
+
+	static std::shared_ptr<NodeStartFloat> create()
+	{
+		auto ret = std::make_shared<NodeStartFloat>(Protected());
+		ret->valueOutput = ret->addOutputValue<float>("valueOutput");
+		ret->arrayOutput = ret->addOutputValue<float>("arrayOutput");
+		return ret;
+	}
+	size_t inputCount() const override { return 0; }
+	size_t outputCount() const override { return 2; }
 
 	void process() override
 	{
@@ -69,19 +114,29 @@ public:
 
 class TestNodeStartFloat : public MetaNode
 {
+private:
+	struct Protected { explicit Protected() = default; };
 public:
 	std::shared_ptr<MetaOutputValue<float>> valueOutput;
 	std::shared_ptr<MetaOutputArray<float>> arrayOutput;
 	TestNodeStartFloat(
+		Protected _,
 		const std::string_view& _name, 
 		const std::string_view& _friendlyName = "",
 		const std::string_view& _description = ""
 		) : 
 			TestNodeStartFloat::MetaNode(_name, _friendlyName, _description) 
 			{
-				valueOutput = addOutputValue<float>("valueOutput");
-				arrayOutput = addOutputArray<float>("arrayOutput");
+				
 			}
+
+	static std::shared_ptr<TestNodeStartFloat> create()
+	{
+		auto ret = std::make_shared<TestNodeStartFloat>(Protected(), "");
+		ret->valueOutput = ret->addOutputValue<float>("valueOutput");
+		ret->arrayOutput = ret->addOutputArray<float>("arrayOutput");
+		return ret;
+	}
 
 	void generate(int count) override {}
 
@@ -91,6 +146,8 @@ public:
 
 class TestNodeMid1 : public MetaNode
 {
+private:
+	struct Protected { explicit Protected() = default; };
 public:
 	std::shared_ptr<MetaInputValue<int>> valueInput;
 	std::shared_ptr<MetaInputArray<int>> arrayInput;
@@ -99,17 +156,25 @@ public:
 	std::shared_ptr<MetaOutputArray<int>> arrayOutput;
 
 	TestNodeMid1(
+		Protected _,
 		const std::string_view& _name, 
 		const std::string_view& _friendlyName = "",
 		const std::string_view& _description = ""
 		) : 
 			TestNodeMid1::MetaNode(_name, _friendlyName, _description) 
 			{
-				valueInput = addInputValue<int>("valueInput");
-				arrayInput = addInputArray<int>("arrayInput");
-				valueOutput = addOutputValue<int>("valueOutput");
-				arrayOutput = addOutputArray<int>("arrayOutput");
+				
 			}
+	
+	static std::shared_ptr<TestNodeMid1> create()
+	{
+		auto ret = std::make_shared<TestNodeMid1>(Protected(), "");
+		ret->valueInput = ret->addInputValue<int>("valueInput");
+		ret->arrayInput = ret->addInputArray<int>("arrayInput");
+		ret->valueOutput = ret->addOutputValue<int>("valueOutput");
+		ret->arrayOutput = ret->addOutputArray<int>("arrayOutput");
+		return ret;
+	}
 
 	void generate(int count) override {}
 
@@ -119,19 +184,29 @@ public:
 
 class TestNodeEnd : public MetaNode
 {
+private:
+	struct Protected { explicit Protected() = default; };
 public:
 	TestNodeEnd(
+		Protected _,
 		const std::string_view& _name, 
 		const std::string_view& _friendlyName = "",
 		const std::string_view& _description = ""
 		) : 
 			TestNodeEnd::MetaNode(_name, _friendlyName, _description) 
 			{
-				valueInput = addInputValue<int>("valueInput");
-				arrayInput = addInputArray<int>("arrayInput");
+				
 			}
 	std::shared_ptr<MetaInputValue<int>> valueInput;
 	std::shared_ptr<MetaInputArray<int>> arrayInput;
+
+	static std::shared_ptr<TestNodeEnd> create()
+	{
+		auto ret = std::make_shared<TestNodeEnd>(Protected(), "");
+		ret->valueInput = ret->addInputValue<int>("valueInput");
+		ret->arrayInput = ret->addInputArray<int>("arrayInput");
+		return ret;
+	}
 
 	void generate(int count) override {}
 
@@ -151,15 +226,15 @@ public:
  */
 TEST(NodeTests, SimpleChain)
 {
-	auto start = TestNodeStart("start", "Start");
-	auto mid = TestNodeMid1("mid", "Middle");
-	auto end = TestNodeEnd("end", "End");
+	auto start = TestNodeStart::create();
+	auto mid = TestNodeMid1::create();
+	auto end = TestNodeEnd::create();
 
-	(*start.valueOutput)>>mid.valueInput;
-	(*start.arrayOutput)>>mid.arrayInput;
+	(*start->valueOutput)>>mid->valueInput;
+	(*start->arrayOutput)>>mid->arrayInput;
 
-	(*mid.valueOutput)>>end.valueInput;
-	(*mid.arrayOutput)>>end.arrayInput;
+	(*mid->valueOutput)>>end->valueInput;
+	(*mid->arrayOutput)>>end->arrayInput;
 }
 
 /**
@@ -175,10 +250,10 @@ TEST(NodeTests, SimpleChain)
  */
 TEST(NodeTests, ValueToArray)
 {
-	auto start = TestNodeStart("start", "Start");
-	auto end = TestNodeEnd("end", "End");
+	auto start = TestNodeStart::create();
+	auto end = TestNodeEnd::create();
 
-	(*start.valueOutput)>>end.arrayInput;
+	(*start->valueOutput)>>end->arrayInput;
 }
 
 /**
@@ -193,15 +268,15 @@ TEST(NodeTests, ValueToArray)
  */
 TEST(NodeTests, OtherChain)
 {
-	auto start = TestNodeStart("start", "Start");
-	auto mid = TestNodeMid1("mid", "Middle");
-	auto end = TestNodeEnd("end", "End");
+	auto start = TestNodeStart::create();
+	auto mid = TestNodeMid1::create();
+	auto end = TestNodeEnd::create();
 
-	(*start.valueOutput)>>mid.valueInput;
-	(*start.arrayOutput)>>mid.arrayInput;
+	(*start->valueOutput)>>mid->valueInput;
+	(*start->arrayOutput)>>mid->arrayInput;
 
-	(*mid.valueOutput)>>end.valueInput;
-	(*mid.arrayOutput)>>end.arrayInput;
+	(*mid->valueOutput)>>end->valueInput;
+	(*mid->arrayOutput)>>end->arrayInput;
 }
 
 
@@ -278,9 +353,9 @@ TEST(NodeUtilitiesMathTests, NegateOperation)
 {
 	// auto t = boost::thread(run);
 	// auto t1 = UnaryNodeTester<Negate<int>, const int, const int>(5, -5);
-	auto n = std::make_shared<Negate<int, DefaultChannelTypeInfo<int>>>("UnaryTest");
-	std::shared_ptr<OutputValue<int>> parameter = std::make_shared<OutputValue<int>>("parameter");
-	std::shared_ptr<InputValue<int>> result = std::make_shared<InputValue<int>>("result");
+	auto n = Negate<int, DefaultChannelTypeInfo<int>>::create(dummy, "UnaryTest");
+	std::shared_ptr<OutputValue<int>> parameter = OutputValue<int>::create(dummy, dummy, "parameter");
+	std::shared_ptr<InputValue<int>> result = InputValue<int>::create(dummy, dummy, "result");
 
 	std::cout << "Connecting" << std::endl;
 	(*parameter) >> n->Parameter;

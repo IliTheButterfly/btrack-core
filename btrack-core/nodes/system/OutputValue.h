@@ -19,14 +19,30 @@ public:
 	using InputValueType = InputValue<T, I>;
     using InputValuePtr = borrowed_ptr_p<InputValue<T, I>>;
 protected:
+	struct Protected { explicit Protected() = default; };
 	std::vector<InputValuePtr> mChildren{};
 public:
 	OutputValue(
+		Protected _,
 		const std::string_view& _name, 
 		const std::string_view& _friendlyName = "",
 		const std::string_view& _description = ""
 		) : 
 			OutputValue::Output(_name, NodeItemType::VALUE, _friendlyName, _description) {}
+
+	static std::shared_ptr<OutputValue> create(
+		std::shared_ptr<_Node> _parent,
+		std::shared_ptr<NodeObserver> _observer,
+		const std::string_view& _name, 
+		const std::string_view& _friendlyName = "",
+		const std::string_view& _description = ""
+	)
+	{
+		auto ret = std::make_shared<OutputValue>(Protected(), _name, _friendlyName, _description);
+		ret->mParent = _parent;
+		ret->mObserver = _observer;
+		return ret;
+	}
 
 	NodeAtWeakCastImpl(_Input, mChildren)
 	NodeAtWeakCastImpl(Input, mChildren)

@@ -33,7 +33,7 @@ protected:
 		const std::string_view& _friendlyName = "",
 		const std::string_view& _description = "")
 	{
-		auto input = std::make_shared<InputValue<T, I>>(_name, _friendlyName, _description);
+		auto input = InputValue<T, I>::create(this->asNode(), this->asObserver(), _name, _friendlyName, _description);
 		mInputs.push_back(input);
 		IF_WEAK_VALID(mObserver)->addItem(input);
 		return input;
@@ -45,7 +45,7 @@ protected:
 		const std::string_view& _friendlyName = "",
 		const std::string_view& _description = "")
 	{
-		auto output = std::make_shared<OutputValue<T, I>>(_name, _friendlyName, _description);
+		auto output = OutputValue<T, I>::create(this->asNode(), this->asObserver(), _name, _friendlyName, _description);
 		mOutputs.push_back(output);
 		IF_WEAK_VALID(mObserver)->addItem(output);
 		return output;

@@ -30,12 +30,14 @@ public:
 	using MetaInputArrayType = MetaInputArray<T, I>;
 	using MetaInputArrayPtr = borrowed_ptr_p<MetaInputArray<T, I>>;
 protected:
+	struct Protected { explicit Protected() = default; };
 	using Sender_t = BroadcastChannel<T, I>;
 	std::shared_ptr<Sender_t> mBroadcast;
 	std::vector<OutputValuePtr> mOutputs;
 	std::vector<MetaInputArrayPtr> mChildren;
 public:
 	MetaOutputArray(
+		Protected _,
 		const std::string_view& _name, 
 		const std::string_view& _friendlyName = "",
 		const std::string_view& _description = ""
@@ -45,7 +47,19 @@ public:
 				mBroadcast = std::make_shared<Sender_t>();
 			}
 
-	
+	static std::shared_ptr<MetaOutputArray> create(
+		std::shared_ptr<_Node> _parent,
+		std::shared_ptr<NodeObserver> _observer,
+		const std::string_view& _name, 
+		const std::string_view& _friendlyName = "",
+		const std::string_view& _description = ""
+		)
+	{
+		auto ret = std::make_shared<MetaOutputArray>(Protected(), _name, _friendlyName, _description);
+		ret->mParent = _parent;
+		ret->mObserver = _observer;
+		return ret;
+	}
 	
 	// Implement iterators
 	NodeAtWeakConcrete(MetaInputArray, mChildren);

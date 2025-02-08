@@ -24,18 +24,34 @@ public:
 	using OutputValueType = OutputValue<T, I>;
 	using OutputValuePtr = borrowed_ptr_p<OutputValue<T, I>>;
 protected:
+	struct Protected { explicit Protected() = default; };
 	using Sender_t = BroadcastChannel<T, I>;
 	std::shared_ptr<Sender_t> mBroadcast;
 	std::vector<OutputValuePtr> mOutputs;
 	std::vector<MetaInputPtr> mChildren;
 public:
 	MetaOutputValue(
+		Protected _,
 		const std::string_view& _name, 
 		const std::string_view& _friendlyName = "",
 		const std::string_view& _description = ""
 		) : 
 			MetaOutputValue::MetaOutput(_name, NodeItemType::VALUE, _friendlyName, _description) {}
 	
+	static std::shared_ptr<MetaOutputValue> create(
+		std::shared_ptr<_Node> _parent,
+		std::shared_ptr<NodeObserver> _observer,
+		const std::string_view& _name, 
+		const std::string_view& _friendlyName = "",
+		const std::string_view& _description = ""
+		)
+	{
+		auto ret = std::make_shared<MetaOutputValue>(Protected(), _name, _friendlyName, _description);
+		ret->mParent = _parent;
+		ret->mObserver = _observer;
+		return ret;
+	}
+
 	NodeAtWeakConcrete(MetaInput, mChildren)
 	NodeAtWeakCastImpl(_MetaInput, mChildren)
 	NodeAtWeakConcrete(OutputValue, mOutputs)

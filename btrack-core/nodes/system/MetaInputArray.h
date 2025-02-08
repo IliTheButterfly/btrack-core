@@ -20,15 +20,30 @@ public:
 	using InputValueType = InputValue<T, I>;
 	using InputValuePtr = borrowed_ptr_p<InputValue<T, I>>;
 protected:
+	struct Protected { explicit Protected() = default; };
 	std::vector<InputValuePtr> mInputs;
 public:
 	MetaInputArray(
+		Protected _,
 		const std::string_view& _name, 
 		const std::string_view& _friendlyName = "",
 		const std::string_view& _description = ""
 		) : 
 			MetaInputArray::MetaInput(_name, NodeItemType::ARRAY, _friendlyName, _description) {}
 
+	static std::shared_ptr<MetaInputArray> create(
+		std::shared_ptr<_Node> _parent,
+		std::shared_ptr<NodeObserver> _observer,
+		const std::string_view& _name, 
+		const std::string_view& _friendlyName = "",
+		const std::string_view& _description = ""
+		)
+	{
+		auto ret = std::make_shared<MetaInputArray>(Protected(), _name, _friendlyName, _description);
+		ret->mParent = _parent;
+		ret->mObserver = _observer;
+		return ret;
+	}
 
 	NodeAtWeakConcrete(InputValue, mInputs);
 	NodeAtWeakCastImpl(_Input, mInputs);

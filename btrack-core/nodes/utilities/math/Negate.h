@@ -12,13 +12,28 @@ namespace btrack::nodes::utilities::math {
 template <typename T, ChannelTypeConcept<T> I = DefaultChannelTypeInfo<T>>
 class Negate : public UnaryOperation<T, T, I, I>
 {
+protected:
+	struct Protected { explicit Protected() = default; };
 public:
+	Negate(
+		Protected _,
+		const std::string_view& _name,
+		const std::string_view& _friendlyName = defaultFriendlyName
+		) :
+			Negate::UnaryOperation(_name, _friendlyName, description) { }
+	static std::shared_ptr<Negate> create(std::shared_ptr<NodeObserver> _observer,
+		const std::string_view& _name,
+		const std::string_view& _friendlyName = defaultFriendlyName)
+	{
+		auto res = std::make_shared<Negate>(Protected(), _name, _friendlyName);
+		res->init();
+		res->mObserver = _observer;
+		return res;
+	}
+
 	inline static const std::string defaultFriendlyName = "Negate";
 	inline static const std::string description = "Negates the input value";
 
-	Negate(const std::string_view& _name, const std::string_view& _friendlyName = defaultFriendlyName)
-		: Negate::UnaryOperation(_name, _friendlyName, description)
-		{ }
 	void process() override
 	{
 		typename I::item val;
@@ -30,21 +45,37 @@ public:
 template <typename T, ChannelTypeConcept<T> I = DefaultChannelTypeInfo<T>>
 class MetaNegate : public MetaUnaryOperation<T, T, I, I>
 {
+protected:
+	struct Protected { explicit Protected() = default; };
 public:
 	inline static const std::string defaultFriendlyName = "Negate";
 	inline static const std::string description = "Negates the input value";
 
 	static const std::string_view Name() { return defaultFriendlyName; }
 
-	MetaNegate(const std::string_view& _name, const std::string_view& _friendlyName = defaultFriendlyName)
-		: MetaNegate::MetaUnaryOperation(_name, _friendlyName, description)
-		{ }
+	MetaNegate(
+		Protected _,
+		const std::string_view& _name,
+		const std::string_view& _friendlyName = defaultFriendlyName
+		) :
+			MetaNegate::MetaUnaryOperation(_name, _friendlyName, description) { }
 	
+	static std::shared_ptr<MetaNegate> create(
+		std::shared_ptr<NodeObserver> _observer,
+		const std::string_view& _name,
+		const std::string_view& _friendlyName = defaultFriendlyName)
+	{
+		auto res = std::make_shared<MetaNegate>(Protected(), _name, _friendlyName);
+		res->init();
+		res->mObserver = _observer;
+		return res;
+	}
+
 	void generate(int count) override
 	{
 		for (int i = 0; i < count; ++i)
 		{
-			auto node = std::make_shared<Negate<T, I>>(this->name());
+			auto node = Negate<T, I>::create(this->asObserver(), this->name());
 			for (int ii = 0; ii < this->inputCount(); ++ii)
 			{
 				this->_MetaInputAt(ii)->attach(node->_InputAt(ii));

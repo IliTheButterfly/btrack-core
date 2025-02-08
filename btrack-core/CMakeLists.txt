@@ -18,6 +18,8 @@ find_package(CUDA REQUIRED)
 endif ()
 find_package(Boost COMPONENTS thread filesystem serialization REQUIRED)
 
+include_directories(${OpenCV_INCLUDE_DIRS})
+
 if (USE_CUDA)
 	# add_definitions(-DUSE_CUDA)
 	include_directories(${CUDA_INCLUDE_DIRS})
@@ -27,6 +29,7 @@ include_directories(${btrack_core_INCLUDES})
 file(GLOB_RECURSE BTRACK_CORE_SOURCES "**.cpp")
 list(FILTER BTRACK_CORE_SOURCES EXCLUDE REGEX "tests/.*")
 add_library(btrack-core ${BTRACK_CORE_SOURCES})
+message(STATUS "Sources: ${BTRACK_CORE_SOURCES}")
 
 if (USE_CUDA)
 	add_library (btrack-core-cuda ${SourceFiles})

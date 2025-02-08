@@ -15,8 +15,10 @@ using namespace boost::numeric::ublas;
 class SimpleNodeRunner : public NodeRunner
 {
 private:
-	std::vector<std::weak_ptr<_NodeItem>> mNodes;
-	Graph mGraph;
+	// Empty item acting as the end point (goal) to solve the graph for
+	const std::shared_ptr<_NodeItem> blank = nullptr;
+	std::vector<std::weak_ptr<_NodeItem>> mNodes { blank };
+	Graph mGraph = {1};
 private:
 public:
 	void run() override;

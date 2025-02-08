@@ -38,48 +38,48 @@ protected:
 	std::vector<_MetaInputPtr> mInputs;
 
 	template <typename T, ChannelTypeConcept<T> I = DefaultChannelTypeInfo<T>>
-	constexpr std::shared_ptr<MetaInputValue<T, I>> addInputValue(
+	std::shared_ptr<MetaInputValue<T, I>> addInputValue(
 		const std::string_view& _name, 
 		const std::string_view& _friendlyName = "",
 		const std::string_view& _description = "")
 	{
-		auto input = std::make_shared<MetaInputValue<T, I>>(_name, _friendlyName, _description); 
+		auto input = MetaInputValue<T, I>::create(this->asNode(), this->asObserver(), _name, _friendlyName, _description); 
 		mInputs.push_back(input);
 		IF_WEAK_VALID(mObserver)->addItem(input);
 		return input;
 	}
 
 	template <typename T, ChannelTypeConcept<T> I = DefaultChannelTypeInfo<T>>
-	constexpr std::shared_ptr<MetaInputArray<T, I>> addInputArray(
+	std::shared_ptr<MetaInputArray<T, I>> addInputArray(
 		const std::string_view& _name, 
 		const std::string_view& _friendlyName = "",
 		const std::string_view& _description = "")
 	{
-		auto input = std::make_shared<MetaInputArray<T, I>>(this->asNode(), this->asObserver(), _name, _friendlyName, _description); 
+		auto input = MetaInputArray<T, I>::create(this->asNode(), this->asObserver(), _name, _friendlyName, _description); 
 		mInputs.push_back(input);
 		IF_WEAK_VALID(mObserver)->addItem(input);
 		return input;
 	}
 
 	template <typename T, ChannelTypeConcept<T> I = DefaultChannelTypeInfo<T>>
-	constexpr std::shared_ptr<MetaOutputValue<T, I>> addOutputValue(
+	std::shared_ptr<MetaOutputValue<T, I>> addOutputValue(
 		const std::string_view& _name, 
 		const std::string_view& _friendlyName = "",
 		const std::string_view& _description = "")
 	{
-		auto output = std::make_shared<MetaOutputValue<T, I>>(_name, _friendlyName, _description); 
+		auto output = MetaOutputValue<T, I>::create(this->asNode(), this->asObserver(), _name, _friendlyName, _description); 
 		mOutputs.push_back(output);
 		IF_WEAK_VALID(mObserver)->addItem(output);
 		return output;
 	}
 
 	template <typename T, ChannelTypeConcept<T> I = DefaultChannelTypeInfo<T>>
-	constexpr std::shared_ptr<MetaOutputArray<T, I>> addOutputArray(
+	std::shared_ptr<MetaOutputArray<T, I>> addOutputArray(
 		const std::string_view& _name, 
 		const std::string_view& _friendlyName = "",
 		const std::string_view& _description = "")
 	{
-		auto output = std::make_shared<MetaOutputArray<T, I>>(_name, _friendlyName, _description); 
+		auto output = MetaOutputArray<T, I>::create(this->asNode(), this->asObserver(), _name, _friendlyName, _description); 
 		mOutputs.push_back(output);
 		IF_WEAK_VALID(mObserver)->addItem(output);
 		return output;
@@ -137,7 +137,7 @@ protected:
 	{
 		for (int i = 0; i != count; ++i)
 		{
-			auto node = std::make_shared<NodeType>(name(), friendlyName(), description());
+			auto node = NodeType::create(name(), friendlyName(), description());
 			IF_WEAK_VALID(mObserver)->addItem(node);
 			for (int ii = 0; ii < this->inputCount(); ++ii)
 			{

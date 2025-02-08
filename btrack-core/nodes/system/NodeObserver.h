@@ -19,6 +19,8 @@ public:
 
 	virtual void addConnection(std::shared_ptr<_NodeItem> from, std::shared_ptr<_NodeItem> to) {}
 	virtual void removeConnection(std::shared_ptr<_NodeItem> from, std::shared_ptr<_NodeItem> to) {}
+
+	virtual ~NodeObserver() = default;
 };
 
 }

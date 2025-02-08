@@ -20,14 +20,15 @@ using NodeRunner = runners::NodeRunner;
 
 enum class NodeItemType : uint8_t
 {
-	UNKNOWN		= 0b000000,
-	INPUT		= 0b000001,
-	OUTPUT 		= 0b000010,
-	NODE		= 0b000100,
-	ARRAY		= 0b001000,
-	VALUE		= 0b010000,
-	META		= 0b100000,
-	ANY			= 0b111111,
+	UNKNOWN		= 0b0000000,
+	INPUT		= 0b0000001,
+	OUTPUT 		= 0b0000010,
+	NODE		= 0b0000100,
+	ARRAY		= 0b0001000,
+	VALUE		= 0b0010000,
+	META		= 0b0100000,
+	FORCED		= 0b1000000,
+	ANY			= 0b1111111,
 	INPUT_ARRAY = INPUT | ARRAY,
 	INPUT_VALUE = INPUT | VALUE,
 	OUTPUT_ARRAY = OUTPUT | ARRAY,
@@ -240,6 +241,7 @@ public:
 	bool isMeta() const { return (mNodeType & NodeItemType::META) == NodeItemType::META; }
 	bool isArray() const { return (mNodeType & NodeItemType::ARRAY) == NodeItemType::ARRAY; }
 	bool isValue() const { return (mNodeType & NodeItemType::VALUE) == NodeItemType::VALUE; }
+	bool isForced() const { return (mNodeType & NodeItemType::FORCED) == NodeItemType::FORCED; }
 	bool matches(NodeItemType pattern) const { return (mNodeType | pattern) == pattern; }
 
 	bool operator==(const _NodeItem& other) const { return uuid() == other.uuid(); }
@@ -250,6 +252,7 @@ public:
 	virtual ~_NodeItem() = default;
 };
 
+class _Node;
 
 class NodeIO : public _NodeItem
 {
@@ -262,7 +265,12 @@ protected:
 		const std::string_view& _description = ""
 		) : 
 			NodeIO::_NodeItem(_name, _nodeType, _friendlyName, _description) {}
+	
+	std::weak_ptr<_Node> mParent;
 public:
+	std::shared_ptr<_Node> parent() const { return mParent.lock(); }
+	template <std::derived_from<_Node> NodeType>
+	std::shared_ptr<NodeType> parent() const { return std::dynamic_pointer_cast<NodeType>(parent()); }
 	virtual constexpr const std::type_info& dataType() const = 0;
 	constexpr bool convertibleFrom(const std::type_info& from) const { return type_traits::convertible(from, dataType()); }
 	constexpr bool convertibleTo(const std::type_info& to) const { return type_traits::convertible(dataType(), to); }
@@ -374,7 +382,16 @@ public:
 	virtual size_t inputCount() const = 0;
 	virtual size_t outputCount() const = 0;
 
+
 	void update() override { if (!mObserver.expired() && mObserver.lock()) mObserver.lock()->update(); }
+
+	std::shared_ptr<_Node> asNode() { return std::dynamic_pointer_cast<_Node>(this->shared_from_this()); }
+
+	std::shared_ptr<NodeObserver> asObserver()
+	{
+		return std::dynamic_pointer_cast<NodeObserver>(this->shared_from_this());
+	}
+
 
 	virtual ~_Node() = default;
 };

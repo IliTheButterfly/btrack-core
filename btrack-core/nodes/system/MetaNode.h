@@ -55,7 +55,7 @@ protected:
 		const std::string_view& _friendlyName = "",
 		const std::string_view& _description = "")
 	{
-		auto input = std::make_shared<MetaInputArray<T, I>>(_name, _friendlyName, _description); 
+		auto input = std::make_shared<MetaInputArray<T, I>>(this->asNode(), this->asObserver(), _name, _friendlyName, _description); 
 		mInputs.push_back(input);
 		IF_WEAK_VALID(mObserver)->addItem(input);
 		return input;

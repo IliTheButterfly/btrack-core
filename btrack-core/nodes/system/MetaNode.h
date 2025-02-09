@@ -137,7 +137,7 @@ protected:
 	{
 		for (int i = 0; i != count; ++i)
 		{
-			auto node = NodeType::create(name(), friendlyName(), description());
+			auto node = NodeType::create(this->asObserver(), name(), friendlyName(), description());
 			IF_WEAK_VALID(mObserver)->addItem(node);
 			for (int ii = 0; ii < this->inputCount(); ++ii)
 			{

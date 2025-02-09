@@ -13,5 +13,5 @@ using namespace btrack::nodes::runners;
 TEST(NodeRunnerTests, BaseOrdering)
 {
 	SimpleNodeRunner runner;
-
+	
 }

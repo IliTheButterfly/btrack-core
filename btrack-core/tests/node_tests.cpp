@@ -305,33 +305,6 @@ TEST(RegistryTests, TestIters)
 
 }
 
-// TEST(NodeTests, TypeConversionChain)
-// {
-// 	auto start = TestNodeStartFloat("start", "Start");
-// 	auto mid = TestNodeMid1("mid", "Middle");
-
-// 	(*start.valueOutput)>>mid.valueInput;
-// 	(*start.arrayOutput)>>mid.arrayInput;
-// }
-
-// template <typename N, typename In, typename Out>
-// struct UnaryNodeTester
-// {
-// 	std::shared_ptr<OutputValue<In>> parameter = std::make_shared<OutputValue<In>>();
-// 	std::shared_ptr<InputValue<Out>> result = std::make_shared<InputValue<Out>>();
-// 	std::shared_ptr<N> node = std::make_shared<N>("TestUnary");
-// 	UnaryNodeTester(SendParam_t<In> param, SendParam_t<Out> expected)
-// 	{
-// 		parameter >>(node->Parameter);
-// 		(*result)>>node->Result;
-// 		parameter<<param;
-// 		ElemType_t<Out> v;
-// 		node->process();
-// 		(*result)>>v;
-// 		GTEST_ASSERT_EQ(expected, v);
-// 	}
-// };
-
 boost::condition_variable done;
 boost::mutex mtx;
 std::atomic_bool doneVar = false;
@@ -345,9 +318,6 @@ void run()
 	else exit(EXIT_SUCCESS);
 
 }
-
-
-
 
 TEST(NodeUtilitiesMathTests, NegateOperation)
 {

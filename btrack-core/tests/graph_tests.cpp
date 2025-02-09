@@ -28,23 +28,50 @@ void linearGraph(Graph &g)
 TEST(GraphTests, LinearGraph3)
 {
 	Graph g = Graph(3);
-	mapped_matrix<int> expected;
+	mapped_matrix<int> expected(3, 3);
+
+	// 0 -> 1 ; 1 -> 2
+	expected(0, 1) = 1;
+	expected(1, 2) = 1;
+
 	linearGraph(g);
 
-	{
-		for (int _i = 0; _i < 3; ++_i)
-		{
-			for (int _ii = 0; _ii < 3; ++_ii)
-			{
-				std::cout << "Index [" << _i << ", " << _ii << "]" << std::endl;
-				switch (0)
-				case 0:
-				default:
-					if (const ::testing::AssertionResult gtest_ar = (::testing::internal::EqHelper::Compare("g(_i, _ii)", "expected(_i, _ii)", g(_i, _ii), expected(_i, _ii))))
-						;
-					else
-						return ::testing::internal::AssertHelper(::testing::TestPartResult::kFatalFailure, "/media/capra/efe2920a-7c6d-4a40-bf38-4ab551f556af/home/ili/prog/btrack-core/btrack-core/tests/graph_tests.cpp", 34, gtest_ar.failure_message()) = ::testing::Message();
-			}
-		}
-	};
+	ASSERT_MAT_EQUAL(g, expected, 3, 3);
+}
+
+TEST(GraphTests, LinearGraph5)
+{
+	Graph g = Graph(5);
+	mapped_matrix<int> expected(5, 5);
+
+	expected(0, 1) = 1;
+	expected(1, 2) = 1;
+	expected(2, 3) = 1;
+	expected(3, 4) = 1;
+
+	linearGraph(g);
+
+	ASSERT_MAT_EQUAL(g, expected, 5, 5);
+}
+
+TEST(GraphTests, BranchedGraph5)
+{
+	Graph g = Graph(5);
+	mapped_matrix<int> expected(5, 5);
+
+	g.addEdge(1, 0);
+	g.addEdge(2, 0);
+	g.addEdge(3, 2);
+	g.addEdge(4, 2);
+	g.addEdge(4, 3);
+
+
+	expected(1, 0) = 1;
+	expected(2, 0) = 1;
+	expected(3, 2) = 1;
+	expected(4, 2) = 1;
+	expected(4, 3) = 1;
+
+
+	ASSERT_MAT_EQUAL(g, expected, 5, 5);
 }

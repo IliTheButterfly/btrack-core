@@ -127,8 +127,15 @@ public:
 		for (auto i : mChildren)
 		{
 			if (i.expired() || !i.lock()) continue;
+			try
+			{
+				IF_WEAK_VALID(this->mObserver)->removeConnection(this->shared_from_this(), i.lock());
+			}
+			catch(const std::bad_weak_ptr& e)
+			{
+			}
 			removeSender(i.lock()->mChannel);
-			IF_WEAK_VALID(this->mObserver)->removeConnection(this->shared_from_this(), i.lock());
+			
 		}
 	}
 };

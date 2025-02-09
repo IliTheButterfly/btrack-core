@@ -83,7 +83,7 @@ add_executable(
     node_tests.cpp
 	${SourceFiles}
 )
-target_include_directories(node_tests PUBLIC ${btrack_core_INCLUDES})
+target_include_directories(node_tests PUBLIC ${btrack_core_INCLUDES} "btrack-core/tests")
 target_link_libraries(
     node_tests
     GTest::gtest_main
@@ -115,6 +115,7 @@ add_executable(
     node_runner_tests
     node_runner_tests.cpp
 )
+target_include_directories(node_runner_tests PUBLIC ${btrack_core_INCLUDES} "btrack-core/tests")
 target_link_libraries(
     node_runner_tests
     GTest::gtest_main

@@ -5,9 +5,11 @@
 #include "nodes/system/nodes.h"
 #include "nodes/utilities/math/UnaryOperation.h"
 #include "nodes/system/shortcuts.h"
+#include "nodes/runners/NodeRunnerProvider.h"
 
 
 using namespace btrack::nodes::system;
+using namespace btrack::nodes::runners;
 using namespace btrack::nodes::utilities::math;
 
 class DummyGraph : public NodeObserver
@@ -100,8 +102,6 @@ protected:
 		}
 	}
 
-
-
 };
 
 class NodeStart : public TestNode
@@ -157,6 +157,15 @@ public:
 	void generate(int count) override 
 	{
 		this->testGenerateImpl<NodeStart>(count);
+	}
+
+	void start(int val, std::vector<int> arr)
+	{
+		generate(arr.size())
+		for (auto v : arr)
+		{
+			
+		}
 	}
 
 	size_t inputCount() const override { return 0; }

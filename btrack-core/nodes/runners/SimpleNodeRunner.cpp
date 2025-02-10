@@ -44,21 +44,34 @@ void SimpleNodeRunner::removeItem(std::shared_ptr<_NodeItem> node)
 void SimpleNodeRunner::addConnection(std::shared_ptr<_NodeItem> from, std::shared_ptr<_NodeItem> to)
 {
 	auto ifrom = std::find_if(mNodes.begin(), mNodes.end(), 
-		[&](std::weak_ptr<_NodeItem> i){ return !i.expired() && i.lock() == from; });
+		[&](std::weak_ptr<_NodeItem> i){ 
+			return !i.expired() && 
+				(i.lock()->isNode() && i.lock() == from) ||
+				(!i.lock()->isNode() && std::dynamic_pointer_cast<NodeIO>(i.lock())->parent() == from); });
 	if (ifrom == mNodes.end()) return;
 	auto ito = std::find_if(mNodes.begin(), mNodes.end(), 
-		[&](std::weak_ptr<_NodeItem> i){ return !i.expired() && i.lock() == to; });
+		[&](std::weak_ptr<_NodeItem> i){ 
+			return !i.expired() && 
+				(i.lock()->isNode() && i.lock() == to) ||
+				(!i.lock()->isNode() && std::dynamic_pointer_cast<NodeIO>(i.lock())->parent() == to); });
 	if (ito == mNodes.end()) return;
+	
 	mGraph.addEdge(ifrom - mNodes.begin(), ito - mNodes.begin());
 }
 
 void SimpleNodeRunner::removeConnection(std::shared_ptr<_NodeItem> from, std::shared_ptr<_NodeItem> to)
 {
 	auto ifrom = std::find_if(mNodes.begin(), mNodes.end(), 
-		[&](std::weak_ptr<_NodeItem> i){ return !i.expired() && i.lock() == from; });
+		[&](std::weak_ptr<_NodeItem> i){ 
+			return !i.expired() && 
+				(i.lock()->isNode() && i.lock() == from) ||
+				(!i.lock()->isNode() && std::dynamic_pointer_cast<NodeIO>(i.lock())->parent() == from); });
 	if (ifrom == mNodes.end()) return;
 	auto ito = std::find_if(mNodes.begin(), mNodes.end(), 
-		[&](std::weak_ptr<_NodeItem> i){ return !i.expired() && i.lock() == to; });
+		[&](std::weak_ptr<_NodeItem> i){ 
+			return !i.expired() && 
+				(i.lock()->isNode() && i.lock() == to) ||
+				(!i.lock()->isNode() && std::dynamic_pointer_cast<NodeIO>(i.lock())->parent() == to); });
 	if (ito == mNodes.end()) return;
 	mGraph.removeEdge(ifrom - mNodes.begin(), ito - mNodes.begin());
 }

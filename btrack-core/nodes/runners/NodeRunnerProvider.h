@@ -5,7 +5,7 @@
 
 namespace btrack::nodes::runners {
 
-class NodeRunnerProvider : public std::enable_shared_from_this<NodeRunnerProvider>
+class NodeRunnerProvider : public NodeObserver
 {
 public:
 	virtual std::shared_ptr<NodeRunner> getRunner() = 0;

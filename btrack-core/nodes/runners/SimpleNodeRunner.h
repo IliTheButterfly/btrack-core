@@ -74,7 +74,15 @@ private:
     Graph mGraph = {1};
     std::vector<int> mExecutionOrder;
 
+    struct Private { explicit Private() {} };
 public:
+    SimpleNodeRunner(Private _) = default;
+
+    static std::shared_ptr<SimpleNodeRunner> create()
+    {
+        return std::make_shared<SimpleNodeRunner>(Private());
+    }
+
     void run() override;
     void update() override;
     void addItem(std::shared_ptr<_NodeItem> node) override;

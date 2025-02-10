@@ -12,6 +12,18 @@ using namespace btrack::nodes::runners;
 
 TEST(NodeRunnerTests, BaseOrdering)
 {
-	SimpleNodeRunner runner;
+	auto provider = std::make_shared<ParallelNodeRunnerProvider>();
 	
+	auto mStart = TestNodeStart::create(provider->step());
+	auto mMid = TestNodeMid1::create(provider->step());
+	auto mEnd = TestNodeEnd::create(provider->step());
+
+	mStart->arrayOutput->connectTo(mMid->arrayInput);
+	mMid->arrayOutput->connectTo(mEnd->arrayInput);
+	auto values = std::vector<int>();
+	values.emplace_back(1);
+	values.emplace_back(2);
+	values.emplace_back(3);
+	mStart->start(10, values);
+	provider->getRunner()->run();
 }

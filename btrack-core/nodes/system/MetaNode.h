@@ -84,6 +84,7 @@ protected:
 		IF_WEAK_VALID(mObserver)->addItem(output);
 		return output;
 	}
+
 public:
 	_MetaNode(
 		const std::string_view& _name, 
@@ -161,7 +162,6 @@ public:
 	using NodeType = typename _MetaNode::NodeType;
 
 	NodeAtImpl(Node, mNodes);
-
 
 	virtual ~MetaNode()
 	{

@@ -17,6 +17,7 @@
 namespace btrack::nodes::system {
 
 using NodeRunner = runners::NodeRunner;
+using NodeRunnerProvider = runners::NodeRunnerProvider;
 
 enum class NodeItemType : uint8_t
 {
@@ -378,12 +379,17 @@ protected:
 		) : 
 			_Node::_NodeItem(_name, _nodeType | NodeItemType::NODE, _friendlyName, _description) {}
 
+
 public:
 	virtual size_t inputCount() const = 0;
 	virtual size_t outputCount() const = 0;
 
 
-	void update() override { if (!mObserver.expired() && mObserver.lock()) mObserver.lock()->update(); }
+	void update() override { IF_WEAK_VALID(mObserver).lock()->update(); }
+	void addItem(std::shared_ptr<_NodeItem> node) override { IF_WEAK_VALID(mObserver).lock()->addItem(node); }
+	void removeItem(std::shared_ptr<_NodeItem> node) override { IF_WEAK_VALID(mObserver).lock()->removeItem(node); }
+	void addConnection(std::shared_ptr<_NodeItem> from, std::shared_ptr<_NodeItem> to) override { IF_WEAK_VALID(mObserver).lock()->addConnection(from, to); }
+	void removeConnection(std::shared_ptr<_NodeItem> from, std::shared_ptr<_NodeItem> to) override { IF_WEAK_VALID(mObserver).lock()->removeConnection(from, to); }
 
 	std::shared_ptr<_Node> asNode() { return std::dynamic_pointer_cast<_Node>(this->shared_from_this()); }
 

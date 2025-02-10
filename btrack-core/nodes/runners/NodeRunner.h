@@ -21,6 +21,9 @@ public:
 	 * @brief Executes the node layout
 	 */
 	virtual void run() = 0;
+
+	virtual void setCount(int count) = 0;
+	virtual int getCount() const = 0;
 };
 
 }

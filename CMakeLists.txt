@@ -8,12 +8,12 @@ cmake_minimum_required (VERSION 3.12)
 if (POLICY CMP0141)
   cmake_policy(SET CMP0141 NEW)
   if (MSVC)
-  	set(CMAKE_MSVC_DEBUG_INFORMATION_FORMAT "$<IF:$<AND:$<C_COMPILER_ID:MSVC>,$<CXX_COMPILER_ID:MSVC>>,$<$<CONFIG:Debug,RelWithDebInfo>:EditAndContinue>,$<$<CONFIG:Debug,RelWithDebInfo>:ProgramDatabase>>")
+      set(CMAKE_MSVC_DEBUG_INFORMATION_FORMAT "$<IF:$<AND:$<C_COMPILER_ID:MSVC>,$<CXX_COMPILER_ID:MSVC>>,$<$<CONFIG:Debug,RelWithDebInfo>:EditAndContinue>,$<$<CONFIG:Debug,RelWithDebInfo>:ProgramDatabase>>")
   endif ()
 endif()
 
 if (POLICY CMP0146)
-	# cmake_policy(SET CMP0146 NEW)
+    # cmake_policy(SET CMP0146 NEW)
 endif()
 
 project ("btrack")
@@ -26,11 +26,11 @@ message(STATUS "btrack includes " ${btrack_core_INCLUDES})
 include_directories(${btrack_core_INCLUDES})
 
 if (MSVC)
-	add_compile_options(
-		$<$<CONFIG:>:/MT>
-		$<$<CONFIG:Debug>:/MT>
-		$<$<CONFIG:RELEASE>:/MT>
-	)
+    add_compile_options(
+        $<$<CONFIG:>:/MT>
+        $<$<CONFIG:Debug>:/MT>
+        $<$<CONFIG:RELEASE>:/MT>
+    )
 endif ()
 
 # Define arguments
@@ -59,8 +59,8 @@ message(STATUS ${OpenCV_LIBS})
 # include_directories(${OpenCV_INCLUDE_DIRS})
 
 if (USE_CUDA)
-	# add_definitions(-DUSE_CUDA)
-	include_directories(${CUDA_INCLUDE_DIRS})
+    # add_definitions(-DUSE_CUDA)
+    include_directories(${CUDA_INCLUDE_DIRS})
 endif()
 
 
@@ -69,7 +69,7 @@ endif()
 file(GLOB Projects "btrack-*")
 
 foreach(Project ${Projects})
-	add_subdirectory(${Project})
+    add_subdirectory(${Project})
 endforeach(Project ${Projects})
 
 include(Dart)

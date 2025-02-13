@@ -7,8 +7,8 @@ FetchContent_Declare(
 # For Windows: Prevent overriding the parent project's compiler/linker settings
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 if (MSVC)
-	set_property(GLOBAL PROPERTY
-		MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+    set_property(GLOBAL PROPERTY
+        MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 endif ()
 
 FetchContent_MakeAvailable(googletest)
@@ -17,43 +17,43 @@ include(GoogleTest)
 include_directories(${btrack_core_INCLUDES})
 
 if (USE_CUDA)
-	add_executable(
-	  cuda_tests
-	  cuda_tests.cpp
-	)
-	target_link_libraries(
-	  cuda_tests
-	  GTest::gtest_main
-	  btrack-core-cuda
-	)
+    add_executable(
+      cuda_tests
+      cuda_tests.cpp
+    )
+    target_link_libraries(
+      cuda_tests
+      GTest::gtest_main
+      btrack-core-cuda
+    )
 
-	add_executable(
-		processing_tests_with_cuda
-		wrapper_tests.cpp
-	)
-	target_include_directories(processing_tests_with_cuda PUBLIC ${btrack_core_INCLUDES})
-	target_link_libraries(
-		processing_tests_with_cuda
-		GTest::gtest_main
-		btrack-core-cuda
-	)
+    add_executable(
+        processing_tests_with_cuda
+        wrapper_tests.cpp
+    )
+    target_include_directories(processing_tests_with_cuda PUBLIC ${btrack_core_INCLUDES})
+    target_link_libraries(
+        processing_tests_with_cuda
+        GTest::gtest_main
+        btrack-core-cuda
+    )
 endif ()
 
 
 add_executable(
-	opencv_tests
-	opencv_tests.cpp
+    opencv_tests
+    opencv_tests.cpp
 )
 target_link_libraries(
-	opencv_tests
-	GTest::gtest_main
-	btrack-core
+    opencv_tests
+    GTest::gtest_main
+    btrack-core
 )
 
 
 if (USE_CUDA)
-	gtest_discover_tests(cuda_tests)
-	gtest_discover_tests(processing_tests_with_cuda)
+    gtest_discover_tests(cuda_tests)
+    gtest_discover_tests(processing_tests_with_cuda)
 endif ()
 
 add_executable(
@@ -81,7 +81,7 @@ target_link_libraries(
 add_executable(
     node_tests
     node_tests.cpp
-	${SourceFiles}
+    ${SourceFiles}
 )
 target_include_directories(node_tests PUBLIC ${btrack_core_INCLUDES} "btrack-core/tests")
 target_link_libraries(

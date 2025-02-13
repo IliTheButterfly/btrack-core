@@ -21,27 +21,27 @@ using NodeRunnerProvider = runners::NodeRunnerProvider;
 
 enum class NodeItemType : uint8_t
 {
-	UNKNOWN		= 0b0000000,
-	INPUT		= 0b0000001,
-	OUTPUT 		= 0b0000010,
-	NODE		= 0b0000100,
-	ARRAY		= 0b0001000,
-	VALUE		= 0b0010000,
-	META		= 0b0100000,
-	FORCED		= 0b1000000,
-	ANY			= 0b1111111,
-	INPUT_ARRAY = INPUT | ARRAY,
-	INPUT_VALUE = INPUT | VALUE,
-	OUTPUT_ARRAY = OUTPUT | ARRAY,
-	OUTPUT_VALUE = OUTPUT | VALUE,
-	META_INPUT_ARRAY = META | INPUT | ARRAY,
-	META_INPUT_VALUE = META | INPUT | VALUE,
-	META_OUTPUT_ARRAY = META | OUTPUT | ARRAY,
-	META_OUTPUT_VALUE = META | OUTPUT | VALUE,
-	ANY_INPUT = META | INPUT | ARRAY | VALUE,
-	ANY_OUTPUT = META | OUTPUT | ARRAY | VALUE,
-	ANY_ARRAY = META | INPUT | OUTPUT | ARRAY,
-	ANY_VALUE = META | INPUT | OUTPUT | VALUE,
+    UNKNOWN        = 0b0000000,
+    INPUT        = 0b0000001,
+    OUTPUT         = 0b0000010,
+    NODE        = 0b0000100,
+    ARRAY        = 0b0001000,
+    VALUE        = 0b0010000,
+    META        = 0b0100000,
+    FORCED        = 0b1000000,
+    ANY            = 0b1111111,
+    INPUT_ARRAY = INPUT | ARRAY,
+    INPUT_VALUE = INPUT | VALUE,
+    OUTPUT_ARRAY = OUTPUT | ARRAY,
+    OUTPUT_VALUE = OUTPUT | VALUE,
+    META_INPUT_ARRAY = META | INPUT | ARRAY,
+    META_INPUT_VALUE = META | INPUT | VALUE,
+    META_OUTPUT_ARRAY = META | OUTPUT | ARRAY,
+    META_OUTPUT_VALUE = META | OUTPUT | VALUE,
+    ANY_INPUT = META | INPUT | ARRAY | VALUE,
+    ANY_OUTPUT = META | OUTPUT | ARRAY | VALUE,
+    ANY_ARRAY = META | INPUT | OUTPUT | ARRAY,
+    ANY_VALUE = META | INPUT | OUTPUT | VALUE,
 };
 
 inline NodeItemType operator&(uint8_t x, NodeItemType y) { return (NodeItemType)((uint8_t)x & (uint8_t)y); }
@@ -101,13 +101,13 @@ inline NodeItemType operator~(NodeItemType x) { return (NodeItemType)(x ^ NodeIt
 //     template <typename IterT>
 //     class IteratorRef : public _IteratorRef {
 //     public:
-// 		using inner_pointer = typename IterT::pointer;
-// 		using inner_reference = typename IterT::reference;
+//         using inner_pointer = typename IterT::pointer;
+//         using inner_reference = typename IterT::reference;
 //         explicit IteratorRef(IterT iter) : mCurrent(iter) {}
 
 //         reference operator*() const override {
-// 			return static_cast<reference>(*mCurrent); // Ensure this matches NodeIterator<T>::reference
-// 		}
+//             return static_cast<reference>(*mCurrent); // Ensure this matches NodeIterator<T>::reference
+//         }
 
 //         pointer operator->() const override {
 //             return &(this->operator*()); // Cast and return pointer
@@ -165,12 +165,12 @@ inline NodeItemType operator~(NodeItemType x) { return (NodeItemType)(x ^ NodeIt
 
 //     // Static create function for implicit casts
 //     template <typename IterT>
-// 	static NodeIterator create(IterT iter)
-// 	{
-// 		static_assert(boost::is_base_of<type_traits::remove_all_t<T>, type_traits::remove_all_t<typename IterT::value_type>>::value, "Inner type needs to be derived from T");
-// 		static_assert(type_traits::is_same_container<T, typename IterT::value_type>::value, "Inner type needs to have same container as T");
-// 		return NodeIterator(iter);
-// 	}
+//     static NodeIterator create(IterT iter)
+//     {
+//         static_assert(boost::is_base_of<type_traits::remove_all_t<T>, type_traits::remove_all_t<typename IterT::value_type>>::value, "Inner type needs to be derived from T");
+//         static_assert(type_traits::is_same_container<T, typename IterT::value_type>::value, "Inner type needs to have same container as T");
+//         return NodeIterator(iter);
+//     }
 
 //     // Dereference operators
 //     reference operator*() const { return **mCurrent; }
@@ -202,55 +202,53 @@ inline NodeItemType operator~(NodeItemType x) { return (NodeItemType)(x ^ NodeIt
 class _NodeItem : public std::enable_shared_from_this<_NodeItem>
 {
 private:
-	const std::string mName;
-	const boost::uuids::uuid mUUID;
-	const NodeItemType mNodeType;
-	std::string mFriendlyName;
-	std::string mDescription;
+    const std::string mName;
+    const boost::uuids::uuid mUUID;
+    const NodeItemType mNodeType;
+    std::string mFriendlyName;
+    std::string mDescription;
 private:
-	_NodeItem(
-		const std::string_view& _name, 
-		const NodeItemType& _nodeType,
-		const boost::uuids::uuid& _uuid, 
-		const std::string_view& _friendlyName = "",
-		const std::string_view& _description = ""
-		) : 
-			mName(_name), mUUID(_uuid), mNodeType(_nodeType), mFriendlyName(_friendlyName), mDescription(_description) {}
+    _NodeItem(
+        const std::string_view& _name, 
+        const NodeItemType& _nodeType,
+        const boost::uuids::uuid& _uuid, 
+        const std::string_view& _friendlyName = "",
+        const std::string_view& _description = ""
+        ) : 
+            mName(_name), mUUID(_uuid), mNodeType(_nodeType), mFriendlyName(_friendlyName), mDescription(_description) {}
 protected:
-	std::weak_ptr<NodeObserver> mObserver;
-	_NodeItem(
-		const std::string_view& _name, 
-		const NodeItemType& _nodeType,
-		const std::string_view& _friendlyName = "",
-		const std::string_view& _description = ""
-		) : 
-			_NodeItem::_NodeItem(_name, _nodeType, boost::uuids::random_generator()(), _friendlyName, _description) {}
+    std::weak_ptr<NodeObserver> mObserver;
+    _NodeItem(
+        const std::string_view& _name, 
+        const NodeItemType& _nodeType,
+        const std::string_view& _friendlyName = "",
+        const std::string_view& _description = ""
+        ) : 
+            _NodeItem::_NodeItem(_name, _nodeType, boost::uuids::random_generator()(), _friendlyName, _description) {}
 public:
-	_NodeItem() = delete;
+    _NodeItem() = delete;
 
-	const std::string_view name() const { return mName; }
-	const boost::uuids::uuid& uuid() const { return mUUID; }
-	const NodeItemType& nodeType() const { return mNodeType; }
-	const std::string_view friendlyName() const { return mFriendlyName; }
-	std::string& friendlyName() { return mFriendlyName; }
-	const std::string_view description() const { return mDescription; }
-	std::string& description() { return mDescription; }
+    virtual const std::string_view name() const { return mName; }
+    virtual const boost::uuids::uuid& uuid() const { return mUUID; }
+    virtual const NodeItemType& nodeType() const { return mNodeType; }
+    virtual const std::string_view friendlyName() const { return mFriendlyName; }
+    virtual std::string& friendlyName() { return mFriendlyName; }
+    virtual const std::string_view description() const { return mDescription; }
+    virtual std::string& description() { return mDescription; }
 
-	bool isInput() const { return (mNodeType & NodeItemType::INPUT) == NodeItemType::INPUT; }
-	bool isOutput() const { return (mNodeType & NodeItemType::OUTPUT) == NodeItemType::OUTPUT; }
-	bool isNode() const { return (mNodeType & NodeItemType::NODE) == NodeItemType::NODE; }
-	bool isMeta() const { return (mNodeType & NodeItemType::META) == NodeItemType::META; }
-	bool isArray() const { return (mNodeType & NodeItemType::ARRAY) == NodeItemType::ARRAY; }
-	bool isValue() const { return (mNodeType & NodeItemType::VALUE) == NodeItemType::VALUE; }
-	bool isForced() const { return (mNodeType & NodeItemType::FORCED) == NodeItemType::FORCED; }
-	bool matches(NodeItemType pattern) const { return (mNodeType | pattern) == pattern; }
+    bool isInput() const { return (mNodeType & NodeItemType::INPUT) == NodeItemType::INPUT; }
+    bool isOutput() const { return (mNodeType & NodeItemType::OUTPUT) == NodeItemType::OUTPUT; }
+    bool isNode() const { return (mNodeType & NodeItemType::NODE) == NodeItemType::NODE; }
+    bool isMeta() const { return (mNodeType & NodeItemType::META) == NodeItemType::META; }
+    bool isArray() const { return (mNodeType & NodeItemType::ARRAY) == NodeItemType::ARRAY; }
+    bool isValue() const { return (mNodeType & NodeItemType::VALUE) == NodeItemType::VALUE; }
+    bool isForced() const { return (mNodeType & NodeItemType::FORCED) == NodeItemType::FORCED; }
+    bool matches(NodeItemType pattern) const { return (mNodeType | pattern) == pattern; }
 
-	bool operator==(const _NodeItem& other) const { return uuid() == other.uuid(); }
-	bool operator!=(const _NodeItem& other) const { return uuid() != other.uuid(); }
+    bool operator==(const _NodeItem& other) const { return uuid() == other.uuid(); }
+    bool operator!=(const _NodeItem& other) const { return uuid() != other.uuid(); }
 
-
-
-	virtual ~_NodeItem() = default;
+    virtual ~_NodeItem() = default;
 };
 
 class _Node;
@@ -259,24 +257,24 @@ class NodeIO : public _NodeItem
 {
 private:
 protected:
-	NodeIO(
-		const std::string_view& _name, 
-		const NodeItemType& _nodeType,
-		const std::string_view& _friendlyName = "",
-		const std::string_view& _description = ""
-		) : 
-			NodeIO::_NodeItem(_name, _nodeType, _friendlyName, _description) {}
-	
-	std::weak_ptr<_Node> mParent;
+    NodeIO(
+        const std::string_view& _name, 
+        const NodeItemType& _nodeType,
+        const std::string_view& _friendlyName = "",
+        const std::string_view& _description = ""
+        ) : 
+            NodeIO::_NodeItem(_name, _nodeType, _friendlyName, _description) {}
+    
+    std::weak_ptr<_Node> mParent;
 public:
-	std::shared_ptr<_Node> parent() const { return mParent.lock(); }
-	template <std::derived_from<_Node> NodeType>
-	std::shared_ptr<NodeType> parent() const { return std::dynamic_pointer_cast<NodeType>(parent()); }
-	virtual constexpr const std::type_info& dataType() const = 0;
-	constexpr bool convertibleFrom(const std::type_info& from) const { return type_traits::convertible(from, dataType()); }
-	constexpr bool convertibleTo(const std::type_info& to) const { return type_traits::convertible(dataType(), to); }
+    std::shared_ptr<_Node> parent() const { return mParent.lock(); }
+    template <std::derived_from<_Node> NodeType>
+    std::shared_ptr<NodeType> parent() const { return std::dynamic_pointer_cast<NodeType>(parent()); }
+    virtual constexpr const std::type_info& dataType() const = 0;
+    constexpr bool convertibleFrom(const std::type_info& from) const { return type_traits::convertible(from, dataType()); }
+    constexpr bool convertibleTo(const std::type_info& to) const { return type_traits::convertible(dataType(), to); }
 
-	virtual ~NodeIO() = default;
+    virtual ~NodeIO() = default;
 };
 
 #define EXPAND(x) x
@@ -284,10 +282,10 @@ public:
 #define NodeIteratorAccessor(iteratorType, name, parentType) \
 struct iteratorType##_ref \
 { \
-	parentType& parent; \
-	iteratorType##_ref(parentType& p) : parent{p} {} \
-	iteratorType begin() { return parent.name##Begin(); } \
-	iteratorType end() { return parent.name##End(); } \
+    parentType& parent; \
+    iteratorType##_ref(parentType& p) : parent{p} {} \
+    iteratorType begin() { return parent.name##Begin(); } \
+    iteratorType end() { return parent.name##End(); } \
 };\
 virtual iteratorType name##Begin() = 0; \
 virtual iteratorType name##End() = 0; \
@@ -297,10 +295,10 @@ iteratorType##_ref name##Iter() { return iteratorType##_ref(*this); }
 #define NodeIteratorAccessorConcrete(iteratorType, name, parentType) \
 struct iteratorType##_ref \
 { \
-	parentType& parent; \
-	iteratorType##_ref(parentType& p) : parent{p} {} \
-	iteratorType begin() { return parent.name##Begin(); } \
-	iteratorType end() { return parent.name##End(); } \
+    parentType& parent; \
+    iteratorType##_ref(parentType& p) : parent{p} {} \
+    iteratorType begin() { return parent.name##Begin(); } \
+    iteratorType end() { return parent.name##End(); } \
 };\
 iteratorType##_ref name##Iter() { return iteratorType##_ref(*this); }
 /*iteratorType name##Begin(); \
@@ -359,11 +357,11 @@ returnType##Ptr returnType##At(int index) { return std::dynamic_pointer_cast<typ
 
 enum class ConnectionResult
 {
-	UNKNOWN,
-	SUCCESS,
-	INCOMPATIBLE_TYPES,
-	FROM_NOT_OUTPUT,
-	TO_NOT_INPUT,
+    UNKNOWN,
+    SUCCESS,
+    INCOMPATIBLE_TYPES,
+    FROM_NOT_OUTPUT,
+    TO_NOT_INPUT,
 };
 
 
@@ -371,35 +369,35 @@ class _Node : public _NodeItem, public NodeObserver
 {
 private:
 protected:
-	_Node(
-		const std::string_view& _name, 
-		const NodeItemType& _nodeType,
-		const std::string_view& _friendlyName = "",
-		const std::string_view& _description = ""
-		) : 
-			_Node::_NodeItem(_name, _nodeType | NodeItemType::NODE, _friendlyName, _description) {}
+    _Node(
+        const std::string_view& _name, 
+        const NodeItemType& _nodeType,
+        const std::string_view& _friendlyName = "",
+        const std::string_view& _description = ""
+        ) : 
+            _Node::_NodeItem(_name, _nodeType | NodeItemType::NODE, _friendlyName, _description) {}
 
 
 public:
-	virtual size_t inputCount() const = 0;
-	virtual size_t outputCount() const = 0;
+    virtual size_t inputCount() const = 0;
+    virtual size_t outputCount() const = 0;
 
 
-	void update() override { IF_WEAK_VALID(mObserver).lock()->update(); }
-	void addItem(std::shared_ptr<_NodeItem> node) override { IF_WEAK_VALID(mObserver).lock()->addItem(node); }
-	void removeItem(std::shared_ptr<_NodeItem> node) override { IF_WEAK_VALID(mObserver).lock()->removeItem(node); }
-	void addConnection(std::shared_ptr<_NodeItem> from, std::shared_ptr<_NodeItem> to) override { IF_WEAK_VALID(mObserver).lock()->addConnection(from, to); }
-	void removeConnection(std::shared_ptr<_NodeItem> from, std::shared_ptr<_NodeItem> to) override { IF_WEAK_VALID(mObserver).lock()->removeConnection(from, to); }
+    void update() override { IF_WEAK_VALID(mObserver).lock()->update(); }
+    void addItem(std::shared_ptr<_NodeItem> node) override { IF_WEAK_VALID(mObserver).lock()->addItem(node); }
+    void removeItem(std::shared_ptr<_NodeItem> node) override { IF_WEAK_VALID(mObserver).lock()->removeItem(node); }
+    void addConnection(std::shared_ptr<_NodeItem> from, std::shared_ptr<_NodeItem> to) override { IF_WEAK_VALID(mObserver).lock()->addConnection(from, to); }
+    void removeConnection(std::shared_ptr<_NodeItem> from, std::shared_ptr<_NodeItem> to) override { IF_WEAK_VALID(mObserver).lock()->removeConnection(from, to); }
 
-	std::shared_ptr<_Node> asNode() { return std::dynamic_pointer_cast<_Node>(this->shared_from_this()); }
+    std::shared_ptr<_Node> asNode() { return std::dynamic_pointer_cast<_Node>(this->shared_from_this()); }
 
-	std::shared_ptr<NodeObserver> asObserver()
-	{
-		return std::dynamic_pointer_cast<NodeObserver>(this->shared_from_this());
-	}
+    std::shared_ptr<NodeObserver> asObserver()
+    {
+        return std::dynamic_pointer_cast<NodeObserver>(this->shared_from_this());
+    }
 
 
-	virtual ~_Node() = default;
+    virtual ~_Node() = default;
 };
 
 } // namespace btrack::nodes::system

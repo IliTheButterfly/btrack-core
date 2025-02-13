@@ -1,42 +1,60 @@
 #ifndef __INPUT_H__
 #define __INPUT_H__
 
-#include "nodes/system/NodeIO.h"
-#include <vector>
-#include <memory>
+#include "nodes/system/Port.h"
+#include "memory_backend.h"
 
 namespace btrack::nodes::system {
 
-class _Input : public NodeIO
+template <typename ..._Types>
+class Input : public Port<..._Types>, public enable_shared_from_this<Input>
 {
-protected:
-	_Input(
-		const std::string_view& _name, 
-		const NodeItemType& _nodeType,
-		const std::string_view& _friendlyName = "",
-		const std::string_view& _description = ""
-		) : 
-			_Input::NodeIO(_name, _nodeType | NodeItemType::INPUT, _friendlyName, _description) {}
+private:
+    weak_ptr<Port<..._Types>> mSource;
+    VariantBase<..._Types> mDefault;
 public:
-	virtual ~_Input() = default;
+    const VariantBase<..._Types>& get() const override;
+    VariantBase<..._Types>& get() override;
+    Type type() const override { return Port<..._Types>::INPUT; }
+    bool connect(std::shared_ptr<Port<..._Types>> other) override;
+    bool disconnect(std::shared_ptr<Port<..._Types>> other) override;
+
+    shared_ptr<Input> getPtr() { return this->shared_from_this(); }
 };
 
-template <typename T, ChannelTypeConcept<T> I = DefaultChannelTypeInfo<T>>
-class Input : public _Input
+template <typename... _Types>
+inline const VariantBase<... _Types> &Input<_Types...>::get() const
 {
-protected:
-	std::shared_ptr<Channel<T, I>> mChannel = std::make_shared<Channel<T, I>>();
-	Input(
-		const std::string_view& _name, 
-		const NodeItemType& _nodeType,
-		const std::string_view& _friendlyName = "",
-		const std::string_view& _description = ""
-		) : 
-			Input::_Input(_name, _nodeType, _friendlyName, _description) {}
-public:
-	constexpr const std::type_info& dataType() const override { return typeid(T); }
-	virtual ~Input() = default;
-};
+    if (mSource.expired() || !mSource.lock()) return mDefault;
+    return mSource.lock()->get();
+}
 
-} // namespace btrack::nodes::system
+template <typename... _Types>
+inline VariantBase<... _Types> &Input<_Types...>::get()
+{
+    if (mSource.expired() || !mSource.lock()) return mDefault;
+    return mSource.lock()->get();
+}
+template <typename... _Types>
+inline bool Input<_Types...>::connect(std::shared_ptr<Port<... _Types>> other)
+{
+    if (!other) return false;
+    if (!mSource.expired() && mSource.lock())
+    {
+        mSource->disconnect(getPtr());
+    }
+    return other->connect(getPtr());
+}
+template <typename... _Types>
+inline bool Input<_Types...>::disconnect(std::shared_ptr<Port<... _Types>> other)
+{
+    if (!other) return false;
+    if (!mSource.expired() && mSource.lock())
+    {
+        if (mSource.lock() == other) return mSource.lock()->disconnect(getPtr());
+    }
+    return false;
+}
+}
+
 #endif // __INPUT_H__

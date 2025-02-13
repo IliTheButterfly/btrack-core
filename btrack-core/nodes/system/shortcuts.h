@@ -11,23 +11,23 @@ namespace btrack::nodes::system {
 template <std::derived_from<Node> T>
 class AutoMetaNode : public MetaNode
 {
-	BOOST_STATIC_ASSERT((boost::is_base_of<Node, T>::value));
+    BOOST_STATIC_ASSERT((boost::is_base_of<Node, T>::value));
 protected:
 public:
-	AutoMetaNode(
-		std::shared_ptr<NodeObserver> _observer,
-		const std::string_view& _name, 
-		const std::string_view& _friendlyName = "",
-		const std::string_view& _description = ""
-		) :
-			AutoMetaNode::MetaNode(_observer, _name, _friendlyName, _description)
-	{
-		T dummy = T(std::string{_name} + "_dummy", std::string{_friendlyName} + "_dummy");
-	}
+    AutoMetaNode(
+        std::shared_ptr<NodeObserver> _observer,
+        const std::string_view& _name, 
+        const std::string_view& _friendlyName = "",
+        const std::string_view& _description = ""
+        ) :
+            AutoMetaNode::MetaNode(_observer, _name, _friendlyName, _description)
+    {
+        T dummy = T(std::string{_name} + "_dummy", std::string{_friendlyName} + "_dummy");
+    }
 
-	void generate(int count)
-	{
-	}
+    void generate(int count)
+    {
+    }
 };
 
 

@@ -17,34 +17,34 @@ class SettingsContainer;
 class _SettingsManager
 {
 protected:
-	SceneSettings mCurrent{};
-	std::string mFilename = "default";
+    SceneSettings mCurrent{};
+    std::string mFilename = "default";
 
 public:
-	virtual void setFilename(const std::string_view& name);
-	virtual const std::string getFilenemae() const;
-	virtual void load() = 0;
-	virtual void save() = 0;
-	virtual SceneSettings& get();
-	virtual void set(const SceneSettings& settings);
+    virtual void setFilename(const std::string_view& name);
+    virtual const std::string getFilenemae() const;
+    virtual void load() = 0;
+    virtual void save() = 0;
+    virtual SceneSettings& get();
+    virtual void set(const SceneSettings& settings);
 };
 
 class SettingsManager : public _SettingsManager
 {
 public:
-	void load() override;
-	void save() override;
+    void load() override;
+    void save() override;
 };
 
 class SettingsContainer
 {
 private:
-	_SettingsManager* mManager;
-	SceneSettings mSettings;
+    _SettingsManager* mManager;
+    SceneSettings mSettings;
 public:
-	SettingsContainer(_SettingsManager* manager);
-	SceneSettings& get();
-	~SettingsContainer();
+    SettingsContainer(_SettingsManager* manager);
+    SceneSettings& get();
+    ~SettingsContainer();
 };
 
 } // btrack::settings

@@ -13,8 +13,8 @@ namespace btrack::processing {
 template <typename T>
 struct _StampedImage
 {
-	// boost::chrono::nanoseconds time;
-	T image;
+    // boost::chrono::nanoseconds time;
+    T image;
 };
 
 typedef _StampedImage<cv::InputArray> StampedInputArray;
@@ -25,72 +25,72 @@ class Camera
 {
 public:
 
-	/**
-	 * @brief Opens the capture with the specified settings
-	 */
-	virtual void open() = 0;
-	/**
-	 * @brief Closes the capture
-	 * 
-	 */
-	virtual void close() = 0;
+    /**
+     * @brief Opens the capture with the specified settings
+     */
+    virtual void open() = 0;
+    /**
+     * @brief Closes the capture
+     * 
+     */
+    virtual void close() = 0;
 
-	/**
-	 * @brief Indicates if the capture is open
-	 * 
-	 * @return true if capture is open
-	 */
-	virtual bool isOpen() = 0;
-	/**
-	 * @brief Grabs a frame to be retrieved later and marks the time of capture
-	 * 
-	 * @return false if grabbing frame failed
-	 */
-	virtual bool grab() = 0;
-	/**
-	 * @brief Retrieves a grabbed frame
-	 * 
-	 * @param img Stamped image
-	 * @param flag See cv::VideoCapture::Retrieve()
-	 * @return false if failed or no frame grabbed
-	 */
-	virtual bool retrieve(StampedOutputArray img, int flag = 0) = 0;
-	/**
-	 * @brief Grabs and retrieves a frame
-	 * 
-	 * @param img Stamped image
-	 * @return false if failed
-	 */
-	virtual bool read(StampedOutputArray img) = 0;
-	
-	virtual const settings::CameraSettings& settings() const = 0;
-	virtual settings::CameraSettings& settings() = 0;
-	virtual ~Camera() = default;
+    /**
+     * @brief Indicates if the capture is open
+     * 
+     * @return true if capture is open
+     */
+    virtual bool isOpen() = 0;
+    /**
+     * @brief Grabs a frame to be retrieved later and marks the time of capture
+     * 
+     * @return false if grabbing frame failed
+     */
+    virtual bool grab() = 0;
+    /**
+     * @brief Retrieves a grabbed frame
+     * 
+     * @param img Stamped image
+     * @param flag See cv::VideoCapture::Retrieve()
+     * @return false if failed or no frame grabbed
+     */
+    virtual bool retrieve(StampedOutputArray img, int flag = 0) = 0;
+    /**
+     * @brief Grabs and retrieves a frame
+     * 
+     * @param img Stamped image
+     * @return false if failed
+     */
+    virtual bool read(StampedOutputArray img) = 0;
+    
+    virtual const settings::CameraSettings& settings() const = 0;
+    virtual settings::CameraSettings& settings() = 0;
+    virtual ~Camera() = default;
 };
 
 class CaptureCamera : public Camera
 {
 private:
-	cv::VideoCapture mCap;
-	settings::CameraSettings mSettings;
-	// boost::chrono::nanoseconds mLastCapture;
+    cv::VideoCapture mCap;
+    settings::CameraSettings mSettings;
+    // boost::chrono::nanoseconds mLastCapture;
 
 public:
-	CaptureCamera() = default;
-	CaptureCamera(const settings::CameraSettings& settings);
+    CaptureCamera() = default;
+    CaptureCamera(const settings::CameraSettings& settings);
 
-	void open() override;
-	void close() override;
-	bool isOpen() override;
+    void open() override;
+    void close() override;
+    bool isOpen() override;
 
-	bool grab() override;
-	bool retrieve(StampedOutputArray img, int flag = 0) override;
-	bool read(StampedOutputArray img) override;
-	
-	const settings::CameraSettings& settings() const override;
-	settings::CameraSettings& settings() override;
+    bool grab() override;
+    bool retrieve(StampedOutputArray img, int flag = 0) override;
+    bool read(StampedOutputArray img) override;
+    
+    const settings::CameraSettings& settings() const override;
+    settings::CameraSettings& settings() override;
 
-	~CaptureCamera();
+    ~CaptureCamera();
 };
 
 

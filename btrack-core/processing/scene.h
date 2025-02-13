@@ -12,16 +12,16 @@ namespace btrack::processing {
 class Scene
 {
 private:
-	settings::SettingsManager mSettingsManager;
+    settings::SettingsManager mSettingsManager;
 public:
-	Scene();
+    Scene();
 
-	virtual bool activate() = 0;
-	virtual bool deactivate() = 0;
-	virtual bool reload() = 0;
-	virtual bool isActive() = 0;
+    virtual bool activate() = 0;
+    virtual bool deactivate() = 0;
+    virtual bool reload() = 0;
+    virtual bool isActive() = 0;
 
-	virtual ~Scene() = default;
+    virtual ~Scene() = default;
 };
 
 } // btrack::processing

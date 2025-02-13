@@ -4,7 +4,7 @@ namespace btrack::processing {
 
 Scene::Scene()
 {
-	
+    
 }
 
 } // btrack::processing

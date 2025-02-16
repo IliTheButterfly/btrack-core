@@ -13,24 +13,20 @@ struct PortMetadata
 {
     enum PortType {
         INPUT_VALUE,
-        INPUT_ARRAY,
         OUTPUT_VALUE,
-        OUTPUT_ARRAY,
     };
     const std::string name;
-    const std::string displayName;
     const std::string description;
     const PortType portType;
-    const std::type_info& type;
+    const std::type_index& type;
 };
 
 struct NodeMetadata
 {
     const std::string name;
-    const std::string displayName;
     const std::string description;
-    const std::type_info& nodeType;
-    const std::type_info& metaNodeType;
+    const std::string category;
+    const std::type_index& nodeType;
     PortMetadata* ports;
 };
 

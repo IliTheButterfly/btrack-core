@@ -5,44 +5,40 @@
 #include <boost/type_traits.hpp>
 #include <boost/concept_check.hpp>
 #include <type_traits>
+#include <boost/move/default_delete.hpp>
 
 
 
-namespace btrack::type_traits {
+namespace btrack {
 
 
-template <typename T> struct remove_smart_ptr { typedef T type; };
-template <typename T> struct remove_smart_ptr<std::unique_ptr<T>> { typedef T type; };
-template <typename T> struct remove_smart_ptr<std::shared_ptr<T>> { typedef T type; };
-template <typename T> struct remove_smart_ptr<std::weak_ptr<T>> { typedef T type; };
-template <typename T> struct remove_smart_ptr<std::auto_ptr<T>> { typedef T type; };
-template <typename T> struct remove_smart_ptr<boost::shared_ptr<T>> { typedef T type; };
-template <typename T> struct remove_smart_ptr<boost::movelib::unique_ptr<T>> { typedef T type; };
-template <typename T> struct remove_smart_ptr<boost::weak_ptr<T>> { typedef T type; };
+template <typename T, typename D = void> struct remove_smart_ptr { typedef T type; };
+template <typename T, typename D> struct remove_smart_ptr<std::unique_ptr<T, D>, D> { typedef T type; };
+template <typename T> struct remove_smart_ptr<std::shared_ptr<T>,void> { typedef T type; };
+template <typename T> struct remove_smart_ptr<std::weak_ptr<T>,void> { typedef T type; };
+template <typename T> struct remove_smart_ptr<boost::shared_ptr<T>,void> { typedef T type; };
+template <typename T, typename D> struct remove_smart_ptr<boost::movelib::unique_ptr<T, D>, D> { typedef T type; };
+template <typename T> struct remove_smart_ptr<boost::weak_ptr<T>,void> { typedef T type; };
 
-template <class T> using remove_smart_ptr_t = typename remove_smart_ptr<T>::type;
+template <class T, class D = void> using remove_smart_ptr_t = typename remove_smart_ptr<T, D>::type;
 
 template <typename T, typename C> struct is_shared : public boost::false_type {};
 template <typename T> struct is_shared<T, std::shared_ptr<T>> : public boost::true_type {};
 template <typename T> struct is_shared<T, boost::shared_ptr<T>> : public boost::true_type {};
 
-template <typename T, typename C> struct is_unique : public boost::false_type {};
-template <typename T> struct is_unique<T, std::unique_ptr<T>> : public boost::true_type {};
-template <typename T> struct is_unique<T, boost::movelib::unique_ptr<T>> : public boost::true_type {};
+template <typename T, typename C, typename D = void> struct is_unique : public boost::false_type {};
+template <typename T, typename D> struct is_unique<T, std::unique_ptr<T, D>, D> : public boost::true_type {};
+template <typename T, typename D> struct is_unique<T, boost::movelib::unique_ptr<T, D>, D> : public boost::true_type {};
 
 template <typename T, typename C> struct is_weak : public boost::false_type {};
 template <typename T> struct is_weak<T, std::weak_ptr<T>> : public boost::true_type {};
 template <typename T> struct is_weak<T, boost::weak_ptr<T>> : public boost::true_type {};
 
-template <typename T, typename C> struct is_auto : public boost::false_type {};
-template <typename T> struct is_auto<T, std::auto_ptr<T>> : public boost::true_type {};
-
-
-template <typename T> struct container_traits { typedef T type; typedef void container; };
+template <typename T, typename D = void> struct container_traits { typedef T type; typedef void container; };
 template <typename T> struct container_traits<std::shared_ptr<T>> { typedef T type; typedef shared_ptr<T> container; };
 template <typename T> struct container_traits<boost::shared_ptr<T>> { typedef T type; typedef shared_ptr<T> container; };
-template <typename T> struct container_traits<std::unique_ptr<T>> { typedef T type; typedef unique_ptr<T> container; };
-template <typename T> struct container_traits<boost::movelib::unique_ptr<T>> { typedef T type; typedef unique_ptr<T> container; };
+template <typename T, typename D> struct container_traits<std::unique_ptr<T, D>, D> { typedef T type; typedef unique_ptr<T, D> container; };
+template <typename T, typename D> struct container_traits<boost::movelib::unique_ptr<T, D>, D> { typedef T type; typedef unique_ptr<T, D> container; };
 template <typename T> struct container_traits<std::weak_ptr<T>> { typedef T type; typedef weak_ptr<T> container; };
 template <typename T> struct container_traits<boost::weak_ptr<T>> { typedef T type; typedef weak_ptr<T> container; };
 
@@ -62,8 +58,22 @@ template <typename T1, typename T2> using is_same_container =
                         typename container_traits<T2>::type, typename container_traits<T2>::container>;
 
 
+// Forward declaration of VariantBase
+template <typename ..._Types>
+class VariantBase;
 
-} // namespace btrack::nodes::system::type_traits
+// Helper to detect if a type is a specialization of VariantBase
+template <typename T>
+struct is_variant_base_specialization : std::false_type {};
+
+template <typename ..._Types>
+struct is_variant_base_specialization<VariantBase<_Types...>> : std::true_type {};
+
+// Concept to check if a type is a specialization of VariantBase
+template <typename T>
+concept VariantTemplate = is_variant_base_specialization<std::remove_cvref_t<T>>::value;
+
+} // namespace btrack
 
 
 #endif // __TYPE_TRAITS_H__

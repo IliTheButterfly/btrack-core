@@ -2,12 +2,17 @@
 #define __MEMORY_BACKEND_H__
 
 #include <boost/smart_ptr.hpp>
+#include <boost/move/unique_ptr.hpp>
+#include <boost/move/move.hpp>
+#include <boost/move/make_unique.hpp>
 #include <boost/pointer_cast.hpp>
 #include <memory>
 
 namespace btrack {
 
 #define USE_BOOST_MEMORY
+
+using std::move;
 
 #ifdef USE_BOOST_MEMORY
 
@@ -16,7 +21,7 @@ using boost::movelib::unique_ptr;
 using boost::weak_ptr;
 using boost::enable_shared_from_raw;
 using boost::enable_shared_from_this;
-using boost::movelib::swap;
+using boost::swap;
 using boost::make_shared;
 using boost::movelib::make_unique;
 using boost::static_pointer_cast;

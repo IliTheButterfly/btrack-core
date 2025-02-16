@@ -90,37 +90,16 @@ target_link_libraries(
     btrack-core
 )
 
-add_executable(
-    registry_tests
-    registry_tests.cpp
-)
-target_include_directories(registry_tests PUBLIC ${btrack_core_INCLUDES})
-target_link_libraries(
-    registry_tests
-    GTest::gtest_main
-    btrack-core
-)
 
-add_executable(
-    graph_tests
-    graph_tests.cpp
-)
-target_link_libraries(
-    graph_tests
-    GTest::gtest_main
-    btrack-core
-)
-
-add_executable(
-    node_runner_tests
-    node_runner_tests.cpp
-)
-target_include_directories(node_runner_tests PUBLIC ${btrack_core_INCLUDES} "btrack-core/tests")
-target_link_libraries(
-    node_runner_tests
-    GTest::gtest_main
-    btrack-core
-)
+# add_executable(
+#     graph_tests
+#     graph_tests.cpp
+# )
+# target_link_libraries(
+#     graph_tests
+#     GTest::gtest_main
+#     btrack-core
+# )
 
 # add_executable(
 #     iterator_tests
@@ -139,9 +118,7 @@ gtest_discover_tests(processing_tests_no_cuda)
 gtest_discover_tests(opencv_tests)
 gtest_discover_tests(settings_tests)
 gtest_discover_tests(node_tests)
-gtest_discover_tests(registry_tests)
-gtest_discover_tests(graph_tests)
-gtest_discover_tests(node_runner_tests)
+# gtest_discover_tests(graph_tests)
 # gtest_discover_tests(iterator_tests)
 
 

@@ -6,54 +6,78 @@
 
 namespace btrack::nodes::system {
 
-template <typename ..._Types>
-class Input : public Port<..._Types>, public enable_shared_from_this<Input>
+template <VariantTemplate VariantType>
+class Input : public Port<VariantType>
 {
 private:
-    weak_ptr<Port<..._Types>> mSource;
-    VariantBase<..._Types> mDefault;
+    PortBase<VariantType>* mSource = nullptr;
+    VariantType mDefault;
 public:
-    const VariantBase<..._Types>& get() const override;
-    VariantBase<..._Types>& get() override;
-    Type type() const override { return Port<..._Types>::INPUT; }
-    bool connect(std::shared_ptr<Port<..._Types>> other) override;
-    bool disconnect(std::shared_ptr<Port<..._Types>> other) override;
+    Input(NodeBase<VariantType>* _parent, const ID_t& _id, const std::string& _name, const std::string& _description = "", VariantType _default = VariantType())
+        : Input::Port(_parent, _id, _name, _description), mDefault(_default) {}
+    const VariantType& get() const override;
+    VariantType& get() override;
+    PortType type() const override { return PortType::INPUT; }
+    ConnectionResult connect(PortBase<VariantType>* other) override;
+    ConnectionResult disconnect(PortBase<VariantType>* other) override;
 
-    shared_ptr<Input> getPtr() { return this->shared_from_this(); }
+    virtual ~Input();
 };
 
-template <typename... _Types>
-inline const VariantBase<... _Types> &Input<_Types...>::get() const
+template <VariantTemplate VariantType>
+inline const VariantType &Input<VariantType>::get() const
 {
-    if (mSource.expired() || !mSource.lock()) return mDefault;
-    return mSource.lock()->get();
+    if (!mSource) return mDefault;
+    return mSource->get();
 }
 
-template <typename... _Types>
-inline VariantBase<... _Types> &Input<_Types...>::get()
+template <VariantTemplate VariantType>
+inline VariantType &Input<VariantType>::get()
 {
-    if (mSource.expired() || !mSource.lock()) return mDefault;
-    return mSource.lock()->get();
+    if (!mSource) return mDefault;
+    return mSource->get();
 }
-template <typename... _Types>
-inline bool Input<_Types...>::connect(std::shared_ptr<Port<... _Types>> other)
+template <VariantTemplate VariantType>
+inline ConnectionResult Input<VariantType>::connect(PortBase<VariantType>* other)
 {
-    if (!other) return false;
-    if (!mSource.expired() && mSource.lock())
+    if (!other) return ConnectionResult::NULL_POINTER;
+    if (mSource == other) return ConnectionResult::ALREADY_CONNECTED;
+    if (mSource)
     {
-        mSource->disconnect(getPtr());
+        if (auto r = mSource->disconnect(this); r != ConnectionResult::SUCCESS) return r;
+        mSource = nullptr;
     }
-    return other->connect(getPtr());
+    if (auto rr = other->connect(this); rr == ConnectionResult::SUCCESS || rr == ConnectionResult::ALREADY_CONNECTED)
+    {
+        mSource = other;
+        return ConnectionResult::SUCCESS;
+    }
+    else return rr;
+    return ConnectionResult::UNHANDLED;
 }
-template <typename... _Types>
-inline bool Input<_Types...>::disconnect(std::shared_ptr<Port<... _Types>> other)
+template <VariantTemplate VariantType>
+inline ConnectionResult Input<VariantType>::disconnect(PortBase<VariantType>* other)
 {
-    if (!other) return false;
-    if (!mSource.expired() && mSource.lock())
+    if (!other) return ConnectionResult::NULL_POINTER;
+    if (mSource == other)
     {
-        if (mSource.lock() == other) return mSource.lock()->disconnect(getPtr());
+        if (auto r = mSource->disconnect(this); r == ConnectionResult::SUCCESS)
+        {
+            mSource = nullptr;
+            return ConnectionResult::SUCCESS;
+        }
+        else return r;
     }
-    return false;
+    return ConnectionResult::NOT_CONNECTED;
+}
+template <VariantTemplate VariantType>
+inline Input<VariantType>::~Input()
+{
+    if (mSource)
+    {
+        mSource->disconnect(this);
+        mSource = nullptr;
+    }
 }
 }
 

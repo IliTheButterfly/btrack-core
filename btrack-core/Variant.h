@@ -3,6 +3,7 @@
 
 #include <variant>
 #include <type_traits>
+#include <typeindex>
 
 namespace btrack {
 
@@ -10,10 +11,9 @@ namespace btrack {
 template <typename... _Types>
 class VariantBase {
 public:
-    using Types = _Types;
 
     // Final variant type
-    using VariantType = std::variant<Types...>;
+    using VariantType = std::variant<_Types...>;
 
     // Default constructor
     VariantBase() = default;
@@ -50,13 +50,7 @@ private:
     VariantType data;
 };
 
-// Concept to check if a type is a specialization of VariantBase
-template <typename T>
-concept VariantTemplate = requires {
-    typename T::VariantType; // Ensures T has a VariantType alias
-    typename T::Types;       // Ensures T has a Types alias
-    requires std::is_base_of_v<VariantBase<T::Types>, T>; // Ensures T is derived from VariantBase
-};
+
 
 }
 

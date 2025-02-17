@@ -84,14 +84,15 @@ using ID_t = ItemID;
 class Item : public Clonable<Item>
 {
 protected:
-    virtual ID_t& id() = 0;
+    virtual ID_e& id() = 0;
 public:
-    virtual void update() {}
-    virtual const ID_t& id() const = 0;
+    virtual const ID_e& id() const = 0;
     virtual std::string_view name() const = 0;
     virtual std::string& name() = 0;
     virtual std::string_view description() const = 0;
     virtual std::string& description() = 0;
+    virtual bool isNode() const { return false; }
+    virtual bool isPort() const { return false; }
 
     void clone(Item* to) const override
     {
@@ -106,7 +107,7 @@ public:
 
 struct NodeRegister
 {
-    static ID_t& id(Item& item) { return item.id(); }
+    static ID_e& id(Item& item) { return item.id(); }
 };
 
 }

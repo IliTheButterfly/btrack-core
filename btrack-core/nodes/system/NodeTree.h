@@ -109,7 +109,7 @@ inline void NodeTree<VariantType>::compile2()
             if (!out) continue;
             for (const PortBase<VariantType>* p : out->connections())
             {
-                add_edge(i + 1, p->parent()->id().index() + 1, mGraph);
+                add_edge(i + 1, p->parent()->id() + 1, mGraph);
             }
         }
         if (n->isForced()) add_edge(i + 1, 0, mGraph);
@@ -138,7 +138,7 @@ inline NodeType *NodeTree<VariantType>::addNode(TArgs &&...args)
 {
     typedef typename std::remove_cv<NodeType>::type _Tp_nc;
     auto res = dynamic_cast<NodeType*>(mNodes.emplace_back(new _Tp_nc(forward<TArgs>(args)...)));
-    NodeRegister::id(*res) = ID_t(ID_t::Type::NODE, {0, mNodes.size() - 1});
+    NodeRegister::id(*res) = mNodes.size() - 1;
     return res;
 }
 template <VariantTemplate VariantType>

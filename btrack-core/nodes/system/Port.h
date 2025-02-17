@@ -35,7 +35,7 @@ public:
     virtual NodeBase<VariantType>* parent() = 0;
     virtual const NodeBase<VariantType>* parent() const = 0;
     virtual size_t connectionCount() const = 0;
-    void update() override { id() = ((const NodeBase<VariantType>*)parent())->id().child(id().index(), true).get(); }
+    bool isPort() const override { return true; }
     virtual ~PortBase() = default;
 
     friend NodeBase<VariantType>;
@@ -46,16 +46,16 @@ class Port : public PortBase<VariantType>
 {
 private:
     NodeBase<VariantType>* mParent = nullptr;
-    ID_t mID;
+    ID_e mID;
     std::string mName;
     std::string mDescription;
 protected:
-    ID_t& id() override { return mID; }
+    ID_e& id() override { return mID; }
 
-    Port(NodeBase<VariantType>* _parent, const ID_t& _id, const std::string& _name, const std::string& _description = "")
+    Port(NodeBase<VariantType>* _parent, const ID_e& _id, const std::string& _name, const std::string& _description = "")
         : mParent(_parent), mID(_id), mName(_name), mDescription(_description) {}
 public:
-    const ID_t& id() const override { return mID; }
+    const ID_e& id() const override { return mID; }
     std::string_view name() const override { return mName; }
     std::string& name() override { return mName; }
     std::string_view description() const override { return mDescription; }

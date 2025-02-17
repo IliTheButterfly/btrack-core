@@ -1,16 +1,6 @@
 #include "Composite.h"
 
 namespace btrack::nodes::system {
-void Composite::update()
-{
-    CompositeIterator<Item> it = this->recursiveIterator(0);
-    while(it.hasNext())
-    {
-        auto item = it.next();
-        if (!item) continue;
-        item->update();
-    }
-}
 
 Item *Composite::relativeAt(const ID_t &_id)
 {

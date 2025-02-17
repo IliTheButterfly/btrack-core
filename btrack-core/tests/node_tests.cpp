@@ -42,9 +42,9 @@
 TEST(NodeTests, OutputConnections)
 {
     ExecutionOrder o;
-    auto start = NodeStart(&o, ID_t(ID_t::NODE, {0, 0}));
-    auto mid = NodeMid(&o, ID_t(ID_t::NODE, {0, 1}));
-    auto end = NodeEnd(&o, ID_t(ID_t::NODE, {0, 2}));
+    auto start = NodeStart(&o);
+    auto mid = NodeMid(&o);
+    auto end = NodeEnd(&o);
 
     ASSERT_EQ(start.valueOut->connect(mid.valueIn1), ConnectionResult::SUCCESS);
     ASSERT_EQ(start.valueOut->connect(mid.valueIn1), ConnectionResult::ALREADY_CONNECTED);
@@ -67,9 +67,9 @@ TEST(NodeTests, OutputConnections)
 TEST(NodeTests, InputConnections)
 {
     ExecutionOrder o;
-    auto start = NodeStart(&o, ID_t(ID_t::NODE, {0, 0}));
-    auto mid = NodeMid(&o, ID_t(ID_t::NODE, {0, 1}));
-    auto end = NodeEnd(&o, ID_t(ID_t::NODE, {0, 2}));
+    auto start = NodeStart(&o);
+    auto mid = NodeMid(&o);
+    auto end = NodeEnd(&o);
 
     ASSERT_EQ(mid.valueIn1->connect(start.valueOut), ConnectionResult::SUCCESS);
     ASSERT_EQ(mid.valueIn1->connect(start.valueOut), ConnectionResult::ALREADY_CONNECTED);
@@ -92,11 +92,11 @@ TEST(NodeTests, InputConnections)
 TEST(NodeTests, OutputDestructors)
 {
     ExecutionOrder o;
-    auto start = NodeStart(&o, ID_t(ID_t::NODE, {0, 0}));
-    auto end = NodeEnd(&o, ID_t(ID_t::NODE, {0, 2}));
+    auto start = NodeStart(&o);
+    auto end = NodeEnd(&o);
 
     {
-        auto mid = NodeMid(&o, ID_t(ID_t::NODE, {0, 1}));
+        auto mid = NodeMid(&o);
 
         ASSERT_EQ(start.valueOut->connect(mid.valueIn1), ConnectionResult::SUCCESS);
         ASSERT_EQ(mid.valueOut->connect(end.valueIn1), ConnectionResult::SUCCESS);
@@ -113,9 +113,9 @@ TEST(NodeTests, TreeExecutionOrder)
 {
     ExecutionOrder o;
     NodeTree<VariantTest> tree;
-    auto start = tree.addNode<NodeStart>(&o, ID_t(ID_t::NODE, {0, 0}));
-    auto mid = tree.addNode<NodeMid>(&o, ID_t(ID_t::NODE, {0, 1}));
-    auto end = tree.addNode<NodeEnd>(&o, ID_t(ID_t::NODE, {0, 2}));
+    auto start = tree.addNode<NodeStart>(&o);
+    auto mid = tree.addNode<NodeMid>(&o);
+    auto end = tree.addNode<NodeEnd>(&o);
 
     ASSERT_EQ(mid->valueIn1->connect(start->valueOut), ConnectionResult::SUCCESS);
     ASSERT_EQ(end->valueIn1->connect(mid->valueOut), ConnectionResult::SUCCESS);
@@ -150,15 +150,15 @@ TEST(NodeTests, TreeExecutionOrderComplex)
 {
     ExecutionOrder o;
     NodeTree<VariantTest> tree;
-    auto start1 = tree.addNode<NodeStart>(&o, ID_t(ID_t::NODE, {0, 0}), "S1");
-    auto start2 = tree.addNode<NodeStart>(&o, ID_t(ID_t::NODE, {0, 1}), "S2");
-    auto mid1 = tree.addNode<NodeMid>(&o, ID_t(ID_t::NODE, {0, 2}), "M1");
-    auto mid2 = tree.addNode<NodeMid>(&o, ID_t(ID_t::NODE, {0, 3}), "M2");
-    auto mid3 = tree.addNode<NodeMid>(&o, ID_t(ID_t::NODE, {0, 4}), "M3");
-    auto mid4 = tree.addNode<NodeMid>(&o, ID_t(ID_t::NODE, {0, 5}), "M4");
-    auto mid5 = tree.addNode<NodeMid>(&o, ID_t(ID_t::NODE, {0, 6}), "M5");
-    auto end1 = tree.addNode<NodeEnd>(&o, ID_t(ID_t::NODE, {0, 7}), "E1");
-    auto end2 = tree.addNode<NodeEnd>(&o, ID_t(ID_t::NODE, {0, 8}), "E2");
+    auto start1 = tree.addNode<NodeStart>(&o, "S1");
+    auto start2 = tree.addNode<NodeStart>(&o, "S2");
+    auto mid1 = tree.addNode<NodeMid>(&o, "M1");
+    auto mid2 = tree.addNode<NodeMid>(&o, "M2");
+    auto mid3 = tree.addNode<NodeMid>(&o, "M3");
+    auto mid4 = tree.addNode<NodeMid>(&o, "M4");
+    auto mid5 = tree.addNode<NodeMid>(&o, "M5");
+    auto end1 = tree.addNode<NodeEnd>(&o, "E1");
+    auto end2 = tree.addNode<NodeEnd>(&o, "E2");
 
     ASSERT_EQ(start1->valueOut->connect(mid1->valueIn1), ConnectionResult::SUCCESS);
     ASSERT_EQ(start1->valueOut->connect(mid2->valueIn1), ConnectionResult::SUCCESS);
@@ -206,15 +206,15 @@ TEST(NodeTests, TreeExecutionOrderVeryComplex0)
     ExecutionOrder o;
     NodeTree<VariantTest> tree;
 
-    auto start = tree.addNode<NodeStart>(nullptr, ID_t(ID_t::NODE, {0, 0}), "S");
-    auto end = tree.addNode<NodeEnd>(nullptr, ID_t(ID_t::NODE, {0, 0}), "E");
+    auto start = tree.addNode<NodeStart>(nullptr, "S");
+    auto end = tree.addNode<NodeEnd>(nullptr, "E");
 
     boost::container::vector<NodeMultiMid*> nodes;
     {
         boost::timer::auto_cpu_timer t{std::cout};
         for (int i = 0; i < count; ++i)
         {
-            nodes.emplace_back(tree.addNode<NodeMultiMid>(nullptr, ID_t(ID_t::NODE, {0, 0}), "M"));
+            nodes.emplace_back(tree.addNode<NodeMultiMid>(nullptr, "M"));
             if (i % 10 == 0) start->valueOut->connect(nodes.back()->addInput("StartInput"));
             if (i % 8 == 1) nodes.back()->valueOut->connect(end->addInput("StartInput"));
         }
@@ -260,15 +260,15 @@ TEST(NodeTests, TreeExecutionOrderVeryComplex1)
     ExecutionOrder o;
     NodeTree<VariantTest> tree;
 
-    auto start = tree.addNode<NodeStart>(nullptr, ID_t(ID_t::NODE, {0, 0}), "S");
-    auto end = tree.addNode<NodeEnd>(nullptr, ID_t(ID_t::NODE, {0, 0}), "E");
+    auto start = tree.addNode<NodeStart>(nullptr, "S");
+    auto end = tree.addNode<NodeEnd>(nullptr, "E");
 
     boost::container::vector<NodeMultiMid*> nodes;
     {
         boost::timer::auto_cpu_timer t{std::cout};
         for (int i = 0; i < count; ++i)
         {
-            nodes.emplace_back(tree.addNode<NodeMultiMid>(nullptr, ID_t(ID_t::NODE, {0, 0}), "M"));
+            nodes.emplace_back(tree.addNode<NodeMultiMid>(nullptr, "M"));
             if (i % 10 == 0) start->valueOut->connect(nodes.back()->addInput("StartInput"));
             if (i % 8 == 1) nodes.back()->valueOut->connect(end->addInput("StartInput"));
         }
@@ -314,15 +314,15 @@ TEST(NodeTests, TreeExecutionOrderVeryComplex2)
     ExecutionOrder o;
     NodeTree<VariantTest> tree;
 
-    auto start = tree.addNode<NodeStart>(nullptr, ID_t(ID_t::NODE, {0, 0}), "S");
-    auto end = tree.addNode<NodeEnd>(nullptr, ID_t(ID_t::NODE, {0, 0}), "E");
+    auto start = tree.addNode<NodeStart>(nullptr, "S");
+    auto end = tree.addNode<NodeEnd>(nullptr, "E");
 
     boost::container::vector<NodeMultiMid*> nodes;
     {
         boost::timer::auto_cpu_timer t{std::cout};
         for (int i = 0; i < count; ++i)
         {
-            nodes.emplace_back(tree.addNode<NodeMultiMid>(nullptr, ID_t(ID_t::NODE, {0, 0}), "M"));
+            nodes.emplace_back(tree.addNode<NodeMultiMid>(nullptr, "M"));
             if (i % 10 == 0) start->valueOut->connect(nodes.back()->addInput("StartInput"));
             if (i % 8 == 1) nodes.back()->valueOut->connect(end->addInput("StartInput"));
         }
@@ -383,16 +383,16 @@ TEST(NodeTests, TreeExecutionOrderVeryComplex2)
 // {
 //     ExecutionOrder o;
 //     NodeTree<VariantTest> tree;
-//     auto start1 = tree.addNode<NodeStart>(o, ID_t(ID_t::NODE, {0, 0}), "S1");
-//     auto start2 = tree.addNode<NodeStart>(o, ID_t(ID_t::NODE, {0, 1}), "S2");
-//     auto mid1 = tree.addNode<NodeMid>(o, ID_t(ID_t::NODE, {0, 2}), "M1");
-//     auto mid2 = tree.addNode<NodeMid>(o, ID_t(ID_t::NODE, {0, 3}), "M2");
-//     auto mid3 = tree.addNode<NodeMid>(o, ID_t(ID_t::NODE, {0, 4}), "M3");
-//     auto mid4 = tree.addNode<NodeMid>(o, ID_t(ID_t::NODE, {0, 5}), "M4");
-//     auto mid5 = tree.addNode<NodeMid>(o, ID_t(ID_t::NODE, {0, 6}), "M5");
-//     auto mid6 = tree.addNode<NodeMid>(o, ID_t(ID_t::NODE, {0, 7}), "M6");
-//     auto end1 = tree.addNode<NodeEnd>(o, ID_t(ID_t::NODE, {0, 8}), "E1");
-//     auto end2 = tree.addNode<NodeEnd>(o, ID_t(ID_t::NODE, {0, 9}), "E2");
+//     auto start1 = tree.addNode<NodeStart>(o, "S1");
+//     auto start2 = tree.addNode<NodeStart>(o, "S2");
+//     auto mid1 = tree.addNode<NodeMid>(o, "M1");
+//     auto mid2 = tree.addNode<NodeMid>(o, "M2");
+//     auto mid3 = tree.addNode<NodeMid>(o, "M3");
+//     auto mid4 = tree.addNode<NodeMid>(o, "M4");
+//     auto mid5 = tree.addNode<NodeMid>(o, "M5");
+//     auto mid6 = tree.addNode<NodeMid>(o, "M6");
+//     auto end1 = tree.addNode<NodeEnd>(o, "E1");
+//     auto end2 = tree.addNode<NodeEnd>(o, "E2");
 
 //     ASSERT_EQ(start1->valueOut->connect(mid1->valueIn1), ConnectionResult::SUCCESS);
 //     ASSERT_EQ(start1->valueOut->connect(mid2->valueIn1), ConnectionResult::SUCCESS);

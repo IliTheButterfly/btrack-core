@@ -15,7 +15,6 @@ using CompositeIterator = _CompositeIterator<std::remove_pointer_t<std::remove_r
 class Composite : public Item
 {
 public:
-    void update() override;
     virtual Item *relativeAt(const ID_t &_id);
     virtual const Item *relativeAt(const ID_t &_id) const;
 
@@ -47,7 +46,7 @@ public:
     explicit _CompositeIterator(root_pointer root, int depth = -1) : mDepth(depth)
     {
         if (root)
-            stack.push({root, 0, ((const_root_pointer)root)->id().isNode()});
+            stack.push({root, 0, root->isNode()});
     }
 
     pointer next()
@@ -63,7 +62,7 @@ public:
                 {
                     // Keep going deeper if mDepth == -1 or if mDepth not reached
                     if (mDepth > -1 || mDepth > currentDepth())
-                        stack.push({subComposite, 0, ((const_root_pointer)subComposite)->id().isNode()});
+                        stack.push({subComposite, 0, ((const_root_pointer)subComposite)->isNode()});
                 }
                 if (pointer res = dynamic_cast<pointer>(item)) return res;
             }
@@ -81,7 +80,7 @@ public:
 
     int currentDepth() const { return stack.size() - 1; }
 
-    const ID_t &currentID() const
+    const ID_e &currentID() const
     {
         if (stack.empty())
             throw std::runtime_error("Iterator exhausted");

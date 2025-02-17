@@ -18,7 +18,7 @@ class NodeBase : public Composite
 {
 public:
     virtual void run() = 0;
-    virtual void compile() { update(); }
+    virtual void compile() { }
     virtual std::string_view category() const = 0;
     virtual std::string& category() = 0;
     virtual Input<VariantType>* addInput(const std::string& _name, const std::string& _description = "", VariantType _default = VariantType()) = 0;
@@ -26,6 +26,7 @@ public:
     virtual bool isForced() const { return false; }
     virtual boost::container::vector<PortBase<VariantType>*>::const_iterator pbegin() const = 0;
     virtual boost::container::vector<PortBase<VariantType>*>::const_iterator pend() const = 0;
+    bool isNode() const override { return true; }
     void clone(Item* to) const override
     {
         Item::clone(to);
@@ -43,19 +44,19 @@ template <VariantTemplate VariantType>
 class Node : public NodeBase<VariantType>
 {
 private:
-    ID_t mID;
+    ID_e mID = 0;
     std::string mName;
     std::string mDescription;
     std::string mCategory;
 protected:
     boost::container::vector<PortBase<VariantType>*> mPorts;
 
-    ID_t& id() override { return mID; }
+    ID_e& id() override { return mID; }
 
-    Node(const ID_t& _id, const std::string& _name, const std::string& _category, const std::string& _description = "")
-        : mID(_id), mName(_name), mCategory(_category), mDescription(_description) {}
+    Node(const std::string& _name, const std::string& _category, const std::string& _description = "")
+        : mName(_name), mCategory(_category), mDescription(_description) {}
 public:
-    const ID_t& id() const override { return mID; }
+    const ID_e& id() const override { return mID; }
     std::string_view name() const override { return mName; }
     std::string& name() override { return mName; }
     std::string_view description() const override { return mDescription; }
@@ -64,12 +65,12 @@ public:
     std::string& category() override { return mCategory; }
     Input<VariantType>* addInput(const std::string& _name, const std::string& _description = "", VariantType _default = VariantType()) override
     {
-        return (Input<VariantType>*)(mPorts.emplace_back(new Input<VariantType>(this, id().child(mPorts.size(), true).get(), _name, _description, _default)));
+        return (Input<VariantType>*)(mPorts.emplace_back(new Input<VariantType>(this, mPorts.size(), _name, _description, _default)));
     }
 
     Output<VariantType>* addOutput(const std::string& _name, const std::string& _description = "", VariantType _default = VariantType()) override
     {
-        return (Output<VariantType>*)(mPorts.emplace_back(new Output<VariantType>(this, id().child(mPorts.size(), true).get(), _name, _description, _default)));
+        return (Output<VariantType>*)(mPorts.emplace_back(new Output<VariantType>(this, mPorts.size(), _name, _description, _default)));
     }
     boost::container::vector<PortBase<VariantType>*>::const_iterator pbegin() const override { return mPorts.begin(); }
     boost::container::vector<PortBase<VariantType>*>::const_iterator pend() const override { return mPorts.end(); }
@@ -114,13 +115,13 @@ class NodeDecorator : public NodeBase<VariantType>
 protected:
     unique_ptr<NodeType> mInnerNode;
 
-    ID_t& id() override { return mInnerNode->id(); }
+    ID_e& id() override { return mInnerNode->id(); }
 public:
     void run() { mInnerNode->run(); }
     void compile() { mInnerNode->compile(); }
     const std::string& category() const { return mInnerNode->category(); }
     std::string& category() { return mInnerNode->category(); }
-    const ID_t& id() const override { return mInnerNode->id(); }
+    const ID_e& id() const override { return mInnerNode->id(); }
     std::string_view name() const override { return mInnerNode->name(); }
     std::string& name() override { return mInnerNode->name(); }
     std::string_view description() const override { return mInnerNode->description(); }

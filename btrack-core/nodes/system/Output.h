@@ -14,7 +14,7 @@ private:
     boost::container::vector<PortBase<VariantType>*> mDestinations;
     VariantType mValue;
 public:
-    Output(NodeBase<VariantType>* _parent, const ID_t& _id, const std::string& _name, const std::string& _description = "", VariantType _default = VariantType())
+    Output(NodeBase<VariantType>* _parent, const ID_e& _id, const std::string& _name, const std::string& _description = "", VariantType _default = VariantType())
         : Output::Port(_parent, _id, _name, _description), mValue(_default) {}
     const VariantType& get() const override;
     VariantType& get() override;

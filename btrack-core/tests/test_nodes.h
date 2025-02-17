@@ -19,8 +19,8 @@ class NodeStart : public nodes::system::Node<VariantTest>
 public:
     Output<VariantTest>* valueOut;
     ExecutionOrder* order;
-    NodeStart(ExecutionOrder* _order, const ID_t& _id, const std::string& _name = "NodeStart", const std::string& _description = "")
-        : NodeStart::Node(_id, _name, "test", _description), order(_order)
+    NodeStart(ExecutionOrder* _order, const std::string& _name = "NodeStart", const std::string& _description = "")
+        : NodeStart::Node(_name, "test", _description), order(_order)
     {
         valueOut = addOutput("Output", "", 0);
     }
@@ -38,8 +38,8 @@ public:
     Input<VariantTest>* valueIn2;
     Output<VariantTest>* valueOut;
     ExecutionOrder* order;
-    NodeMid(ExecutionOrder* _order, const ID_t& _id, const std::string& _name = "NodeMid", const std::string& _description = "")
-        : NodeMid::Node(_id, _name, "test", _description), order(_order)
+    NodeMid(ExecutionOrder* _order, const std::string& _name = "NodeMid", const std::string& _description = "")
+        : NodeMid::Node(_name, "test", _description), order(_order)
     {
         valueIn1 = addInput("Input1", "", 0);
         valueIn2 = addInput("Input2", "", 0);
@@ -58,8 +58,8 @@ class NodeMultiMid : public nodes::system::Node<VariantTest>
 public:
     Output<VariantTest>* valueOut;
     ExecutionOrder* order;
-    NodeMultiMid(ExecutionOrder* _order, const ID_t& _id, const std::string& _name = "NodeMultiMid", const std::string& _description = "")
-        : NodeMultiMid::Node(_id, _name, "test", _description), order(_order)
+    NodeMultiMid(ExecutionOrder* _order, const std::string& _name = "NodeMultiMid", const std::string& _description = "")
+        : NodeMultiMid::Node(_name, "test", _description), order(_order)
     {
         valueOut = addOutput("Output", "", 0);
     }
@@ -82,8 +82,8 @@ public:
     Input<VariantTest>* valueIn1;
     Input<VariantTest>* valueIn2;
     ExecutionOrder* order;
-    NodeEnd(ExecutionOrder* _order, const ID_t& _id, const std::string& _name = "NodeEnd", const std::string& _description = "")
-        : NodeEnd::Node(_id, _name, "test", _description), order(_order)
+    NodeEnd(ExecutionOrder* _order, const std::string& _name = "NodeEnd", const std::string& _description = "")
+        : NodeEnd::Node(_name, "test", _description), order(_order)
     {
         valueIn1 = addInput("Input1", "", 0);
         valueIn2 = addInput("Input2", "", 0);

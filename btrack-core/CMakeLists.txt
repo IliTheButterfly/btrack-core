@@ -16,7 +16,7 @@ find_package(OpenCV REQUIRED)
 if (USE_CUDA)
 find_package(CUDA REQUIRED)
 endif ()
-find_package(Boost COMPONENTS thread filesystem serialization REQUIRED)
+find_package(Boost COMPONENTS thread filesystem serialization timer REQUIRED)
 
 include_directories(${OpenCV_INCLUDE_DIRS})
 

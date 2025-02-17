@@ -1,13 +1,13 @@
 #include <gtest/gtest.h>
-#include "nodes/utilities/Graph.h"
+#include "nodes/Graph.h"
 #include <boost/numeric/ublas/matrix_sparse.hpp>
 
-using Graph = btrack::nodes::utilities::Graph;
+using Graph = btrack::nodes::Graph;
 using namespace boost::numeric::ublas;
 
 void linearGraph(Graph &g)
 {
-    for (auto i = 0, ii = 1; ii < g.nodeCount(); ++i, ++ii)
+    for (auto i = 0, ii = 1; ii < g.nodeCount; ++i, ++ii)
     {
         g.addEdge(i, ii);
     }
@@ -36,7 +36,7 @@ TEST(GraphTests, LinearGraph3)
 
     linearGraph(g);
 
-    ASSERT_MAT_EQUAL(g, expected, 3, 3);
+    ASSERT_MAT_EQUAL(g.adjMatrix, expected, 3, 3);
 }
 
 TEST(GraphTests, LinearGraph5)
@@ -51,7 +51,7 @@ TEST(GraphTests, LinearGraph5)
 
     linearGraph(g);
 
-    ASSERT_MAT_EQUAL(g, expected, 5, 5);
+    ASSERT_MAT_EQUAL(g.adjMatrix, expected, 5, 5);
 }
 
 TEST(GraphTests, BranchedGraph5)
@@ -73,5 +73,5 @@ TEST(GraphTests, BranchedGraph5)
     expected(4, 3) = 1;
 
 
-    ASSERT_MAT_EQUAL(g, expected, 5, 5);
+    ASSERT_MAT_EQUAL(g.adjMatrix, expected, 5, 5);
 }

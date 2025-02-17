@@ -91,15 +91,15 @@ target_link_libraries(
 )
 
 
-# add_executable(
-#     graph_tests
-#     graph_tests.cpp
-# )
-# target_link_libraries(
-#     graph_tests
-#     GTest::gtest_main
-#     btrack-core
-# )
+add_executable(
+    graph_tests
+    graph_tests.cpp
+)
+target_link_libraries(
+    graph_tests
+    GTest::gtest_main
+    btrack-core
+)
 
 # add_executable(
 #     iterator_tests
@@ -118,7 +118,7 @@ gtest_discover_tests(processing_tests_no_cuda)
 gtest_discover_tests(opencv_tests)
 gtest_discover_tests(settings_tests)
 gtest_discover_tests(node_tests)
-# gtest_discover_tests(graph_tests)
+gtest_discover_tests(graph_tests)
 # gtest_discover_tests(iterator_tests)
 
 

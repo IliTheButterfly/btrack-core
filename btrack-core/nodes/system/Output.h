@@ -22,6 +22,7 @@ public:
     PortType type() const override { return PortType::OUTPUT; }
     ConnectionResult connect(PortBase<VariantType>* other) override;
     ConnectionResult disconnect(PortBase<VariantType>* other) override;
+    const boost::container::vector<PortBase<VariantType>*>& connections() const { return this->mDestinations; }
     virtual ~Output();
 };
 

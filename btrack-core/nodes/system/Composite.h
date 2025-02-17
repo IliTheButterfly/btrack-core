@@ -25,9 +25,9 @@ public:
     CompositeIterator<Item> recursiveIterator(int depth = -1);
     CompositeIterator<const Item> recursiveIterator(int depth = -1) const;
     template <typename U>
-    CompositeIterator<U> recursiveIterator(int depth = -1);
+    CompositeIterator<U> recursiveIteratorFilter(int depth = -1);
     template <typename U>
-    CompositeIterator<std::add_const_t<U>> recursiveIterator(int depth = -1) const;
+    CompositeIterator<std::add_const_t<U>> recursiveIteratorFilter(int depth = -1) const;
 };
 
 
@@ -128,13 +128,13 @@ private:
 };
 
 template <typename U>
-inline CompositeIterator<U> Composite::recursiveIterator(int depth)
+inline CompositeIterator<U> Composite::recursiveIteratorFilter(int depth)
 {
     return CompositeIterator<U>(this, depth);
 }
 
 template <typename U>
-inline CompositeIterator<std::add_const_t<U>> Composite::recursiveIterator(int depth) const
+inline CompositeIterator<std::add_const_t<U>> Composite::recursiveIteratorFilter(int depth) const
 {
     return CompositeIterator<std::add_const_t<U>>(this, depth);
 }

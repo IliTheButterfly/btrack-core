@@ -60,7 +60,6 @@ public:
     std::string& name() override { return mName; }
     std::string_view description() const override { return mDescription; }
     std::string& description() override { return mDescription; }
-
     NodeBase<VariantType>* parent() override { return mParent; }
     const NodeBase<VariantType>* parent() const override { return mParent; }
     virtual ~Port() = default;

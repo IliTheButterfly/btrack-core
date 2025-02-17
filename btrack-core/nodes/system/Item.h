@@ -79,6 +79,8 @@ struct ItemID
 
 using ID_t = ItemID;
 
+
+
 class Item : public Clonable<Item>
 {
 protected:
@@ -99,7 +101,12 @@ public:
         to->description() = this->description();
     }
 
-    friend class NodeRegister;
+    friend struct NodeRegister;
+};
+
+struct NodeRegister
+{
+    static ID_t& id(Item& item) { return item.id(); }
 };
 
 }

@@ -23,6 +23,9 @@ public:
     virtual std::string& category() = 0;
     virtual Input<VariantType>* addInput(const std::string& _name, const std::string& _description = "", VariantType _default = VariantType()) = 0;
     virtual Output<VariantType>* addOutput(const std::string& _name, const std::string& _description = "", VariantType _default = VariantType()) = 0;
+    virtual bool isForced() const { return false; }
+    virtual boost::container::vector<PortBase<VariantType>*>::const_iterator pbegin() const = 0;
+    virtual boost::container::vector<PortBase<VariantType>*>::const_iterator pend() const = 0;
     void clone(Item* to) const override
     {
         Item::clone(to);
@@ -68,6 +71,8 @@ public:
     {
         return (Output<VariantType>*)(mPorts.emplace_back(new Output<VariantType>(this, id().child(mPorts.size(), true).get(), _name, _description, _default)));
     }
+    boost::container::vector<PortBase<VariantType>*>::const_iterator pbegin() const override { return mPorts.begin(); }
+    boost::container::vector<PortBase<VariantType>*>::const_iterator pend() const override { return mPorts.end(); }
     void clone(Item* to) const override
     {
         NodeBase<VariantType>::clone(to);

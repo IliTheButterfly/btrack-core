@@ -34,6 +34,7 @@ public:
     virtual ConnectionResult disconnect(PortBase* other) = 0;
     virtual NodeBase<VariantType>* parent() = 0;
     virtual const NodeBase<VariantType>* parent() const = 0;
+    virtual size_t connectionCount() const = 0;
     void update() override { id() = ((const NodeBase<VariantType>*)parent())->id().child(id().index(), true).get(); }
     virtual ~PortBase() = default;
 

@@ -17,6 +17,7 @@ public:
         : Input::Port(_parent, _id, _name, _description), mDefault(_default) {}
     const VariantType& get() const override;
     VariantType& get() override;
+    size_t connectionCount() const override { return mSource ? 1 : 0; }
     PortType type() const override { return PortType::INPUT; }
     ConnectionResult connect(PortBase<VariantType>* other) override;
     ConnectionResult disconnect(PortBase<VariantType>* other) override;

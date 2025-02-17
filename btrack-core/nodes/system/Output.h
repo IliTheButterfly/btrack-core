@@ -18,6 +18,7 @@ public:
         : Output::Port(_parent, _id, _name, _description), mValue(_default) {}
     const VariantType& get() const override;
     VariantType& get() override;
+    size_t connectionCount() const override { return mDestinations.size(); }
     PortType type() const override { return PortType::OUTPUT; }
     ConnectionResult connect(PortBase<VariantType>* other) override;
     ConnectionResult disconnect(PortBase<VariantType>* other) override;
@@ -77,7 +78,7 @@ inline Output<VariantType>::~Output()
         if (v) v->disconnect(this);
         
 
-        if (v == mDestinations.at(0))
+        if (mDestinations.size() && v == mDestinations.at(0))
         {
             // Ensure the value was removed
             mDestinations.erase(mDestinations.begin());

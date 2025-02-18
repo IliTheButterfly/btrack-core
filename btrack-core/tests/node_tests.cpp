@@ -310,7 +310,7 @@ TEST(NodeTests, TreeExecutionOrderVeryComplex1)
 
 TEST(NodeTests, TreeExecutionOrderVeryComplex2)
 {
-    constexpr int count = 10000;
+    constexpr int count = 100000;
     ExecutionOrder o;
     NodeTree<VariantTest> tree;
 
@@ -318,6 +318,8 @@ TEST(NodeTests, TreeExecutionOrderVeryComplex2)
     auto end = tree.addNode<NodeEnd>(nullptr, "E");
 
     boost::container::vector<NodeMultiMid*> nodes;
+    nodes.reserve(count);
+    tree.reserve(count + 2);
     {
         boost::timer::auto_cpu_timer t{std::cout};
         for (int i = 0; i < count; ++i)

@@ -12,6 +12,7 @@ class Input : public Port<VariantType>
 private:
     PortBase<VariantType>* mSource = nullptr;
     VariantType mDefault;
+    volatile bool mConnecting = false;
 public:
     Input(NodeBase<VariantType>* _parent, const ID_e& _id, const std::string& _name, const std::string& _description = "", VariantType _default = VariantType())
         : Input::Port(_parent, _id, _name, _description), mDefault(_default) {}
@@ -41,6 +42,8 @@ inline VariantType &Input<VariantType>::get()
 template <VariantTemplate VariantType>
 inline ConnectionResult Input<VariantType>::connect(PortBase<VariantType>* other)
 {
+    if (mConnecting) return ConnectionResult::OTHER;
+    Recursion r(mConnecting);
     if (!other) return ConnectionResult::NULL_POINTER;
     if (mSource == other) return ConnectionResult::ALREADY_CONNECTED;
     if (mSource)
@@ -48,7 +51,7 @@ inline ConnectionResult Input<VariantType>::connect(PortBase<VariantType>* other
         if (auto r = mSource->disconnect(this); r != ConnectionResult::SUCCESS) return r;
         mSource = nullptr;
     }
-    if (auto rr = other->connect(this); rr == ConnectionResult::SUCCESS || rr == ConnectionResult::ALREADY_CONNECTED)
+    if (auto rr = other->connect(this); rr == ConnectionResult::SUCCESS || rr == ConnectionResult::ALREADY_CONNECTED || rr == ConnectionResult::OTHER)
     {
         mSource = other;
         return ConnectionResult::SUCCESS;

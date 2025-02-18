@@ -9,6 +9,13 @@ namespace btrack::nodes::system {
 template <VariantTemplate VariantType>
 class NodeBase;
 
+struct Recursion
+{
+    volatile bool& var;
+    Recursion(volatile bool& v) : var(v) { var = true; }
+    ~Recursion() { var = false; }
+};
+
 enum class PortType {
     UNKNOWN,
     INPUT,

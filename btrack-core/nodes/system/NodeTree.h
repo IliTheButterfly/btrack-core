@@ -30,6 +30,7 @@ public:
     NodeType* addNode(TArgs&&... args);
 
     void clone(NodeTree<VariantType>* to) const override;
+    void reserve(size_t count) { mNodes.reserve(count);}
 
     virtual ~NodeTree();
 };

@@ -13,6 +13,7 @@ class Output : public Port<VariantType>
 private:
     boost::container::vector<PortBase<VariantType>*> mDestinations;
     VariantType mValue;
+    volatile bool mConnecting = false;
 public:
     Output(NodeBase<VariantType>* _parent, const ID_e& _id, const std::string& _name, const std::string& _description = "", VariantType _default = VariantType())
         : Output::Port(_parent, _id, _name, _description), mValue(_default) {}
@@ -41,17 +42,17 @@ inline VariantType &Output<VariantType>::get()
 template <VariantTemplate VariantType>
 inline ConnectionResult Output<VariantType>::connect(PortBase<VariantType> *other)
 {
+    if (mConnecting) return ConnectionResult::OTHER;
+    Recursion r(mConnecting);
     if (!other) return ConnectionResult::NULL_POINTER;
-    if (std::find(mDestinations.begin(), mDestinations.end(), other) != mDestinations.end()) return ConnectionResult::ALREADY_CONNECTED;
-    mDestinations.emplace_back(other);
-    if (auto r = other->connect(this); r == ConnectionResult::SUCCESS || r == ConnectionResult::ALREADY_CONNECTED)
+    if (other->type() == PortType::INPUT)
     {
-        return ConnectionResult::SUCCESS;
-    }
-    else
-    {
-        mDestinations.pop_back();
-        return r;
+        if (auto r = other->connect(this); r == ConnectionResult::SUCCESS || r == ConnectionResult::ALREADY_CONNECTED || r == ConnectionResult::OTHER)
+        {
+            mDestinations.emplace_back(other);
+            return ConnectionResult::SUCCESS;
+        }
+        else return r;
     }
     return ConnectionResult::UNHANDLED;
 }

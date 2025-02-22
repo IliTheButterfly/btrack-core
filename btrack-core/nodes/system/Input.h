@@ -65,7 +65,7 @@ inline ConnectionResult Input<VariantType>::disconnect(PortBase<VariantType>* ot
     if (!other) return ConnectionResult::NULL_POINTER;
     if (mSource == other)
     {
-        if (auto r = mSource->disconnect(this); r == ConnectionResult::SUCCESS)
+        if (auto r = mSource->disconnect(this); r == ConnectionResult::SUCCESS || r == ConnectionResult::NOT_CONNECTED)
         {
             mSource = nullptr;
             return ConnectionResult::SUCCESS;

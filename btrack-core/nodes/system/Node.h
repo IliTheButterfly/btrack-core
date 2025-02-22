@@ -24,6 +24,8 @@ public:
     virtual Input<VariantType>* addInput(const std::string& _name, const std::string& _description = "", VariantType _default = VariantType()) = 0;
     virtual Output<VariantType>* addOutput(const std::string& _name, const std::string& _description = "", VariantType _default = VariantType()) = 0;
     virtual bool isForced() const { return false; }
+    virtual size_t inputCount() const = 0;
+    virtual size_t outputCount() const = 0;
     virtual boost::container::vector<PortBase<VariantType>*>::const_iterator pbegin() const = 0;
     virtual boost::container::vector<PortBase<VariantType>*>::const_iterator pend() const = 0;
     bool isNode() const override { return true; }
@@ -98,6 +100,24 @@ public:
         if (_id >= mPorts.size()) return nullptr;
         return mPorts.at(_id);
     }
+    size_t inputCount() const override
+    {
+        size_t count = 0;
+        for (const auto* p : mPorts)
+        {
+            if (p->type() == PortType::INPUT) ++count;
+        }
+        return count;
+    }
+    size_t outputCount() const override
+    {
+        size_t count = 0;
+        for (const auto* p : mPorts)
+        {
+            if (p->type() == PortType::OUTPUT) ++count;
+        }
+        return count;
+    }
 
     virtual ~Node()
     {
@@ -133,6 +153,10 @@ public:
         if (!node) return;
         node->mInnerNode = mInnerNode.clone();
     }
+    size_t inputCount() const override { return mInnerNode->inputCount(); }
+    size_t outputCount() const override { return mInnerNode->outputCount(); }
+    boost::container::vector<PortBase<VariantType>*>::const_iterator pbegin() const override { return mInnerNode->pbegin(); }
+    boost::container::vector<PortBase<VariantType>*>::const_iterator pend() const override { return mInnerNode->pend(); }
 
     virtual ~NodeDecorator() = default;
 };

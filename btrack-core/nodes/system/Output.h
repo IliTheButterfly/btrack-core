@@ -47,7 +47,7 @@ inline ConnectionResult Output<VariantType>::connect(PortBase<VariantType> *othe
     if (!other) return ConnectionResult::NULL_POINTER;
     if (other->type() == PortType::INPUT)
     {
-        if (auto r = other->connect(this); r == ConnectionResult::SUCCESS || r == ConnectionResult::ALREADY_CONNECTED || r == ConnectionResult::OTHER)
+        if (auto r = other->connect(this); r == ConnectionResult::SUCCESS || r == ConnectionResult::OTHER)
         {
             mDestinations.emplace_back(other);
             return ConnectionResult::SUCCESS;

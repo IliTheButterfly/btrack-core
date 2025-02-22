@@ -252,6 +252,12 @@ TEST(NodeTests, TreeExecutionOrderVeryComplex0)
         boost::timer::auto_cpu_timer t{std::cout};
         tree.run();
     }
+    size_t operCount = 0;
+    for (auto n : nodes)
+    {
+        operCount += n->inputCount();
+    }
+    std::cout << "Operation count: " << operCount << std::endl;
 }
 
 TEST(NodeTests, TreeExecutionOrderVeryComplex1)
@@ -306,6 +312,12 @@ TEST(NodeTests, TreeExecutionOrderVeryComplex1)
         boost::timer::auto_cpu_timer t{std::cout};
         tree.run();
     }
+    size_t operCount = 0;
+    for (auto n : nodes)
+    {
+        operCount += n->inputCount();
+    }
+    std::cout << "Operation count: " << operCount << std::endl;
 }
 
 TEST(NodeTests, TreeExecutionOrderVeryComplex2)
@@ -360,8 +372,19 @@ TEST(NodeTests, TreeExecutionOrderVeryComplex2)
     }
     {
         boost::timer::auto_cpu_timer t{std::cout};
-        tree.run();
+        for (int i = 0; i < 30; ++i)
+        {
+            tree.run();
+        }
+        std::cout << "Total:" << std::endl;
     }
+    size_t operCount = 0;
+    for (auto n : nodes)
+    {
+        operCount += n->inputCount();
+    }
+    std::cout << "Operation count per: " << operCount << std::endl;
+    std::cout << "Operation count total: " << operCount * 30 << std::endl;
 }
 
 /**

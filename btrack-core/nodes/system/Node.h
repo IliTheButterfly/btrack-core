@@ -16,7 +16,12 @@ class NodeTree;
 template <VariantTemplate VariantType>
 class NodeBase : public Composite
 {
+protected:
+    typedef typename boost::container::vector<PortBase<VariantType>*>::iterator port_iterator;
+    virtual boost::container::vector<PortBase<VariantType>*>::iterator _pbegin() = 0;
+    virtual boost::container::vector<PortBase<VariantType>*>::iterator _pend() = 0;
 public:
+    typedef typename boost::container::vector<PortBase<VariantType>*>::const_iterator const_port_iterator;
     virtual void run() = 0;
     virtual void compile() { }
     virtual std::string_view category() const = 0;
@@ -29,7 +34,7 @@ public:
     virtual boost::container::vector<PortBase<VariantType>*>::const_iterator pbegin() const = 0;
     virtual boost::container::vector<PortBase<VariantType>*>::const_iterator pend() const = 0;
     bool isNode() const override { return true; }
-    void clone(Item* to) const override
+    virtual void clone(Item* to) const override
     {
         Item::clone(to);
         NodeBase<VariantType>* node = dynamic_cast<NodeBase<VariantType>*>(to);
@@ -53,8 +58,11 @@ private:
 protected:
     boost::container::vector<PortBase<VariantType>*> mPorts;
 
-    ID_e& id() override { return mID; }
+    ID_e& _id() override { return mID; }
+    boost::container::vector<PortBase<VariantType>*>::iterator _pbegin() override { return mPorts.begin(); }
+    boost::container::vector<PortBase<VariantType>*>::iterator _pend() override { return mPorts.end(); }
 
+    Node() = default;
     Node(const std::string& _name, const std::string& _category, const std::string& _description = "")
         : mName(_name), mCategory(_category), mDescription(_description) {}
 public:
@@ -74,8 +82,8 @@ public:
     {
         return (Output<VariantType>*)(mPorts.emplace_back(new Output<VariantType>(this, mPorts.size(), _name, _description, _default)));
     }
-    boost::container::vector<PortBase<VariantType>*>::const_iterator pbegin() const override { return mPorts.begin(); }
-    boost::container::vector<PortBase<VariantType>*>::const_iterator pend() const override { return mPorts.end(); }
+    boost::container::vector<PortBase<VariantType>*>::const_iterator pbegin() const override { return mPorts.cbegin(); }
+    boost::container::vector<PortBase<VariantType>*>::const_iterator pend() const override { return mPorts.cend(); }
     void clone(Item* to) const override
     {
         NodeBase<VariantType>::clone(to);
@@ -133,10 +141,18 @@ template <VariantTemplate VariantType, std::derived_from<NodeBase<VariantType>> 
 class NodeDecorator : public NodeBase<VariantType>
 {
 protected:
-    unique_ptr<NodeType> mInnerNode;
+    NodeType* mInnerNode = nullptr;
 
-    ID_e& id() override { return mInnerNode->id(); }
+    ID_e& _id() override { return NodeRegister::id(*mInnerNode); }
 public:
+    NodeDecorator() = default;
+    template <typename ...TArgs>
+    NodeDecorator(TArgs&&... args)
+    {
+        typedef typename std::remove_cv<NodeType>::type _Tp_nc;
+        mInnerNode = dynamic_cast<NodeType*>(new _Tp_nc(forward<TArgs>(args)...));
+    }
+    NodeDecorator(NodeType* node) : mInnerNode(node) { }
     void run() { mInnerNode->run(); }
     void compile() { mInnerNode->compile(); }
     const std::string& category() const { return mInnerNode->category(); }
@@ -151,7 +167,7 @@ public:
         NodeBase<VariantType>::clone(to);
         NodeDecorator* node = dynamic_cast<NodeDecorator*>(to);
         if (!node) return;
-        node->mInnerNode = mInnerNode.clone();
+        node->mInnerNode = mInnerNode.createClone();
     }
     size_t inputCount() const override { return mInnerNode->inputCount(); }
     size_t outputCount() const override { return mInnerNode->outputCount(); }

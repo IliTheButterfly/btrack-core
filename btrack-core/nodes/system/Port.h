@@ -41,6 +41,7 @@ public:
     virtual ConnectionResult disconnect(PortBase* other) = 0;
     virtual NodeBase<VariantType>* parent() = 0;
     virtual const NodeBase<VariantType>* parent() const = 0;
+    virtual const PortBase<VariantType>* connectionAt(const ID_e& _id) const = 0;
     virtual size_t connectionCount() const = 0;
     bool isPort() const override { return true; }
     virtual ~PortBase() = default;
@@ -57,8 +58,8 @@ private:
     std::string mName;
     std::string mDescription;
 protected:
-    ID_e& id() override { return mID; }
-
+    ID_e& _id() override { return mID; }
+    Port() = default;
     Port(NodeBase<VariantType>* _parent, const ID_e& _id, const std::string& _name, const std::string& _description = "")
         : mParent(_parent), mID(_id), mName(_name), mDescription(_description) {}
 public:

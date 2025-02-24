@@ -5,8 +5,7 @@
 
 namespace btrack::nodes::system {
 
-template <VariantTemplate VariantType>
-class GroupNodeTemplate;
+constexpr ID_e GROUP_ID = 0b1000000000000000;
 
 template <VariantTemplate VariantType>
 class GroupNode;
@@ -15,52 +14,116 @@ template <VariantTemplate VariantType>
 class GroupTemplate : public Item
 {
 private:
-    GroupNodeTemplate<VariantType> mTemplate;
-public:
-    unique_ptr<GroupNode<VariantType>> create();
-    GroupNodeTemplate<VariantType>* getTemplate();
-};
-
-
-
-template <VariantTemplate VariantType>
-class GroupNodeTemplate : public Node<VariantType>
-{
+    NodeTree<VariantType> mTemplate;
 protected:
-    NodeTree<VariantType> mTree;
+    ID_e& _id() override { return NodeRegister::id(mTemplate); }
 public:
-    void run() override { mTree.run(); }
+    GroupTemplate() = default;
+    GroupTemplate(const std::string& _name, const std::string& _category, const std::string& _description = "");
+    GroupNode<VariantType>* create();
+    NodeTree<VariantType>* getTemplate();
     void clone(Item* to) const override;
+    Item* createClone() const override;
+    const ID_e& id() const override { return mTemplate.id(); }
+    std::string_view name() const override { return mTemplate.name(); }
+    std::string& name() override { return mTemplate.name(); }
+    std::string_view description() const override { return mTemplate.description(); }
+    std::string& description() override { return mTemplate.description(); }
 };
 
 template <VariantTemplate VariantType>
-class GroupNode : public NodeDecorator<VariantType, GroupNodeTemplate<VariantType>>
+class GroupNode : public Node<VariantType>
 {
 private:
-    GroupTemplate<VariantType>* mTemplate;
+    GroupTemplate<VariantType>* mTemplate = nullptr;
+    NodeTree<VariantType>* mInnerNode = nullptr;
+    GroupNode() = default;
+    GroupNode(GroupTemplate<VariantType>* _template) : mTemplate(_template)
+    {
+        if (!mTemplate) return;
+        mInnerNode = dynamic_cast<NodeTree<VariantType>*>(mTemplate->getTemplate()->createClone());
+        this->name() = mInnerNode->name();
+        this->category() = mInnerNode->category();
+        this->description() = mInnerNode->description();
+    }
+    GroupNode(const std::string& _name, const std::string& _category, const std::string& _description = "")
+        : GroupNode::Node(_name, _category, _description) {}
 public:
-    bool usesTemplate(const GroupTemplate<VariantType>* t) const { return mTemplate == t; }
-    void compile() override { this->mInnerNode = move(mTemplate->create()); }
+    bool usesTemplate(const GroupTemplate<VariantType>* t) const { return mTemplate && mTemplate == t; }
+    void compile() override 
+    {
+        if (this->mInnerNode) delete this->mInnerNode;
+        this->mInnerNode = dynamic_cast<NodeTree<VariantType>*>(mTemplate->getTemplate()->createClone());
+        mInnerNode->name() = this->name();
+        mInnerNode->category() = this->category();
+        mInnerNode->description() = this->description();
+        this->mInnerNode->compile();
+    }
     void run() override { this->mInnerNode->run(); }
 
     void clone(Item* to) const override;
+    Item* createClone() const override;
+
+    Item *at(const ID_e &_id, const bool& port = false) override
+    {
+        if (port) return Node<VariantType>::at(_id, port);
+        if (!mInnerNode) return nullptr;
+        return mInnerNode->at(_id, port);
+    }
+    const Item *at(const ID_e &_id, const bool& port = false) const override
+    {
+        if (port) return Node<VariantType>::at(_id, port);
+        if (!mInnerNode) return nullptr;
+        return mInnerNode->at(_id, port);
+    }
+
+    virtual ~GroupNode()
+    {
+        if (this->mInnerNode) delete mInnerNode;
+        this->mInnerNode = nullptr;
+    }
+    friend GroupTemplate<VariantType>;
 };
 
 template <VariantTemplate VariantType>
-inline unique_ptr<GroupNode<VariantType>> GroupTemplate<VariantType>::create()
+inline GroupTemplate<VariantType>::GroupTemplate(const std::string &_name, const std::string &_category, const std::string &_description)
 {
-    return make_unique<GroupNode<VariantType>>();
+    mTemplate = NodeTree<VariantType>(_name, _category, _description);
 }
 
 template <VariantTemplate VariantType>
-inline GroupNodeTemplate<VariantType> *GroupTemplate<VariantType>::getTemplate()
+inline GroupNode<VariantType>* GroupTemplate<VariantType>::create()
 {
-    return mTemplate;
+    return new GroupNode<VariantType>(this);
+}
+
+template <VariantTemplate VariantType>
+inline NodeTree<VariantType> *GroupTemplate<VariantType>::getTemplate()
+{
+    return &mTemplate;
+}
+
+template <VariantTemplate VariantType>
+inline void GroupTemplate<VariantType>::clone(Item *to) const
+{
+    Item::clone(to);
+    GroupTemplate<VariantType>* cloned = dynamic_cast<GroupTemplate<VariantType>*>(to);
+    if (!cloned) return;
+    mTemplate.clone(&cloned->mTemplate);
+}
+
+template <VariantTemplate VariantType>
+inline Item *GroupTemplate<VariantType>::createClone() const
+{
+    auto res = new GroupTemplate<VariantType>();
+    this->clone(res);
+    return res;
 }
 
 template <VariantTemplate VariantType>
 inline void GroupNode<VariantType>::clone(Item *to) const
 {
+    Node<VariantType>::clone(to);
     GroupNode<VariantType>* group = dynamic_cast<GroupNode<VariantType>*>(to);
     if (!group) return;
 
@@ -68,15 +131,15 @@ inline void GroupNode<VariantType>::clone(Item *to) const
     group->category() = this->category();
     group->description() = this->description();
     group->name() = this->name();
-    group->mInnerNode = move(this->mInnerNode->clone());
+    group->mInnerNode = dynamic_cast<NodeTree<VariantType>*>(mTemplate->getTemplate()->createClone());
 }
 
 template <VariantTemplate VariantType>
-inline void GroupNodeTemplate<VariantType>::clone(Item *to) const
+inline Item *GroupNode<VariantType>::createClone() const
 {
-    GroupNodeTemplate<VariantType>* group = dynamic_cast<GroupNodeTemplate<VariantType>*>(to);
-    if (!group) return;
-    
+    auto res = new GroupNode<VariantType>();
+    this->clone(res);
+    return res;
 }
 
 }

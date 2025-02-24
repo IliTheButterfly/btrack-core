@@ -27,6 +27,8 @@ public:
     CompositeIterator<U> recursiveIteratorFilter(int depth = -1);
     template <typename U>
     CompositeIterator<std::add_const_t<U>> recursiveIteratorFilter(int depth = -1) const;
+
+    virtual ~Composite() = default;
 };
 
 

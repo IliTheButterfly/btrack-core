@@ -22,16 +22,7 @@ public:
      */
     virtual void clone(T* to) const = 0;
 
-    /**
-     * @brief Creates a unique_ptr clone of the current object.
-     * @return A unique_ptr<T> to the cloned object.
-     */
-    unique_ptr<T> clone() const 
-    {
-        unique_ptr<T> newClone = make_unique<T>();
-        clone(newClone.get());
-        return newClone;
-    }
+    virtual T* createClone() const = 0;
 
     /**
      * @brief Checks if the given object is the same instance.

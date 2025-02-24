@@ -14,11 +14,14 @@ private:
     VariantType mDefault;
     volatile bool mConnecting = false;
 public:
+    Input() = default;
     Input(NodeBase<VariantType>* _parent, const ID_e& _id, const std::string& _name, const std::string& _description = "", VariantType _default = VariantType())
         : Input::Port(_parent, _id, _name, _description), mDefault(_default) {}
     const VariantType& get() const override;
     VariantType& get() override;
+    Item* createClone() const override;
     size_t connectionCount() const override { return mSource ? 1 : 0; }
+    const PortBase<VariantType>* connectionAt(const ID_e& _id) const override { return _id != 0 ? nullptr : mSource; }
     PortType type() const override { return PortType::INPUT; }
     ConnectionResult connect(PortBase<VariantType>* other) override;
     ConnectionResult disconnect(PortBase<VariantType>* other) override;
@@ -73,6 +76,13 @@ inline ConnectionResult Input<VariantType>::disconnect(PortBase<VariantType>* ot
         else return r;
     }
     return ConnectionResult::NOT_CONNECTED;
+}
+template <VariantTemplate VariantType>
+inline Item* Input<VariantType>::createClone() const
+{
+    auto res = new Input<VariantType>();
+    Port<VariantType>::clone(res);
+    return res;
 }
 template <VariantTemplate VariantType>
 inline Input<VariantType>::~Input()

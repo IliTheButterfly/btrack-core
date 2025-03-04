@@ -20,14 +20,23 @@ protected:
     typedef typename boost::container::vector<PortBase<VariantType>*>::iterator port_iterator;
     virtual boost::container::vector<PortBase<VariantType>*>::iterator _pbegin() = 0;
     virtual boost::container::vector<PortBase<VariantType>*>::iterator _pend() = 0;
+    std::ostream& writeTo(std::ostream& os) const override
+    {
+        Composite::writeTo(os) <<
+        "Category: " << category() << std::endl <<
+        "Inputs: " << inputCount() << std::endl <<
+        "Outputs: " << outputCount() << std::endl;
+        if (isForced()) os << "Is forced" << std::endl;
+        return os;
+    }
 public:
     typedef typename boost::container::vector<PortBase<VariantType>*>::const_iterator const_port_iterator;
     virtual void run() = 0;
     virtual void compile() { }
     virtual std::string_view category() const = 0;
     virtual std::string& category() = 0;
-    virtual Input<VariantType>* addInput(const std::string& _name, const std::string& _description = "", VariantType _default = VariantType()) = 0;
-    virtual Output<VariantType>* addOutput(const std::string& _name, const std::string& _description = "", VariantType _default = VariantType()) = 0;
+    virtual PortBase<VariantType>* addInput(const std::string& _name, const std::string& _description = "", VariantType _default = VariantType()) = 0;
+    virtual PortBase<VariantType>* addOutput(const std::string& _name, const std::string& _description = "", VariantType _default = VariantType()) = 0;
     virtual bool isForced() const { return false; }
     virtual size_t inputCount() const = 0;
     virtual size_t outputCount() const = 0;
@@ -73,14 +82,13 @@ public:
     std::string& description() override { return mDescription; }
     std::string_view category() const override { return mCategory; }
     std::string& category() override { return mCategory; }
-    Input<VariantType>* addInput(const std::string& _name, const std::string& _description = "", VariantType _default = VariantType()) override
+    PortBase<VariantType>* addInput(const std::string& _name, const std::string& _description = "", VariantType _default = VariantType()) override
     {
-        return (Input<VariantType>*)(mPorts.emplace_back(new Input<VariantType>(this, mPorts.size(), _name, _description, _default)));
+        return (PortBase<VariantType>*)(mPorts.emplace_back(new Input<VariantType>(this, mPorts.size(), _name, _description, _default)));
     }
-
-    Output<VariantType>* addOutput(const std::string& _name, const std::string& _description = "", VariantType _default = VariantType()) override
+    PortBase<VariantType>* addOutput(const std::string& _name, const std::string& _description = "", VariantType _default = VariantType()) override
     {
-        return (Output<VariantType>*)(mPorts.emplace_back(new Output<VariantType>(this, mPorts.size(), _name, _description, _default)));
+        return (PortBase<VariantType>*)(mPorts.emplace_back(new Output<VariantType>(this, mPorts.size(), _name, _description, _default)));
     }
     boost::container::vector<PortBase<VariantType>*>::const_iterator pbegin() const override { return mPorts.cbegin(); }
     boost::container::vector<PortBase<VariantType>*>::const_iterator pend() const override { return mPorts.cend(); }

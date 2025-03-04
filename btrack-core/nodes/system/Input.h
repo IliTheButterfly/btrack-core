@@ -11,7 +11,7 @@ class Input : public Port<VariantType>
 {
 private:
     PortBase<VariantType>* mSource = nullptr;
-    VariantType mDefault;
+    VariantType mDefault{};
     volatile bool mConnecting = false;
 public:
     Input() = default;
@@ -48,6 +48,7 @@ inline ConnectionResult Input<VariantType>::connect(PortBase<VariantType>* other
     if (mConnecting) return ConnectionResult::OTHER;
     Recursion r(mConnecting);
     if (!other) return ConnectionResult::NULL_POINTER;
+    if (other->type() == PortType::INPUT && !other->isPassthrough()) return ConnectionResult::INCOMPATIBLE;
     if (mSource == other) return ConnectionResult::ALREADY_CONNECTED;
     if (mSource)
     {

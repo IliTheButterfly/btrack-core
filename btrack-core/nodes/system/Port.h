@@ -27,12 +27,43 @@ enum class ConnectionResult {
     NULL_POINTER,
     ALREADY_CONNECTED,
     NOT_CONNECTED,
+    INCOMPATIBLE,
     OTHER,
 };
 
 template <VariantTemplate VariantType>
 class PortBase : public Item
 {
+protected:
+    std::ostream& writeTo(std::ostream& os) const override
+    {
+        Item::writeTo(os) << "Port type: ";
+        switch (this->type())
+        {
+            case PortType::INPUT:
+                os << "Input";
+            break;
+            case PortType::OUTPUT:
+                os << "Output";
+            break;
+            default:
+                os << "Unknown";
+            break;
+        }
+        os << std::endl <<
+        "Parent: ";
+        if (parent())
+        {
+            os << "\tID: " << parent()->id() << std::endl <<
+            "\tName: " << parent()->name() << std::endl;
+        }
+        else os << "nullptr" << std::endl;
+        os << "Connections: " << connectionCount() << std::endl;
+        if (isPassthrough()) os << "Is a passthrough" << std::endl;
+        if (isSplitter()) os << "Is a splitter" << std::endl << "Spread count: " << spreadCount() << std::endl;
+        if (isMerger()) os << "Is a merger" << std::endl << "Spread count: " << spreadCount() << std::endl;
+        return os;
+    }
 public:
     virtual const VariantType& get() const = 0;
     virtual VariantType& get() = 0;
@@ -44,6 +75,17 @@ public:
     virtual const PortBase<VariantType>* connectionAt(const ID_e& _id) const = 0;
     virtual size_t connectionCount() const = 0;
     bool isPort() const override { return true; }
+    virtual bool isPassthrough() const { return false; }
+    virtual bool isSplitter() const { return false; }
+    virtual bool isMerger() const { return false; }
+    virtual int spreadCount() const { return -1; }
+    virtual bool setSpreadCount(int count) { return false; }
+    void clone(Item* to) const override 
+    {
+        PortBase* port = dynamic_cast<PortBase*>(to);
+        if (!port) return;
+        port->get() = this->get();
+    }
     virtual ~PortBase() = default;
 
     friend NodeBase<VariantType>;

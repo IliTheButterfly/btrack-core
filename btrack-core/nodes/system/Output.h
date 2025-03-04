@@ -56,15 +56,13 @@ inline ConnectionResult Output<VariantType>::connect(PortBase<VariantType> *othe
     if (mConnecting) return ConnectionResult::OTHER;
     Recursion r(mConnecting);
     if (!other) return ConnectionResult::NULL_POINTER;
-    if (other->type() == PortType::INPUT)
+    if (other->type() == PortType::OUTPUT && !other->isPassthrough()) return ConnectionResult::INCOMPATIBLE;
+    if (auto r = other->connect(this); r == ConnectionResult::SUCCESS || r == ConnectionResult::OTHER)
     {
-        if (auto r = other->connect(this); r == ConnectionResult::SUCCESS || r == ConnectionResult::OTHER)
-        {
-            mDestinations.emplace_back(other);
-            return ConnectionResult::SUCCESS;
-        }
-        else return r;
+        mDestinations.emplace_back(other);
+        return ConnectionResult::SUCCESS;
     }
+    else return r;
     return ConnectionResult::UNHANDLED;
 }
 

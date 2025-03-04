@@ -396,32 +396,33 @@ TEST(NodeTests, GroupTest)
 
     ExecutionOrder o;
     NodeTree<VariantTest>& tree = *group->getTemplate();
-    auto start1 = tree.addNode<NodeStart>(&o, "S1");
-    auto start2 = tree.addNode<NodeStart>(&o, "S2");
+    auto in1 = tree.addInput("I1", "", 0);
+    auto in2 = tree.addInput("I2", "", 0);
+    auto out1 = tree.addOutput("O1", "", 0);
+    auto out2 = tree.addOutput("O2", "", 0);
+    auto out3 = tree.addOutput("O3", "", 0);
     auto mid1 = tree.addNode<NodeMid>(&o, "M1");
     auto mid2 = tree.addNode<NodeMid>(&o, "M2");
     auto mid3 = tree.addNode<NodeMid>(&o, "M3");
     auto mid4 = tree.addNode<NodeMid>(&o, "M4");
     auto mid5 = tree.addNode<NodeMid>(&o, "M5");
-    auto end1 = tree.addNode<NodeEnd>(&o, "E1");
-    auto end2 = tree.addNode<NodeEnd>(&o, "E2");
 
-    ASSERT_EQ(start1->valueOut->connect(mid1->valueIn1), ConnectionResult::SUCCESS);
-    ASSERT_EQ(start1->valueOut->connect(mid2->valueIn1), ConnectionResult::SUCCESS);
-    ASSERT_EQ(start1->valueOut->connect(mid3->valueIn1), ConnectionResult::SUCCESS);
+    ASSERT_EQ(in1->connect(mid1->valueIn1), ConnectionResult::SUCCESS);
+    ASSERT_EQ(in1->connect(mid2->valueIn1), ConnectionResult::SUCCESS);
+    ASSERT_EQ(in1->connect(mid3->valueIn1), ConnectionResult::SUCCESS);
 
-    ASSERT_EQ(start2->valueOut->connect(mid2->valueIn2), ConnectionResult::SUCCESS);
+    ASSERT_EQ(in2->connect(mid2->valueIn2), ConnectionResult::SUCCESS);
 
     ASSERT_EQ(mid1->valueOut->connect(mid3->valueIn2), ConnectionResult::SUCCESS);
-    ASSERT_EQ(mid1->valueOut->connect(end1->valueIn1), ConnectionResult::SUCCESS);
+    ASSERT_EQ(mid1->valueOut->connect(out1), ConnectionResult::SUCCESS);
 
     ASSERT_EQ(mid2->valueOut->connect(mid4->valueIn1), ConnectionResult::SUCCESS);
 
-    ASSERT_EQ(mid3->valueOut->connect(end2->valueIn1), ConnectionResult::SUCCESS);
+    ASSERT_EQ(mid3->valueOut->connect(out2), ConnectionResult::SUCCESS);
 
     ASSERT_EQ(mid4->valueOut->connect(mid5->valueIn1), ConnectionResult::SUCCESS);
 
-    ASSERT_EQ(mid5->valueOut->connect(end2->valueIn2), ConnectionResult::SUCCESS);
+    ASSERT_EQ(mid5->valueOut->connect(out3), ConnectionResult::SUCCESS);
 
     auto g1 = group->create();
     auto g2 = group->create();
@@ -429,41 +430,42 @@ TEST(NodeTests, GroupTest)
     mainTree.addNode(g2);
 
     // Force execution of groups
-    auto end = mainTree.addNode<NodeEnd>(&o);
-    g1->addOutput("Out")->connect(end->valueIn1);
-    g2->addOutput("Out")->connect(end->valueIn2);
+    g1->addOutput("Out")->connect(mainTree.addOutput("Out"));
+    g2->addOutput("Out")->connect(mainTree.addOutput("Out"));
+
+    auto i1_1 =  dynamic_cast<PortBase<VariantTest>*>(g1->at(in1->id(), true));
+    auto i2_1 =  dynamic_cast<PortBase<VariantTest>*>(g1->at(in2->id(), true));
+    auto i1_2 =  dynamic_cast<PortBase<VariantTest>*>(g2->at(in1->id(), true));
+    auto i2_2 =  dynamic_cast<PortBase<VariantTest>*>(g2->at(in2->id(), true));
+
+    auto o1_1 =  dynamic_cast<PortBase<VariantTest>*>(g1->at(out1->id(), true));
+    auto o2_1 =  dynamic_cast<PortBase<VariantTest>*>(g1->at(out2->id(), true));
+    auto o3_1 =  dynamic_cast<PortBase<VariantTest>*>(g1->at(out3->id(), true));
+    auto o1_2 =  dynamic_cast<PortBase<VariantTest>*>(g2->at(out1->id(), true));
+    auto o2_2 =  dynamic_cast<PortBase<VariantTest>*>(g2->at(out2->id(), true));
+    auto o3_2 =  dynamic_cast<PortBase<VariantTest>*>(g2->at(out3->id(), true));
+
+    i1_1->get().get<int>() = 5;
+    i2_1->get().get<int>() = 15;
+    i1_2->get().get<int>() = 5;
+    i2_2->get().get<int>() = 15;
 
     {
         boost::timer::auto_cpu_timer t{std::cout};
         mainTree.compile();
     }
 
-    auto s1_1 =  dynamic_cast<NodeStart*>(g1->at(start1->id()));
-    auto s2_1 =  dynamic_cast<NodeStart*>(g1->at(start2->id()));
-    auto s1_2 =  dynamic_cast<NodeStart*>(g2->at(start1->id()));
-    auto s2_2 =  dynamic_cast<NodeStart*>(g2->at(start2->id()));
-
-    auto e1_1 =  dynamic_cast<NodeEnd*>(g1->at(end1->id()));
-    auto e2_1 =  dynamic_cast<NodeEnd*>(g1->at(end2->id()));
-    auto e1_2 =  dynamic_cast<NodeEnd*>(g2->at(end1->id()));
-    auto e2_2 =  dynamic_cast<NodeEnd*>(g2->at(end2->id()));
-
-    s1_1->valueOut->get().get<int>() = 5;
-    s2_1->valueOut->get().get<int>() = 15;
-    s1_2->valueOut->get().get<int>() = 5;
-    s2_2->valueOut->get().get<int>() = 15;
-
     {
         boost::timer::auto_cpu_timer t{std::cout};
         mainTree.run();
     }
 
-    ASSERT_EQ(e1_1->valueIn1->get().get<int>(), 6);  // M1 = 6
-    ASSERT_EQ(e2_1->valueIn1->get().get<int>(), 12); // M3 = 12
-    ASSERT_EQ(e2_1->valueIn2->get().get<int>(), 23); // M5 = 23
-    ASSERT_EQ(e1_2->valueIn1->get().get<int>(), 6);  // M1 = 6
-    ASSERT_EQ(e2_2->valueIn1->get().get<int>(), 12); // M3 = 12
-    ASSERT_EQ(e2_2->valueIn2->get().get<int>(), 23); // M5 = 23
+    ASSERT_EQ(o1_1->get().get<int>(), 6);  // M1 = 6
+    ASSERT_EQ(o2_1->get().get<int>(), 12); // M3 = 12
+    ASSERT_EQ(o3_1->get().get<int>(), 23); // M5 = 23
+    ASSERT_EQ(o1_2->get().get<int>(), 6);  // M1 = 6
+    ASSERT_EQ(o2_2->get().get<int>(), 12); // M3 = 12
+    ASSERT_EQ(o3_2->get().get<int>(), 23); // M5 = 23
 }
 
 TEST(NodeTests, GroupExecutionOrderVeryComplex)

@@ -23,7 +23,7 @@ public:
     NodeStart(ExecutionOrder* _order, const std::string& _name = "NodeStart", const std::string& _description = "")
         : NodeStart::Node(_name, "test", _description), order(_order)
     {
-        valueOut = addOutput("Output", "", 0);
+        valueOut = dynamic_cast<Output<VariantTest>*>(addOutput("Output", "", 0));
     }
     void clone(Item* to) const override
     {
@@ -57,9 +57,9 @@ public:
     NodeMid(ExecutionOrder* _order, const std::string& _name = "NodeMid", const std::string& _description = "")
         : NodeMid::Node(_name, "test", _description), order(_order)
     {
-        valueIn1 = addInput("Input1", "", 0);
-        valueIn2 = addInput("Input2", "", 0);
-        valueOut = addOutput("Output", "", 0);
+        valueIn1 = dynamic_cast<Input<VariantTest>*>(addInput("Input1", "", 0));
+        valueIn2 = dynamic_cast<Input<VariantTest>*>(addInput("Input2", "", 0));
+        valueOut = dynamic_cast<Output<VariantTest>*>(addOutput("Output", "", 0));
     }
     void clone(Item* to) const override
     {
@@ -93,7 +93,7 @@ public:
     NodeMultiMid(ExecutionOrder* _order, const std::string& _name = "NodeMultiMid", const std::string& _description = "")
         : NodeMultiMid::Node(_name, "test", _description), order(_order)
     {
-        valueOut = addOutput("Output", "", 0);
+        valueOut = dynamic_cast<Output<VariantTest>*>(addOutput("Output", "", 0));
     }
     void clone(Item* to) const override
     {
@@ -132,8 +132,8 @@ public:
     NodeEnd(ExecutionOrder* _order, const std::string& _name = "NodeEnd", const std::string& _description = "")
         : NodeEnd::Node(_name, "test", _description), order(_order)
     {
-        valueIn1 = addInput("Input1", "", 0);
-        valueIn2 = addInput("Input2", "", 0);
+        valueIn1 = dynamic_cast<Input<VariantTest>*>(addInput("Input1", "", 0));
+        valueIn2 = dynamic_cast<Input<VariantTest>*>(addInput("Input2", "", 0));
     }
 
     void clone(Item* to) const override

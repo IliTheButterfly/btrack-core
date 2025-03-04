@@ -2,6 +2,7 @@
 #define __NODETREE_H__
 
 #include "nodes/system/Node.h"
+#include "nodes/system/PassthroughPort.h"
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/topological_sort.hpp>
 #include <boost/iterator/zip_iterator.hpp>
@@ -31,6 +32,14 @@ public:
     void compile() override { compile<2>(); }
     void run() override;
     bool isNodeTree() const override { return true; }
+    PortBase<VariantType>* addInput(const std::string& _name, const std::string& _description = "", VariantType _default = VariantType()) override
+    {
+        return (PortBase<VariantType>*)(this->mPorts.emplace_back(new PassthroughPort<VariantType>(this, this->mPorts.size(), PortType::INPUT, _name, _description, _default)));
+    }
+    PortBase<VariantType>* addOutput(const std::string& _name, const std::string& _description = "", VariantType _default = VariantType()) override
+    {
+        return (PortBase<VariantType>*)(this->mPorts.emplace_back(new PassthroughPort<VariantType>(this, this->mPorts.size(), PortType::OUTPUT, _name, _description, _default)));
+    }
 
     NodeBase<VariantType>* addNode(NodeBase<VariantType>* node);
     template <std::derived_from<NodeBase<VariantType>> NodeType, typename ...TArgs>
@@ -130,7 +139,11 @@ inline void NodeTree<VariantType>::compile2()
             if (!out) continue;
             for (const PortBase<VariantType>* p : out->connections())
             {
-                add_edge(i + 1, p->parent()->id() + 1, mGraph);
+                if (p->parent() == this) // Connected to the passthrough output
+                {
+                    if (p->type() == PortType::OUTPUT) add_edge(i + 1, 0, mGraph);
+                }
+                else add_edge(i + 1, p->parent()->id() + 1, mGraph);
             }
         }
         if (n->isForced()) add_edge(i + 1, 0, mGraph);
@@ -202,8 +215,7 @@ inline void NodeTree<VariantType>::clone(Item *to) const
         {
             const NodeBase<VariantType>* localNode = mNodes.at(i);
             NodeBase<VariantType>* clonedNode = res->mNodes.at(i);
-            // TODO Implement passthrough ports
-
+            
             // Connect new ports
             auto b = boost::make_zip_iterator(boost::make_tuple(localNode->pbegin(), clonedNode->_pbegin()));
             auto e = boost::make_zip_iterator(boost::make_tuple(localNode->pend(), clonedNode->_pend()));
@@ -212,14 +224,23 @@ inline void NodeTree<VariantType>::clone(Item *to) const
                 const PortBase<VariantType>* localPort = boost::get<0>(*pair);
                 PortBase<VariantType>* clonedPort = boost::get<1>(*pair);
 
+
                 for (ID_e ii = 0; ii < localPort->connectionCount(); ++ii)
                 {
                     const PortBase<VariantType>* localConnection = localPort->connectionAt(ii);
                     if (!localConnection) continue;
                     // Find equivalent connection for the cloned port
-                    PortBase<VariantType>* clonedConnection = (dynamic_cast<PortBase<VariantType>*>((dynamic_cast<NodeBase<VariantType>*>(res->at(localConnection->parent()->id(), false)))->at(localConnection->id(), true)));
-
-                    clonedPort->connect(clonedConnection);
+                    if (auto p = std::find(this->pbegin(), this->pend(), localConnection); p != this->pend())
+                    {
+                        // Connection is a passthrough port from this node tree
+                        PortBase<VariantType>* clonedConnection = (dynamic_cast<PortBase<VariantType>*>(res->at((*p)->id(), true)));
+                        clonedPort->connect(clonedConnection);
+                    }
+                    else
+                    {
+                        PortBase<VariantType>* clonedConnection = (dynamic_cast<PortBase<VariantType>*>((dynamic_cast<NodeBase<VariantType>*>(res->at(localConnection->parent()->id(), false)))->at(localConnection->id(), true)));
+                        clonedPort->connect(clonedConnection);
+                    }
                 }
             }
         }

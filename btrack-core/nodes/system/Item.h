@@ -7,6 +7,7 @@
 #include <boost/static_string.hpp>
 #include "nodes/metadata.h"
 #include <boost/optional.hpp>
+#include <iostream>
 
 namespace btrack::nodes::system {
 
@@ -83,6 +84,18 @@ class Item : public Clonable<Item>
 {
 protected:
     virtual ID_e& _id() = 0;
+    virtual std::type_index internalType() const { return typeid(this); }
+    virtual std::ostream& writeTo(std::ostream& os) const
+    {
+        os << "Item type: " << internalType().name() << std::endl <<
+        "ID: " << id() << std::endl <<
+        "Name: " << name() << std::endl <<
+        "Description: " << description() << std::endl;
+        if (isNode()) os << "Is a node" << std::endl;
+        if (isNodeTree()) os << "Is a node tree" << std::endl;
+        if (isPort()) os << "Is a port" << std::endl;
+        return os;
+    }
 public:
     virtual const ID_e& id() const = 0;
     virtual std::string_view name() const = 0;
@@ -93,6 +106,11 @@ public:
     virtual bool isNodeTree() const { return false; }
     virtual bool isPort() const { return false; }
 
+    std::string representation() const &
+    {
+        
+    }
+
     void clone(Item* to) const override
     {
         if (!to) return;
@@ -101,13 +119,27 @@ public:
         to->description() = this->description();
     }
 
+    friend std::ostream& operator<<(std::ostream& os, const Item& item);
     friend struct NodeRegister;
 };
+
+
+inline std::ostream& operator<<(std::ostream& os, const Item& item)
+{
+    return item.writeTo(os);
+}
 
 struct NodeRegister
 {
     static ID_e& id(Item& item) { return item._id(); }
 };
+
+inline unique_ptr<std::stringstream> debugItem(const Item& it)
+{
+    unique_ptr<std::stringstream> res = make_unique<std::stringstream>();
+    *res << it;
+    return std::move(res);
+}
 
 }
 

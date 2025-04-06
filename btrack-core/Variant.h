@@ -46,6 +46,24 @@ public:
         return std::get<T>(data);
     }
 
+    // Get value safely
+    template <typename T>
+    T* get_if() {
+        return std::get_if<T>(&data);
+    }
+
+    template <typename T>
+    const T* get_if() const {
+        return std::get_if<T>(&data);
+    }
+    
+    template <typename T>
+    VariantBase& operator=(const T& value) { data = value; return *this; }
+    template <typename T>
+    VariantBase& operator=(T& value) { data = value; return *this; }
+    template <typename T>
+    VariantBase& operator=(T&& value) { data = value; return *this; }
+
 private:
     VariantType data;
 };

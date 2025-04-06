@@ -34,11 +34,13 @@ public:
     bool isNodeTree() const override { return true; }
     PortBase<VariantType>* addInput(const std::string& _name, const std::string& _description = "", VariantType _default = VariantType()) override
     {
-        return (PortBase<VariantType>*)(this->mPorts.emplace_back(new PassthroughPort<VariantType>(this, this->mPorts.size(), PortType::INPUT, _name, _description, _default)));
+        return (PortBase<VariantType>*)(this->mPorts.emplace_back(
+            new PassthroughPort<VariantType>(this, this->mPorts.size(), PortType::INPUT, _name, _description, _default)));
     }
     PortBase<VariantType>* addOutput(const std::string& _name, const std::string& _description = "", VariantType _default = VariantType()) override
     {
-        return (PortBase<VariantType>*)(this->mPorts.emplace_back(new PassthroughPort<VariantType>(this, this->mPorts.size(), PortType::OUTPUT, _name, _description, _default)));
+        return (PortBase<VariantType>*)(this->mPorts.emplace_back(
+            new PassthroughPort<VariantType>(this, this->mPorts.size(), PortType::OUTPUT, _name, _description, _default)));
     }
 
     NodeBase<VariantType>* addNode(NodeBase<VariantType>* node);
@@ -154,6 +156,8 @@ inline void NodeTree<VariantType>::compile2()
 template <VariantTemplate VariantType>
 inline NodeBase<VariantType>* NodeTree<VariantType>::addNode(NodeBase<VariantType> *node)
 {
+    if (!node) return node;
+    node->_id() = mNodes.size();
     mNodes.emplace_back(node);
     return node;
 }

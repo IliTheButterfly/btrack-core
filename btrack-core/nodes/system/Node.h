@@ -137,11 +137,12 @@ public:
 
     virtual ~Node()
     {
-        for (PortBase<VariantType>* p : this->mPorts)
+        for (int i = 0; i < mPorts.size(); ++i)
         {
-            delete p;
-            p = nullptr;
+            delete mPorts.at(i);
+            mPorts.at(i) = nullptr;
         }
+        mPorts.clear();
     }
 };
 
@@ -161,21 +162,25 @@ public:
         mInnerNode = dynamic_cast<NodeType*>(new _Tp_nc(forward<TArgs>(args)...));
     }
     NodeDecorator(NodeType* node) : mInnerNode(node) { }
-    void run() { mInnerNode->run(); }
-    void compile() { mInnerNode->compile(); }
-    const std::string& category() const { return mInnerNode->category(); }
-    std::string& category() { return mInnerNode->category(); }
+    void run() override { mInnerNode->run(); }
+    void compile() override { mInnerNode->compile(); }
+    std::string_view category() const override { return mInnerNode->category(); }
+    std::string& category() override { return mInnerNode->category(); }
     const ID_e& id() const override { return mInnerNode->id(); }
     std::string_view name() const override { return mInnerNode->name(); }
     std::string& name() override { return mInnerNode->name(); }
     std::string_view description() const override { return mInnerNode->description(); }
     std::string& description() override { return mInnerNode->description(); }
+    PortBase<VariantType>* addInput(const std::string& _name, const std::string& _description = "", VariantType _default = VariantType()) override 
+    { return mInnerNode->addInput(_name, _description, _default); }
+    PortBase<VariantType>* addOutput(const std::string& _name, const std::string& _description = "", VariantType _default = VariantType()) override 
+    { return mInnerNode->addOutput(_name, _description, _default); }
     void clone(Item* to) const override
     {
         NodeBase<VariantType>::clone(to);
         NodeDecorator* node = dynamic_cast<NodeDecorator*>(to);
         if (!node) return;
-        node->mInnerNode = mInnerNode.createClone();
+        node->mInnerNode = dynamic_cast<NodeType*>(mInnerNode->createClone());
     }
     size_t inputCount() const override { return mInnerNode->inputCount(); }
     size_t outputCount() const override { return mInnerNode->outputCount(); }

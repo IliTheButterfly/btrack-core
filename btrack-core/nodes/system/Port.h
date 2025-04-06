@@ -21,6 +21,11 @@ enum class PortType {
     INPUT,
     OUTPUT,
 };
+enum class PassthroughType {
+    NOT_PASSTHROUGH,
+    INNER,
+    OUTTER,
+};
 enum class ConnectionResult {
     UNHANDLED,
     SUCCESS,
@@ -68,6 +73,7 @@ public:
     virtual const VariantType& get() const = 0;
     virtual VariantType& get() = 0;
     virtual PortType type() const = 0;
+    virtual PassthroughType passthroughType() const { return PassthroughType::NOT_PASSTHROUGH; }
     virtual ConnectionResult connect(PortBase* other) = 0;
     virtual ConnectionResult disconnect(PortBase* other) = 0;
     virtual NodeBase<VariantType>* parent() = 0;
@@ -80,6 +86,15 @@ public:
     virtual bool isMerger() const { return false; }
     virtual int spreadCount() const { return -1; }
     virtual bool setSpreadCount(int count) { return false; }
+    virtual bool isConnectedTo(const PortBase* other) const
+    {
+        if (!other) return false;
+        for (ID_e i = 0; i < other->connectionCount(); ++i)
+        {
+            if (other->connectionAt(i) == this) return true;
+        }
+        return false;
+    }
     void clone(Item* to) const override 
     {
         PortBase* port = dynamic_cast<PortBase*>(to);
@@ -113,6 +128,35 @@ public:
     NodeBase<VariantType>* parent() override { return mParent; }
     const NodeBase<VariantType>* parent() const override { return mParent; }
     virtual ~Port() = default;
+};
+
+template <VariantTemplate VariantType, std::derived_from<PortBase<VariantType>>>
+class PortDecorator : public PortBase<VariantType>
+{
+protected:
+    PortBase<VariantType>* mInnerPort = nullptr;
+public:
+    const VariantType& get() const override { return mInnerPort->get(); }
+    VariantType& get() override { return mInnerPort->get(); }
+    PortType type() const override { return mInnerPort->type(); }
+    ConnectionResult connect(PortBase<VariantType>* other) override { return mInnerPort->connect(other); }
+    ConnectionResult disconnect(PortBase<VariantType>* other) override { return mInnerPort->disconnect(other); }
+    NodeBase<VariantType>* parent() override { return mInnerPort->parent(); }
+    const NodeBase<VariantType>* parent() const override { return mInnerPort->parent(); }
+    const PortBase<VariantType>* connectionAt(const ID_e& _id) const override { return mInnerPort->connectionAt(_id); }
+    size_t connectionCount() const override { return mInnerPort->connectionCount(); }
+    virtual bool isPassthrough() const { return mInnerPort->isPassthrough(); }
+    virtual bool isSplitter() const { return mInnerPort->isSplitter(); }
+    virtual bool isMerger() const { return mInnerPort->isMerger(); }
+    virtual int spreadCount() const { return mInnerPort->isMerger(); }
+    virtual bool setSpreadCount(int count) { return mInnerPort->setSpreadCount(count); }
+    void clone(Item* to) const override 
+    {
+        PortBase<VariantType>* port = dynamic_cast<PortBase<VariantType>*>(to);
+        if (!port) return;
+        port->get() = this->get();
+    }
+    virtual ~PortDecorator() = default;
 };
 
 }

@@ -57,12 +57,18 @@ inline ConnectionResult Output<VariantType>::connect(PortBase<VariantType> *othe
     Recursion r(mConnecting);
     if (!other) return ConnectionResult::NULL_POINTER;
     if (other->type() == PortType::OUTPUT && !other->isPassthrough()) return ConnectionResult::INCOMPATIBLE;
+    mDestinations.emplace_back(other);
     if (auto r = other->connect(this); r == ConnectionResult::SUCCESS || r == ConnectionResult::OTHER)
     {
-        mDestinations.emplace_back(other);
+        std::cout << "Connection:{" << this->parent()->name() << '(' << this->parent()->id() << ")." << this->name() << '(' << this->id() << ")}->{"
+        << other->parent()->name() << '(' << other->parent()->id() << ")." << other->name() << '(' << other->id() << ")}" << std::endl;
         return ConnectionResult::SUCCESS;
     }
-    else return r;
+    else
+    {
+        mDestinations.pop_back();
+        return r;
+    }
     return ConnectionResult::UNHANDLED;
 }
 
@@ -74,7 +80,12 @@ inline ConnectionResult Output<VariantType>::disconnect(PortBase<VariantType> *o
     else
     {
         mDestinations.erase(it);
-        if (auto r = other->disconnect(this); r == ConnectionResult::SUCCESS || r == ConnectionResult::NOT_CONNECTED) return ConnectionResult::SUCCESS;
+        if (auto r = other->disconnect(this); r == ConnectionResult::SUCCESS || r == ConnectionResult::NOT_CONNECTED) 
+        {
+            std::cout << "Disconnection:{" << this->parent()->name() << '(' << this->parent()->id() << ")." << this->name() << '(' << this->id() << ")}->{"
+            << other->parent()->name() << '(' << other->parent()->id() << ")." << other->name() << '(' << other->id() << ")}" << std::endl;
+            return ConnectionResult::SUCCESS;
+        }
         else return r;
     }
     return ConnectionResult::UNHANDLED;

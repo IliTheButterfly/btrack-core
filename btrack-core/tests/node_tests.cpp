@@ -109,6 +109,46 @@ TEST(NodeTests, OutputDestructors)
     ASSERT_EQ(end.valueIn1->connectionCount(), 0);
 }
 
+TEST(NodeTests, PassthroughConnections)
+{
+    NodeTree<VariantTest> tree;
+    auto ip1 = new PassthroughPort<VariantTest>(&tree, 0, PortType::INPUT, "IP1", "Input Passthrough 1", 0);
+    auto ip2 = new PassthroughPort<VariantTest>(&tree, 1, PortType::INPUT, "IP2", "Input Passthrough 2", 0);
+    auto op1 = new PassthroughPort<VariantTest>(&tree, 2, PortType::OUTPUT, "OP1", "Output Passthrough 1", 0);
+    auto op2 = new PassthroughPort<VariantTest>(&tree, 3, PortType::OUTPUT, "OP2", "Output Passthrough 2", 0);
+    auto i1 = new Input<VariantTest>(&tree, 4, "I1", "Input 1", 0);
+    auto i2 = new Input<VariantTest>(&tree, 5, "I2", "Input 2", 0);
+    auto o1 = new Input<VariantTest>(&tree, 6, "O1", "Output 1", 0);
+    auto o2 = new Input<VariantTest>(&tree, 7, "O2", "Output 2", 0);
+
+    // Input passthrough to input passthrough
+    ASSERT_EQ(ip1->connect(ip2), ConnectionResult::SUCCESS);
+    ASSERT_EQ(ip1->_destination(0), ip2);
+    ASSERT_EQ(ip2->_source(), ip1);
+    ASSERT_EQ(ip2->_destination(0), nullptr);
+    ASSERT_EQ(ip1->_source(), nullptr);
+
+    ASSERT_EQ(ip1->connect(ip2), ConnectionResult::ALREADY_CONNECTED);
+    ASSERT_EQ(ip1->_destination(0), ip2);
+    ASSERT_EQ(ip2->_source(), ip1);
+    ASSERT_EQ(ip2->_destination(0), nullptr);
+    ASSERT_EQ(ip1->_source(), nullptr);
+
+    ASSERT_EQ(ip1->connect(nullptr), ConnectionResult::NULL_POINTER);
+    ASSERT_EQ(ip1->_destination(0), ip2);
+    ASSERT_EQ(ip2->_source(), ip1);
+    ASSERT_EQ(ip2->_destination(0), nullptr);
+    ASSERT_EQ(ip1->_source(), nullptr);
+
+    ASSERT_EQ(ip1->disconnect(ip2), ConnectionResult::SUCCESS);
+    ASSERT_EQ(ip1->_destination(0), nullptr);
+    ASSERT_EQ(ip2->_source(), nullptr);
+
+    ASSERT_EQ(ip1->disconnect(ip2), ConnectionResult::NOT_CONNECTED);
+    ASSERT_EQ(ip1->disconnect(nullptr), ConnectionResult::NULL_POINTER);
+
+}
+
 TEST(NodeTests, TreeExecutionOrder)
 {
     ExecutionOrder o;
@@ -388,11 +428,11 @@ TEST(NodeTests, TreeExecutionOrderVeryComplex2)
 }
 
 
+
 TEST(NodeTests, GroupTest)
 {
-    NodeTree<VariantTest> mainTree;
-    auto group = new GroupTemplate<VariantTest>();
-    
+    NodeTree<VariantTest> mainTree{"MainTree", "Tree"};
+    auto group = new GroupTemplate<VariantTest>("Group", "Groups");
 
     ExecutionOrder o;
     NodeTree<VariantTest>& tree = *group->getTemplate();
@@ -424,14 +464,17 @@ TEST(NodeTests, GroupTest)
 
     ASSERT_EQ(mid5->valueOut->connect(out3), ConnectionResult::SUCCESS);
 
+    std::cout << "Group1 clone" << std::endl;
     auto g1 = group->create();
+    g1->name() = "G1";
+    std::cout << "Group2 clone" << std::endl;
     auto g2 = group->create();
+    g2->name() = "G2";
     mainTree.addNode(g1);
     mainTree.addNode(g2);
 
-    // Force execution of groups
-    g1->addOutput("Out")->connect(mainTree.addOutput("Out"));
-    g2->addOutput("Out")->connect(mainTree.addOutput("Out"));
+    // Make the groups bind their inputs
+    mainTree.compile();
 
     auto i1_1 =  dynamic_cast<PortBase<VariantTest>*>(g1->at(in1->id(), true));
     auto i2_1 =  dynamic_cast<PortBase<VariantTest>*>(g1->at(in2->id(), true));
@@ -445,15 +488,26 @@ TEST(NodeTests, GroupTest)
     auto o2_2 =  dynamic_cast<PortBase<VariantTest>*>(g2->at(out2->id(), true));
     auto o3_2 =  dynamic_cast<PortBase<VariantTest>*>(g2->at(out3->id(), true));
 
-    i1_1->get().get<int>() = 5;
-    i2_1->get().get<int>() = 15;
-    i1_2->get().get<int>() = 5;
-    i2_2->get().get<int>() = 15;
+    o1_1->connect(mainTree.addOutput("Out", "", 0));
+    o1_2->connect(mainTree.addOutput("Out", "", 0));
+
+
+    // i1_1->get().get<int>() = 5;
+    // i2_1->get().get<int>() = 15;
+    // i1_2->get().get<int>() = 5;
+    // i2_2->get().get<int>() = 15;
+    
 
     {
         boost::timer::auto_cpu_timer t{std::cout};
         mainTree.compile();
     }
+
+
+    i1_1->get() = 5;
+    i2_1->get() = 15;
+    i1_2->get() = 5;
+    i2_2->get() = 15;
 
     {
         boost::timer::auto_cpu_timer t{std::cout};

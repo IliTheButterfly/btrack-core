@@ -15,11 +15,8 @@ using CompositeIterator = _CompositeIterator<std::remove_pointer_t<std::remove_r
 class Composite : public Item
 {
 public:
-    virtual Item *relativeAt(const ID_t &_id);
-    virtual const Item *relativeAt(const ID_t &_id) const;
-
-    virtual Item *at(const ID_e &_id, const bool& port = false) = 0;
-    virtual const Item *at(const ID_e &_id, const bool& port = false) const = 0;
+    virtual Item *relativeAt(const ID_t &_id) override;
+    virtual const Item *relativeAt(const ID_t &_id) const override;
 
     CompositeIterator<Item> recursiveIterator(int depth = -1);
     CompositeIterator<const Item> recursiveIterator(int depth = -1) const;

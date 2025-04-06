@@ -32,54 +32,116 @@ public:
 };
 
 template <VariantTemplate VariantType>
-class GroupNode : public Node<VariantType>
+class GroupNode : public NodeDecorator<VariantType, NodeTree<VariantType>>
 {
 private:
+    ID_e mID = 0;
+    std::string mName;
+    std::string mDescription;
     GroupTemplate<VariantType>* mTemplate = nullptr;
-    NodeTree<VariantType>* mInnerNode = nullptr;
     GroupNode() = default;
     GroupNode(GroupTemplate<VariantType>* _template) : mTemplate(_template)
     {
         if (!mTemplate) return;
-        mInnerNode = dynamic_cast<NodeTree<VariantType>*>(mTemplate->getTemplate()->createClone());
-        this->name() = mInnerNode->name();
-        this->category() = mInnerNode->category();
-        this->description() = mInnerNode->description();
+        this->mInnerNode = dynamic_cast<NodeTree<VariantType>*>(mTemplate->getTemplate()->createClone());
+        this->name() = this->mInnerNode->name();
+        this->category() = this->mInnerNode->category();
+        this->description() = this->mInnerNode->description();
     }
     GroupNode(const std::string& _name, const std::string& _category, const std::string& _description = "")
         : GroupNode::Node(_name, _category, _description) {}
+
+    boost::container::vector<PortBase<VariantType>*> mPorts;
+
+    ID_e& _id() override { return mID; }
+    boost::container::vector<PortBase<VariantType>*>::iterator _pbegin() override { return mPorts.begin(); }
+    boost::container::vector<PortBase<VariantType>*>::iterator _pend() override { return mPorts.end(); }
+
+    void linkIOs()
+    {
+        for (ID_e i = 0; i < mPorts.size(); ++i)
+        {
+            if (mPorts[i]->type() == PortType::INPUT)
+            {
+                dynamic_cast<PortBase<VariantType>*>(this->at(i, true))->connect(dynamic_cast<PortBase<VariantType>*>(this->mInnerNode->at(i, true)));
+            }
+            else
+            {
+                dynamic_cast<PortBase<VariantType>*>(this->mInnerNode->at(i, true))->connect(dynamic_cast<PortBase<VariantType>*>(this->at(i, true)));
+            }
+        }
+    }
+
+    void matchIOs()
+    {
+        if (mPorts.size() != (this->mInnerNode->inputCount() + this->mInnerNode->outputCount()))
+        {
+            mPorts.clear();
+            for (ID_e i = 0; i < this->mInnerNode->inputCount() + this->mInnerNode->outputCount(); ++i)
+            {
+                auto innerPort = dynamic_cast<PortBase<VariantType>*>(this->mInnerNode->at(i, true));
+                mPorts.emplace_back(new PassthroughPort<VariantType>(this, mPorts.size(), innerPort->type(), innerPort->name(), innerPort->description(), innerPort->get()));
+            }
+        }
+    }
 public:
+    const ID_e& id() const override { return mID; }
+    std::string_view name() const override { return mName; }
+    std::string& name() override { return mName; }
+    std::string_view description() const override { return mDescription; }
+    std::string& description() override { return mDescription; }
     bool usesTemplate(const GroupTemplate<VariantType>* t) const { return mTemplate && mTemplate == t; }
+    PortBase<VariantType>* addInput(const std::string& _name, const std::string& _description = "", VariantType _default = VariantType()) override
+    {
+        return (PortBase<VariantType>*)(mPorts.emplace_back(new Input<VariantType>(this, mPorts.size(), _name, _description, _default)));
+    }
+    PortBase<VariantType>* addOutput(const std::string& _name, const std::string& _description = "", VariantType _default = VariantType()) override
+    {
+        return (PortBase<VariantType>*)(mPorts.emplace_back(new Output<VariantType>(this, mPorts.size(), _name, _description, _default)));
+    }
     void compile() override 
     {
         if (this->mInnerNode) delete this->mInnerNode;
         this->mInnerNode = dynamic_cast<NodeTree<VariantType>*>(mTemplate->getTemplate()->createClone());
-        mInnerNode->name() = this->name();
-        mInnerNode->category() = this->category();
-        mInnerNode->description() = this->description();
+        this->mInnerNode->name() = this->name();
+        this->mInnerNode->category() = this->category();
+        this->mInnerNode->description() = this->description();
+
+        // Update ports
+        if (mPorts.size() == (this->mInnerNode->inputCount() + this->mInnerNode->outputCount()))
+        {
+            // We assume no ports were added or removed
+            linkIOs();
+        }
+        else
+        {
+            matchIOs();
+            linkIOs();
+        }
+
         this->mInnerNode->compile();
     }
-    void run() override { this->mInnerNode->run(); }
-
+    boost::container::vector<PortBase<VariantType>*>::const_iterator pbegin() const override { return mPorts.cbegin(); }
+    boost::container::vector<PortBase<VariantType>*>::const_iterator pend() const override { return mPorts.cend(); }
     void clone(Item* to) const override;
     Item* createClone() const override;
 
     Item *at(const ID_e &_id, const bool& port = false) override
     {
-        if (port) return Node<VariantType>::at(_id, port);
-        if (!mInnerNode) return nullptr;
-        return mInnerNode->at(_id, port);
+        if (!port) return this->mInnerNode->at(_id, false);
+        if (_id >= mPorts.size()) return nullptr;
+        return mPorts.at(_id);
     }
     const Item *at(const ID_e &_id, const bool& port = false) const override
     {
-        if (port) return Node<VariantType>::at(_id, port);
-        if (!mInnerNode) return nullptr;
-        return mInnerNode->at(_id, port);
+        if (!port) return this->mInnerNode->at(_id, false);
+        if (_id >= mPorts.size()) return nullptr;
+        return mPorts.at(_id);
     }
 
     virtual ~GroupNode()
     {
-        if (this->mInnerNode) delete mInnerNode;
+        if (this->mInnerNode) delete this->mInnerNode;
         this->mInnerNode = nullptr;
     }
     friend GroupTemplate<VariantType>;
@@ -123,15 +185,14 @@ inline Item *GroupTemplate<VariantType>::createClone() const
 template <VariantTemplate VariantType>
 inline void GroupNode<VariantType>::clone(Item *to) const
 {
-    Node<VariantType>::clone(to);
+    NodeBase<VariantType>::clone(to);
     GroupNode<VariantType>* group = dynamic_cast<GroupNode<VariantType>*>(to);
     if (!group) return;
 
     group->mTemplate = mTemplate;
-    group->category() = this->category();
-    group->description() = this->description();
-    group->name() = this->name();
     group->mInnerNode = dynamic_cast<NodeTree<VariantType>*>(mTemplate->getTemplate()->createClone());
+    group->matchIOs();
+    group->linkIOs();
 }
 
 template <VariantTemplate VariantType>

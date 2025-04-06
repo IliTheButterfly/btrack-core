@@ -6,6 +6,7 @@
 #include <boost/move/move.hpp>
 #include <boost/move/make_unique.hpp>
 #include <boost/pointer_cast.hpp>
+#include <iostream>
 #include <memory>
 
 namespace btrack {

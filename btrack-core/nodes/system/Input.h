@@ -55,12 +55,16 @@ inline ConnectionResult Input<VariantType>::connect(PortBase<VariantType>* other
         if (auto r = mSource->disconnect(this); r != ConnectionResult::SUCCESS) return r;
         mSource = nullptr;
     }
+    mSource = other;
     if (auto rr = other->connect(this); rr == ConnectionResult::SUCCESS || rr == ConnectionResult::ALREADY_CONNECTED || rr == ConnectionResult::OTHER)
     {
-        mSource = other;
         return ConnectionResult::SUCCESS;
     }
-    else return rr;
+    else 
+    {
+        mSource = nullptr;
+        return rr;
+    }
     return ConnectionResult::UNHANDLED;
 }
 template <VariantTemplate VariantType>
@@ -69,12 +73,17 @@ inline ConnectionResult Input<VariantType>::disconnect(PortBase<VariantType>* ot
     if (!other) return ConnectionResult::NULL_POINTER;
     if (mSource == other)
     {
-        if (auto r = mSource->disconnect(this); r == ConnectionResult::SUCCESS || r == ConnectionResult::NOT_CONNECTED)
+        mSource = nullptr;
+        if (auto r = other->disconnect(this); r == ConnectionResult::SUCCESS || r == ConnectionResult::NOT_CONNECTED)
         {
             mSource = nullptr;
             return ConnectionResult::SUCCESS;
         }
-        else return r;
+        else 
+        {
+            mSource = other;
+            return r;
+        }
     }
     return ConnectionResult::NOT_CONNECTED;
 }

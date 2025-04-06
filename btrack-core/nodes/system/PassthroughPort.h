@@ -12,16 +12,23 @@ class PassthroughPort : public Port<VariantType>
 private:
     PortBase<VariantType>* mSource = nullptr;
     boost::container::vector<PortBase<VariantType>*> mDestinations;
-    VariantType mDefault;
+    VariantType mDefault{};
     volatile bool mConnecting = false;
     PortType mType;
+    PassthroughType mPassthroughType{};
 public:
     PassthroughPort() : PassthroughPort::Port() { }
-    PassthroughPort(NodeBase<VariantType>* _parent, const ID_e& _id, PortType _type, const std::string& _name, const std::string& _description = "", VariantType _default = VariantType())
-        : PassthroughPort::Port(_parent, _id, _name, _description), mDefault(_default), mType(_type) { }
+    PassthroughPort(NodeBase<VariantType>* _parent, const ID_e& _id, PortType _type, PassthroughType _passthroughType, const std::string& _name, const std::string& _description = "", VariantType _default = VariantType())
+        : PassthroughPort::Port(_parent, _id, _name, _description), mDefault(_default), mType(_type), mPassthroughType(_passthroughType) { }
     const VariantType& get() const override;
     VariantType& get() override;
     Item* createClone() const override;
+    const PortBase<VariantType>* _source() const { return mSource; }
+    const PortBase<VariantType>* _destination(size_t index) const 
+    {
+        if (index >= mDestinations.size()) return nullptr;
+        return mDestinations.at(index);
+    }
     size_t connectionCount() const override { return (mSource ? 1 : 0) + mDestinations.size(); }
     const PortBase<VariantType>* connectionAt(const ID_e& _id) const override {
         return _id == mDestinations.size() ?
@@ -59,27 +66,11 @@ inline ConnectionResult PassthroughPort<VariantType>::connect(PortBase<VariantTy
     if (!other) return ConnectionResult::NULL_POINTER;
     PortType otherPortType = other->type();
     if (otherPortType == PortType::UNKNOWN) return ConnectionResult::UNHANDLED;
-    if (other->isPassthrough())
-    {
-        // other is a passthrough so we need to determine whether it acts as an input or an output
-        // If other is contained in parent, then it acts as it says, otherwise, it acts as the opposite
-        bool found = false;
-        for (auto i = 0; this->parent()->at(i) != nullptr; ++i)
-        {
-            const auto* n = dynamic_cast<const NodeBase<VariantType>*>(this->parent()->at(i));
-            if (std::find(n->pbegin(), n->pend(), other) != n->pend())
-            {
-                found = true;
-                break;
-            }
-        }
-        if (!found)
-        {
-            if (otherPortType == PortType::INPUT) otherPortType = PortType::OUTPUT;
-            else otherPortType = PortType::INPUT;
-        }
-    }
-    if (otherPortType == PortType::OUTPUT) // Acting as an input
+
+    // We act as an input in 2 cases:
+    // Either, we are acting like a normal port (output->input)
+    // Either, we are acting as a passthrough in the case other->connect(this) (right hand side) so we act as an input
+    if (otherPortType == this->type() ? otherPortType == PortType::OUTPUT && !other->isPassthrough() : otherPortType == PortType::OUTPUT) // Acting as an input
     {
         if (mSource == other) return ConnectionResult::ALREADY_CONNECTED;
         if (mSource)
@@ -87,21 +78,50 @@ inline ConnectionResult PassthroughPort<VariantType>::connect(PortBase<VariantTy
             if (auto r = mSource->disconnect(this); r != ConnectionResult::SUCCESS) return r;
             mSource = nullptr;
         }
+        mSource = other;
         if (auto rr = other->connect(this); rr == ConnectionResult::SUCCESS || rr == ConnectionResult::ALREADY_CONNECTED || rr == ConnectionResult::OTHER)
         {
-            mSource = other;
             return ConnectionResult::SUCCESS;
         }
-        else return rr;
-    }
-    if (otherPortType == PortType::INPUT) // Acting as an output
-    {
-        if (auto r = other->connect(this); r == ConnectionResult::SUCCESS || r == ConnectionResult::OTHER)
+        else
         {
-            mDestinations.emplace_back(other);
+            mSource = nullptr;
+            return rr;
+        }
+    }
+    // We act as an output in 2 cases:
+    // Either, we are acting like a normal port (output->input)
+    // Either, we are acting as a passthrough in the case this->connect(other) (left hand side) so we act as an output
+    if (otherPortType == this->type() ? otherPortType == PortType::INPUT || other->isPassthrough() : otherPortType == PortType::INPUT) // Acting as an output
+    {
+        mDestinations.emplace_back(other);
+        if (other->isPassthrough())
+        {
+            PassthroughPort<VariantType>* p = dynamic_cast<PassthroughPort<VariantType>*>(other);
+            if (!p) return ConnectionResult::INCOMPATIBLE;
+            if (p->mSource)
+            {
+                p->mSource->disconnect(p);
+            }
+            p->mSource = this;
             return ConnectionResult::SUCCESS;
         }
-        else return r;
+        else
+        {
+            if (auto r = other->connect(this); r == ConnectionResult::SUCCESS || r == ConnectionResult::OTHER)
+            {
+                if (otherPortType == this->type()) std::cout << "Passthrough";
+                else std::cout << "Connection";
+                std::cout << ":{" << this->parent()->name() << '(' << this->parent()->id() << ")." << this->name() << '(' << this->id() << ")}->{"
+                << other->parent()->name() << '(' << other->parent()->id() << ")." << other->name() << '(' << other->id() << ")}" << std::endl;
+                return ConnectionResult::SUCCESS;
+            }
+            else 
+            {
+                mDestinations.pop_back();
+                return r;
+            }
+        }
     }
     return ConnectionResult::UNHANDLED;
 }
@@ -111,45 +131,27 @@ inline ConnectionResult PassthroughPort<VariantType>::disconnect(PortBase<Varian
     if (!other) return ConnectionResult::NULL_POINTER;
     PortType otherPortType = other->type();
     if (otherPortType == PortType::UNKNOWN) return ConnectionResult::UNHANDLED;
-    if (other->isPassthrough())
+    if (mSource == other)
     {
-        // other is a passthrough so we need to determine whether it acts as an input or an output
-        // If other is contained in parent, then it acts as it says, otherwise, it acts as the opposite
-        bool found = false;
-        for (auto i = 0; this->parent()->at(i) != nullptr; ++i)
+        mSource = nullptr;
+        if (auto r = other->disconnect(this); r == ConnectionResult::SUCCESS || r == ConnectionResult::NOT_CONNECTED)
         {
-            const auto* n = dynamic_cast<const NodeBase<VariantType>*>(this->parent()->at(i));
-            if (std::find(n->pbegin(), n->pend(), other) != n->pend())
-            {
-                found = true;
-                break;
-            }
+            return ConnectionResult::SUCCESS;
         }
-        if (!found)
+        else 
         {
-            if (otherPortType == PortType::INPUT) otherPortType = PortType::OUTPUT;
-            else otherPortType = PortType::INPUT;
+            mSource = other;
+            return r;
         }
     }
-    if (otherPortType == PortType::OUTPUT) // Acting as an input
-    {
-        if (mSource == other)
-        {
-            if (auto r = mSource->disconnect(this); r == ConnectionResult::SUCCESS || r == ConnectionResult::NOT_CONNECTED)
-            {
-                mSource = nullptr;
-                return ConnectionResult::SUCCESS;
-            }
-            else return r;
-        }
-        return ConnectionResult::NOT_CONNECTED;
-    }
-    if (otherPortType == PortType::INPUT) // Acting as an output
+    else
     {
         if (auto it = std::find(mDestinations.begin(), mDestinations.end(), other); it == mDestinations.end()) return ConnectionResult::NOT_CONNECTED;
         else
         {
             mDestinations.erase(it);
+            // std::cout << "Disconnection:{" << this->parent()->name() << '(' << this->parent()->id() << ")." << this->name() << '(' << this->id() << ")}->{"
+            // << other->parent()->name() << '(' << other->parent()->id() << ")." << other->name() << '(' << other->id() << ")}" << std::endl;
             if (auto r = other->disconnect(this); r == ConnectionResult::SUCCESS || r == ConnectionResult::NOT_CONNECTED) return ConnectionResult::SUCCESS;
             else return r;
         }

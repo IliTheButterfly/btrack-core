@@ -106,10 +106,11 @@ public:
     virtual bool isNodeTree() const { return false; }
     virtual bool isPort() const { return false; }
 
-    std::string representation() const &
-    {
-        
-    }
+    virtual Item *relativeAt(const ID_t &_id) { return nullptr; }
+    virtual const Item *relativeAt(const ID_t &_id) const { return nullptr; }
+
+    virtual Item *at(const ID_e &_id, const bool& port = false) { return nullptr; }
+    virtual const Item *at(const ID_e &_id, const bool& port = false) const { return nullptr; }
 
     void clone(Item* to) const override
     {
